@@ -15,11 +15,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
+import 'package:poker_with_friends/src/game_lobby/game_lobby_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'src/app_lifecycle/app_lifecycle.dart';
 import 'src/audio/audio_controller.dart';
-import 'src/level_selection/level_selection_screen.dart';
+import 'src/play_session/play_session_screen.dart';
 import 'src/main_menu/main_menu_screen.dart';
 import 'src/player_progress/persistence/local_storage_player_progress_persistence.dart';
 import 'src/player_progress/persistence/player_progress_persistence.dart';
@@ -127,13 +128,28 @@ class MyApp extends StatelessWidget {
             GoRoute(
               path: 'lobby',
               pageBuilder: (context, state) => buildMyTransition<void>(
-                    key: const ValueKey('lobby'),
-                    child: const LevelSelectionScreen(
-                      key: Key('level selection'),
-                    ),
-                    color: context.watch<Palette>().backgroundLevelSelection,
-                  ),
+                key: const ValueKey('lobby'),
+                child: const GameLobbyScreen(
+                  key: Key('lobby'),
                 ),
+                color: context.watch<Palette>().backgroundLevelSelection,
+              ),
+              routes: [
+                GoRoute(
+                  path: 'playing',
+                  pageBuilder: (context, state) {
+                    return buildMyTransition<void>(
+                      child: const PlaySessionScreen(
+                        2,
+                        key: Key('play-session'),
+                      ),
+                      color: context.watch<Palette>().trueWhite,
+                      //flipHorizontally: true,
+                    );
+                  },
+                ),
+              ],
+            ),
             GoRoute(
               path: 'settings',
               builder: (context, state) =>

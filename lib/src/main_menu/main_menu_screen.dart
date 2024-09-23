@@ -73,11 +73,12 @@ class MainMenuScreen extends StatelessWidget {
               height: 50,
               child:  Text("v1.0.0 by Hai Phan",
                 style: TextStyle(
-                fontFamily: 'Permanent Marker',
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                height: 1,
-              )),
+                  fontFamily: 'Permanent Marker',
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  height: 1,
+                )
+              ),
             )
           ],
         ),

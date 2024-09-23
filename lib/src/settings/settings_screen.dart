@@ -84,19 +84,19 @@ class SettingsScreen extends StatelessWidget {
             //     onSelected: callback,
             //   );
             // }),
-            _SettingsLine(
-              'Reset progress',
-              const Icon(Icons.delete),
-              onSelected: () {
-                context.read<PlayerProgress>().reset();
+            // _SettingsLine(
+            //   'Reset progress',
+            //   const Icon(Icons.delete),
+            //   onSelected: () {
+            //     context.read<PlayerProgress>().reset();
 
-                final messenger = ScaffoldMessenger.of(context);
-                messenger.showSnackBar(
-                  const SnackBar(
-                      content: Text('Player progress has been reset.')),
-                );
-              },
-            ),
+            //     final messenger = ScaffoldMessenger.of(context);
+            //     messenger.showSnackBar(
+            //       const SnackBar(
+            //           content: Text('Player progress has been reset.')),
+            //     );
+            //   },
+            // ),
             _gap,
           ],
         ),

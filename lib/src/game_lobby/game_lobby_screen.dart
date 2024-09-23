@@ -1,13 +1,33 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../audio/audio_controller.dart';
 import '../audio/sounds.dart';
-import '../player_progress/player_progress.dart';
+// import '../player_progress/player_progress.dart';
 import '../style/palette.dart';
 import '../style/responsive_screen.dart';
 
+class RoomAvailable {
+  final int? number;
+  final int? ID;
+
+  final String? passCode;
+
+  const RoomAvailable({
+    required this.number,
+    required this.ID,
+    required this.passCode,
+  });
+}
+
+const roomList = [
+  RoomAvailable(number: 1, ID: 2, passCode: '1'),
+  RoomAvailable(number: 2, ID: 3, passCode: '2'),
+  RoomAvailable(number: 3, ID: 4, passCode: '3'),
+];
 
 class GameLobbyScreen extends StatelessWidget {
   const GameLobbyScreen({super.key});
@@ -15,7 +35,7 @@ class GameLobbyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.watch<Palette>();
-    final playerProgress = context.watch<PlayerProgress>();
+    // final playerProgress = context.watch<PlayerProgress>();
 
     return Scaffold(
       backgroundColor: palette.backgroundLevelSelection,
@@ -26,9 +46,9 @@ class GameLobbyScreen extends StatelessWidget {
               padding: EdgeInsets.all(16),
               child: Center(
                 child: Text(
-                  'Select level',
+                  'Select room to join',
                   style:
-                      TextStyle(fontFamily: 'Permanent Marker', fontSize: 30),
+                      TextStyle(fontFamily: 'Permanent Marker', fontSize: 26),
                 ),
               ),
             ),
@@ -36,19 +56,18 @@ class GameLobbyScreen extends StatelessWidget {
             Expanded(
               child: ListView(
                 children: [
-                  for (final level in gameLevels)
+                  for (final room in roomList)
                     ListTile(
-                      enabled: playerProgress.highestLevelReached >=
-                          level.number - 1,
+                      enabled: true,
                       onTap: () {
                         final audioController = context.read<AudioController>();
                         audioController.playSfx(SfxType.buttonTap);
 
                         GoRouter.of(context)
-                            .go('/lobby/session/${level.number}');
+                            .go('/lobby/playing');
                       },
-                      leading: Text(level.number.toString()),
-                      title: Text('Level #${level.number}'),
+                      leading: Text(room.number.toString()),
+                      title: Text('Room #${room.ID}'),
                     )
                 ],
               ),
@@ -60,9 +79,10 @@ class GameLobbyScreen extends StatelessWidget {
             final audioController = context.read<AudioController>();
             audioController.playSfx(SfxType.buttonTap);
 
-            GoRouter.of(context).go('/main-menu');
+            GoRouter.of(context).go('/');
           },
           child: const Text('Main Menu'),
+          // Removed invalid constant
         ),
       ),
     );
