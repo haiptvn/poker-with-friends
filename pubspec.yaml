@@ -19,6 +19,7 @@ dependencies:
   logging: ^1.1.0
   provider: ^6.0.2
   shared_preferences: ^2.0.13
+  protobuf: ^3.1.0
 
   # If you don't need one of the following dependencies,
   # delete the relevant line below, and get rid of any Dart code
@@ -44,5 +45,6 @@ flutter:
   assets:
     # Add assets from the images directory to the application.
     - assets/images/
+    - assets/cards/
     - assets/music/
     - assets/sfx/

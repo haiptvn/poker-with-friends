@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -14,6 +15,7 @@ import '../audio/sounds.dart';
 import '../game_internals/level_state.dart';
 import '../style/confetti.dart';
 import '../style/palette.dart';
+import '../cards/cards.dart';
 
 import 'positioned_player_slot.dart';
 
@@ -36,6 +38,30 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   bool _duringCelebration = false;
 
   // late DateTime _startOfPlay;
+
+  // Helper function to calculate the position of players
+  Positioned _buildPlayerPosition(double angle, double radius, String role, String name, String chips, String starCount, String imagePath) {
+    // Convert the angle to radians
+    double rad = angle * pi / 180;
+
+    // Calculate the x and y position based on the angle and radius
+    double x = radius * cos(rad);
+    double y = radius * sin(rad);
+
+    // Return a Positioned widget with the calculated coordinates
+    return Positioned(
+      left: x + radius, // Center horizontally (shift by radius)
+      top: y + radius,  // Center vertically (shift by radius)
+      child: PlayerPanel(
+        role: role,
+        playerName: name,
+        chips: chips,
+        starCount: starCount,
+        imagePath: imagePath,
+        showCards: false,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,53 +90,106 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                 ),
               ),
 
+              Positioned(
+                top: MediaQuery.of(context).size.height / 2 - 30,
+                left:  MediaQuery.of(context).size.width / 2 - 120,
+                child: Row(
+                  children: [
+                    // Community cards
+                    buildCard("assets/cards/3_11.png"), // Replace with actual card image
+                    buildCard("assets/cards/2_12.png"), // Replace with actual card image
+                    buildCard("assets/cards/1_13.png"), // Replace with actual card image
+                    buildCard("assets/cards/2_14.png"), // Replace with actual card image
+                    buildCard("assets/cards/2_10.png"), // Replace with actual card image
+                  ],
+              ),
+              ),
+
+              Positioned(
+                top: MediaQuery.of(context).size.height / 1.35,
+                left: MediaQuery.of(context).size.width / 2 - 110,
+                child: PlayerPanel(
+                  role: "DEALER", // Replace with actual role
+                  playerName: "MiMi", // Replace with player's name
+                  chips: "2000", // Replace with chips amount
+                  starCount: "11", // Replace with player's star count
+                  imagePath: "assets/images/avatar_default.png", // Replace with player image path
+                  showCards: true,
+                ),
+              ),
+
+              Positioned(
+                top: 100,
+                left: 20,
+                child: PlayerPanel(
+                  role: "SM. BLIND", // Replace with actual role
+                  playerName: "Toan", // Replace with player's name
+                  chips: "4000", // Replace with chips amount
+                  starCount: "54", // Replace with player's star count
+                  imagePath: "assets/images/avatar_default.png", // Replace with player image path
+                  showCards: false  ,
+                ),
+              ),
+
+              Positioned(
+                top: 2,
+                left: MediaQuery.of(context).size.width / 2 - 60,
+                child: PlayerPanel(
+                  role: "B. BLIND", // Replace with actual role
+                  playerName: "Mo", // Replace with player's name
+                  chips: "2000", // Replace with chips amount
+                  starCount: "11", // Replace with player's star count
+                  imagePath: "assets/images/avatar_default.png", // Replace with player image path
+                  showCards: false,
+                ),
+              ),
 
               // Player slots
-              PositionedPlayerSlot(
-                top: MediaQuery.of(context).size.height /1.25,
-                left: MediaQuery.of(context).size.width/10-85,
-                playerNumber: 0,
-              ),
-              const PositionedPlayerSlot(
-                top: 100,
-                left: 20,
-                playerNumber: 2,
-              ),
-              PositionedPlayerSlot(
-                top: MediaQuery.of(context).size.height / 2 - 40,
-                left: 0,
-                playerNumber: 3,
-              ),
-              PositionedPlayerSlot(
-                top: MediaQuery.of(context).size.height - 150,
-                left: 20,
-                playerNumber: 4,
-              ),
-              PositionedPlayerSlot(
-                top: MediaQuery.of(context).size.height - 100,
-                left: MediaQuery.of(context).size.width / 2 - 40,
-                playerNumber: 5,
-              ),
-              PositionedPlayerSlot(
-                top: MediaQuery.of(context).size.height - 150,
-                right: 20,
-                playerNumber: 6,
-              ),
-              PositionedPlayerSlot(
-                top: MediaQuery.of(context).size.height / 2 - 40,
-                right: 500,
-                playerNumber: 7,
-              ),
-              const PositionedPlayerSlot(
-                top: 100,
-                right: 20,
-                playerNumber: 8,
-              ),
-              PositionedPlayerSlot(
-                top: 50,
-                right: MediaQuery.of(context).size.width / 2 - 40,
-                playerNumber: 9,
-              ),
+              // PositionedPlayerSlot(
+              //   top: MediaQuery.of(context).size.height /1.25,
+              //   left: MediaQuery.of(context).size.width/10-85,
+              //   playerNumber: 0,
+              // ),
+              // const PositionedPlayerSlot(
+              //   top: 100,
+              //   left: 20,
+              //   playerNumber: 1,
+              // ),
+              // PositionedPlayerSlot(
+              //   top: MediaQuery.of(context).size.height / 2 - 40,
+              //   left: 0,
+              //   playerNumber: 2,
+              // ),
+              // PositionedPlayerSlot(
+              //   top: MediaQuery.of(context).size.height - 150,
+              //   left: 20,
+              //   playerNumber: 3,
+              // ),
+              // PositionedPlayerSlot(
+              //   top: MediaQuery.of(context).size.height - 100,
+              //   left: MediaQuery.of(context).size.width / 2 - 40,
+              //   playerNumber: 4,
+              // ),
+              // PositionedPlayerSlot(
+              //   top: MediaQuery.of(context).size.height - 150,
+              //   right: 20,
+              //   playerNumber: 5,
+              // ),
+              // PositionedPlayerSlot(
+              //   top: MediaQuery.of(context).size.height / 2 - 40,
+              //   right: 500,
+              //   playerNumber: 6,
+              // ),
+              // const PositionedPlayerSlot(
+              //   top: 100,
+              //   right: 20,
+              //   playerNumber: 7,
+              // ),
+              // PositionedPlayerSlot(
+              //   top: 50,
+              //   right: MediaQuery.of(context).size.width / 2 - 40,
+              //   playerNumber: 8,
+              // ),
             ],
 
 

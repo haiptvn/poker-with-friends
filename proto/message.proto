@@ -1,0 +1,188 @@
+syntax = "proto3";
+
+package gpbmessage;
+
+option go_package = "../gen;gpbmessage";
+
+// Enum for card rank
+enum RankType {
+    UNSPECIFIED_RANK = 0; // Default value, should not be used
+    DEUCE = 1;            // 2 (Deuce)
+    THREE = 2;            // 3
+    FOUR = 3;             // 4
+    FIVE = 4;             // 5
+    SIX = 5;              // 6
+    SEVEN = 6;            // 7
+    EIGHT = 7;            // 8
+    NINE = 8;             // 9
+    TEN = 9;              // 10
+    JACK = 10;            // Jack
+    QUEEN = 11;           // Queen
+    KING = 12;            // King
+    ACE = 13;             // Ace
+}
+
+enum SuitType {
+    HEARTS = 0;
+    DIAMONDS = 1;
+    CLUBS = 2;
+    SPADES = 3;
+}
+
+enum HankRankingType {
+	HIGH_CARD       = 0;
+	ONE_PAIR        = 1;
+	TWO_PAIR        = 2;
+	THREE_OF_A_KIND = 3;
+	STRAIGHT        = 4;
+	FLUSH           = 5;
+	FULL_HOUSE      = 6;
+	FOUR_OF_A_KIND  = 7;
+	STRAIGH_FLUSH   = 8;
+	ROYAL_FLUSH     = 9;
+}
+
+enum PlayerStatusType {
+    Sat_Out = 0;      // Player is sat out the game
+    Spectating  = 1;  // Player is sat in but not playing
+    Playing = 2;      // Player is playing
+    Wait4Act = 3;     // Player is waiting for user action in their turn
+    Fold  = 4;        // Player has folded
+    Check = 5;        // Player has checked
+    Call  = 6;        // Player has called
+    Raise = 7;        // Player has raised
+    AllIn = 8;        // Player has all in
+    LOSER = 9;        // Loser
+    WINNER= 10;       // Winner
+    SB = 11;   // Small blind
+    BB = 12;   // Big blind
+}
+
+enum PlayerGameActionType {
+    FOLD  = 0;
+    CHECK = 1;
+    CALL  = 2;
+    RAISE = 3;
+    ALLIN = 4;
+}
+
+enum RoundStateType {
+    INITIAL   = 0;
+    PREFLOP   = 1;
+    FLOP      = 2;
+    TURN      = 3;
+    RIVER     = 4;
+    SHOWDOWN  = 5;
+}
+
+// Message to represent a card
+message Card {
+    RankType rank = 1;   // Rank of the card (e.g., "A", "2", "10", "J", "Q", "K")
+    SuitType suit = 2;   // Suit of the card (e.g., "hearts", "diamonds", "clubs", "spades")
+}
+
+// Message to each player
+message PeerState {
+    int32 table_pos = 1;
+    bool is_chain_man = 3;
+    repeated Card player_cards = 2;   // Cards of each player in a game
+    string hand_ranking = 4;          // Description for player hand ranking at the time, or showing time
+    repeated Card evaluated_hand = 5; // Bigest hand
+}
+
+// Message to represent a player
+message PlayerState {
+    string id = 1;         // Unique identifier for the player
+    string name = 2;       // Player's display name
+    int32 table_position = 3; // Player's position on table
+    int32 chips = 4;       // Current chip count
+    bool is_active = 5;    // If the player is currently active in the hand
+    bool is_dealer = 6;    // If the player is the dealer
+    PlayerStatusType status = 7; // Player's status
+    int32 current_bet = 8;  // Player's current bet amount
+    int32 change_amount = 9;   // Player's chip changing amount
+    repeated PlayerGameActionType no_actions = 10;   // Invalid action that player should not act
+}
+
+message Result {
+    repeated PeerState showing_cards = 3;
+}
+
+// Message to represent a game state
+message GameState {
+    repeated PlayerState players = 1;       // State of players
+    int32 pot_size = 2;                     // Current size of the pot
+    int32 dealer_id = 3;                    // Position of the current dealer/button
+    repeated Card community_cards = 4;      // Cards on the table in this round
+    int32 current_bet = 5;                  // Current bet amount
+    RoundStateType current_round = 6;       // Type of the current round
+    Result final_result = 7;                // For final result e.g winner, show hands
+}
+
+// Message to represent a player's action
+message PlayerAction {
+    string player_id = 1;       // Position of the player taking action
+    string action_type = 2;     // Type of action (e.g., "fold", "check", "call", "raise", "all_in")
+    int32 raise_amount = 3;     // If the action is a raise, the amount raised
+}
+
+message JoinRoom {
+    string name_id = 1;
+	string room = 2;
+	string passcode = 3;
+	string session_id = 4; // Emtpty string for first time connection
+}
+
+message JoinGame {
+    string name_id = 1;
+    int32  choose_slot = 2;
+}
+
+message ControlAction {
+    string control_type    = 1;
+    repeated int32 options =2;
+}
+
+// Message to represent game settings
+message GameSetting {
+    int32 max_players = 1;           // Maximum number of players allowed in the game
+    int32 min_players = 2;           // Minimum number of players needed to start the game
+    int32 min_stack_size = 3;        // Minimun number of players' stack size
+    int32 small_blind = 4;           // Small blind value
+    int32 big_blind = 5;             // Big blind value
+    int32 time_per_turn = 7;         // Maximum time (in seconds) allowed for each player to take a turn.
+    bool auto_next_game = 8;         // Enable auto next game if all required conditions are met
+    int32 auto_next_time = 9;        // How many seconds to wait for next game
+}
+
+message PlayerBalance {
+    string player_name = 1;
+    int32 balance = 2;
+}
+
+message BalanceInfo {
+    repeated PlayerBalance player_balances = 1;
+}
+
+// Message sent by the client to the server
+message ClientMessage {
+    oneof message {
+        PlayerAction player_action = 1;    // Player's action message
+        JoinRoom join_room = 2;            // Request to join a room
+        JoinGame join_game = 3;              // Request to join a game
+        ControlAction control_action = 4;    // Custom control requests to the game
+    }
+}
+
+// Message sent by the server to the client
+message ServerMessage {
+    oneof message {
+        GameState game_state = 1;          // Updated game state
+        GameSetting game_setting = 2;      // Updated game setting
+        PeerState peer_state = 3;          // Updated private player information
+        BalanceInfo balance_info = 4;      // Updated all player balance information
+        string game_over = 5;              // Game over message
+        string error_message = 6;          // Error message
+        string welcome_message = 7;        // Welcome message upon joining
+    }
+}

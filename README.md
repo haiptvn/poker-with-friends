@@ -21,3 +21,9 @@ include with your application.
 
 The `assets/images` directory contains [resolution-aware
 images](https://flutter.dev/to/resolution-aware-images).
+
+## Progo gen
+
+```
+protoc --dart_out=lib/ proto/message.proto
+```

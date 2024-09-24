@@ -1,43 +1,148 @@
 import 'package:flutter/material.dart';
 
 
-// A widget to position player slots around the poker table
-class PositionedPlayerSlot extends StatelessWidget {
-  final double top;
-  final double left;
-  final double right;
-  final int playerNumber;
+import '../cards/cards.dart';
 
-  const PositionedPlayerSlot({
-    Key? key,
-    required this.top,
-    this.left = 0,
-    this.right = 0,
-    required this.playerNumber,
-  }) : super(key: key);
+
+class PlayerPanel extends StatelessWidget {
+  final String role;
+  final String playerName;
+  final String chips;
+  final String starCount;
+  final String imagePath;
+  final bool active = false;
+  final bool showCards;
+
+  PlayerPanel({
+    super.key,
+    required this.role,
+    required this.playerName,
+    required this.chips,
+    required this.starCount,
+    required this.imagePath,
+    required this.showCards,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      top: top,
-      left: left,
-      right: right,
-      child: Column(
+    return SizedBox(
+      width: 172, // Adjust width as needed
+      height: 100, // Adjust height as needed
+      child: Stack(
+        alignment: Alignment.centerLeft,
         children: [
-          // Player avatar
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.green.shade700,
-              borderRadius: BorderRadius.circular(100),
-              border: Border.all(color: Colors.brown, width: 3),
+          // Player 2 cards
+          showCards ? Positioned(
+            top: 10,
+            left: 85,
+            child: Container(
+              width: 80, // Adjust width as needed
+              height: 55, // Adjust height as needed
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7), // Adjust the color as needed
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(height: 5),
+                  Image.asset(
+                    'assets/cards/1_7.png',
+                    width: 40, // Card width
+                    height: 60, // Card height
+                  ),
+                  Image.asset(
+                    'assets/cards/4_2.png',
+                    width: 40, // Card width
+                    height: 60, // Card height
+                  ),
+                  const SizedBox(height: 5),
+                ],
+              ),
             ),
-            child: Text(
-              'P$playerNumber',
-              style: const TextStyle(color: Colors.white),
+          ) : const SizedBox.shrink(),
+
+          // Circular avatar for player image
+          Positioned(
+            top: 0,
+            child: CircleAvatar(
+              backgroundImage: AssetImage(imagePath), // Player image path
+              radius: 40, // Adjust size
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: active ? Colors.lightGreen : Colors.grey, // Border color
+                    width: 5, // Border width
+                  ),
+                ),
+              ),
             ),
-          )
+          ),
+
+          // Role (e.g., SM. BLIND)
+          if (role != "")
+            Positioned(
+              top: 43,
+              child: Container(
+                color: Colors.black.withOpacity(0.7),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                child: Text(
+                  role,
+                  style: const TextStyle(
+                    color: Colors.yellowAccent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
+          // Player name and star count with chip
+          Positioned(
+            top: 64,
+            child: Container(
+              decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7), // Adjust the color as needed
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 5),
+                  Text(
+                    playerName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Permanent Marker',
+                      height: 1,
+                    ),
+                  ),
+                  const SizedBox(width: 8), // Space between name and star
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.catching_pokemon_sharp, // Star icon
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                      Text(
+                        chips,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Permanent Marker',
+                          height: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 5),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
