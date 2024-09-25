@@ -83,6 +83,7 @@ class PlayerPanel extends StatelessWidget {
           if (role != "")
             Positioned(
               top: 43,
+              left: 8,
               child: Container(
                 color: Colors.black.withOpacity(0.7),
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

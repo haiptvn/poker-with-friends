@@ -39,26 +39,18 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
 
   // late DateTime _startOfPlay;
 
-  // Helper function to calculate the position of players
-  Positioned _buildPlayerPosition(double angle, double radius, String role, String name, String chips, String starCount, String imagePath) {
-    // Convert the angle to radians
-    double rad = angle * pi / 180;
-
-    // Calculate the x and y position based on the angle and radius
-    double x = radius * cos(rad);
-    double y = radius * sin(rad);
-
-    // Return a Positioned widget with the calculated coordinates
-    return Positioned(
-      left: x + radius, // Center horizontally (shift by radius)
-      top: y + radius,  // Center vertically (shift by radius)
-      child: PlayerPanel(
-        role: role,
-        playerName: name,
-        chips: chips,
-        starCount: starCount,
-        imagePath: imagePath,
-        showCards: false,
+  // Function to create a responsive button
+  Widget _buildResponsiveButton(String text) {
+    return SizedBox(
+      width: 105, // Fixed width for the button
+      height: 30, // Fixed height for the button
+      child: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.all(0), // Remove default padding since size is fixed
+          textStyle: TextStyle(fontSize: 14),
+        ),
+        child: Text(text),
       ),
     );
   }
@@ -99,14 +91,30 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                     buildCard("assets/cards/3_11.png"), // Replace with actual card image
                     buildCard("assets/cards/2_12.png"), // Replace with actual card image
                     buildCard("assets/cards/1_13.png"), // Replace with actual card image
-                    buildCard("assets/cards/2_14.png"), // Replace with actual card image
-                    buildCard("assets/cards/2_10.png"), // Replace with actual card image
+                    //buildCard("assets/cards/2_14.png"), // Replace with actual card image
+                    //buildCard("assets/cards/2_10.png"), // Replace with actual card image
                   ],
               ),
               ),
 
+              // Other widgets can go here
               Positioned(
-                top: MediaQuery.of(context).size.height / 1.35,
+                bottom: 5,  // Distance from the bottom
+                right: 16,   // Distance from the right
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    _buildResponsiveButton("Check"),
+                    SizedBox(width: 8), // Space between buttons
+                    _buildResponsiveButton("Call"),
+                    SizedBox(width: 8), // Space between buttons
+                    _buildResponsiveButton("Raise"),
+                  ],
+                ),
+              ),
+
+              Positioned(
+                top: MediaQuery.of(context).size.height / 1.32,
                 left: MediaQuery.of(context).size.width / 2 - 110,
                 child: PlayerPanel(
                   role: "DEALER", // Replace with actual role
@@ -120,7 +128,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
 
               Positioned(
                 top: 100,
-                left: 20,
+                left: 55,
                 child: PlayerPanel(
                   role: "SM. BLIND", // Replace with actual role
                   playerName: "Toan", // Replace with player's name
@@ -132,7 +140,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               ),
 
               Positioned(
-                top: 2,
+                top: 5,
                 left: MediaQuery.of(context).size.width / 2 - 60,
                 child: PlayerPanel(
                   role: "B. BLIND", // Replace with actual role

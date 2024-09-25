@@ -50,6 +50,7 @@ class AudioController {
             .toList(growable: false),
         _playlist = Queue.of(List<Song>.of(songs)..shuffle()) {
     _musicPlayer.onPlayerComplete.listen(_changeSong);
+    _musicPlayer.setVolume(0.15);
   }
 
   /// Enables the [AudioController] to listen to [AppLifecycleState] events,
