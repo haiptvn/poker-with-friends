@@ -5,21 +5,17 @@ import '../cards/cards.dart';
 
 
 class PlayerPanel extends StatelessWidget {
-  final String role;
+  final String state;
   final String playerName;
   final String chips;
-  final String starCount;
-  final String imagePath;
   final bool active = false;
   final bool showCards;
 
   PlayerPanel({
     super.key,
-    required this.role,
+    required this.state,
     required this.playerName,
     required this.chips,
-    required this.starCount,
-    required this.imagePath,
     required this.showCards,
   });
 
@@ -65,7 +61,8 @@ class PlayerPanel extends StatelessWidget {
           Positioned(
             top: 0,
             child: CircleAvatar(
-              backgroundImage: AssetImage(imagePath), // Player image path
+              backgroundImage: AssetImage( playerName != '' ? 'assets/images/avatar_default.png'
+              : 'assets/images/avatar_empty.png'), // Player image path
               radius: 40, // Adjust size
               child: Container(
                 decoration: BoxDecoration(
@@ -80,7 +77,7 @@ class PlayerPanel extends StatelessWidget {
           ),
 
           // Role (e.g., SM. BLIND)
-          if (role != "")
+          if (state != "")
             Positioned(
               top: 43,
               left: 8,
@@ -88,7 +85,7 @@ class PlayerPanel extends StatelessWidget {
                 color: Colors.black.withOpacity(0.7),
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 child: Text(
-                  role,
+                  state,
                   style: const TextStyle(
                     color: Colors.yellowAccent,
                     fontSize: 12,
@@ -99,6 +96,7 @@ class PlayerPanel extends StatelessWidget {
             ),
 
           // Player name and star count with chip
+          if (playerName != "" && chips != "")
           Positioned(
             top: 64,
             child: Container(

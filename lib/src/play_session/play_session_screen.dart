@@ -8,11 +8,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart' hide Level;
+import 'package:poker_with_friends/src/game_internals/poker_game_state.dart';
 import 'package:provider/provider.dart';
 
 import '../audio/audio_controller.dart';
 import '../audio/sounds.dart';
 import '../game_internals/level_state.dart';
+import '../game_internals/poker_game_state.dart';
 import '../style/confetti.dart';
 import '../style/palette.dart';
 import '../cards/cards.dart';
@@ -67,13 +69,16 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
             onWin: _playerWon,
           ),
         ),
+        ChangeNotifierProvider(
+          create: (context) => PokerGameState(), // Provide PokerGameState
+        ),
       ],
       child: IgnorePointer(
         ignoring: _duringCelebration,
         child: Scaffold(
           backgroundColor: palette.trueWhite,
           body: Stack(
-            children: [
+            children: <Widget>[
               // Poker table background
               Positioned.fill(
                 child: Image.asset(
@@ -116,13 +121,15 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               Positioned(
                 top: MediaQuery.of(context).size.height / 1.32,
                 left: MediaQuery.of(context).size.width / 2 - 110,
-                child: PlayerPanel(
-                  role: "DEALER", // Replace with actual role
-                  playerName: "MiMi", // Replace with player's name
-                  chips: "2000", // Replace with chips amount
-                  starCount: "11", // Replace with player's star count
-                  imagePath: "assets/images/avatar_default.png", // Replace with player image path
-                  showCards: true,
+                child: Consumer<PokerGameState>(
+                  builder: (context, pokerGameState, child) {
+                    return PlayerPanel(
+                      state: pokerGameState.playerMain.getState, // Replace with actual state
+                      playerName: pokerGameState.playerMain.getName, // Replace with player's name
+                      chips: pokerGameState.playerMain.getChips.toString(), // Replace with chips amount
+                      showCards: true,
+                    );
+                  },
                 ),
               ),
 
@@ -130,11 +137,9 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                 top: 100,
                 left: 55,
                 child: PlayerPanel(
-                  role: "SM. BLIND", // Replace with actual role
+                  state: "SM. BLIND", // Replace with actual state
                   playerName: "Toan", // Replace with player's name
                   chips: "4000", // Replace with chips amount
-                  starCount: "54", // Replace with player's star count
-                  imagePath: "assets/images/avatar_default.png", // Replace with player image path
                   showCards: false  ,
                 ),
               ),
@@ -143,11 +148,9 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                 top: 5,
                 left: MediaQuery.of(context).size.width / 2 - 60,
                 child: PlayerPanel(
-                  role: "B. BLIND", // Replace with actual role
+                  state: "B. BLIND", // Replace with actual state
                   playerName: "Mo", // Replace with player's name
                   chips: "2000", // Replace with chips amount
-                  starCount: "11", // Replace with player's star count
-                  imagePath: "assets/images/avatar_default.png", // Replace with player image path
                   showCards: false,
                 ),
               ),
