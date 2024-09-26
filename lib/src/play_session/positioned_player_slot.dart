@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 
 import '../cards/cards.dart';
+import '../../proto/message.pb.dart' as $proto;
 
 
 class PlayerPanel extends StatelessWidget {
@@ -10,6 +11,8 @@ class PlayerPanel extends StatelessWidget {
   final String chips;
   final bool active = false;
   final bool showCards;
+  final $proto.Card card1;
+  final $proto.Card card2;
 
   PlayerPanel({
     super.key,
@@ -17,7 +20,11 @@ class PlayerPanel extends StatelessWidget {
     required this.playerName,
     required this.chips,
     required this.showCards,
+    required this.card1,
+    required this.card2,
   });
+
+  String cardToImagePath($proto.Card card) => 'assets/cards/${card.suit.value}_${card.rank.value + 1}.png';
 
   @override
   Widget build(BuildContext context) {
@@ -42,12 +49,12 @@ class PlayerPanel extends StatelessWidget {
                 children: [
                   const SizedBox(height: 5),
                   Image.asset(
-                    'assets/cards/1_7.png',
+                    cardToImagePath(card1),
                     width: 40, // Card width
                     height: 60, // Card height
                   ),
                   Image.asset(
-                    'assets/cards/4_2.png',
+                    cardToImagePath(card2),
                     width: 40, // Card width
                     height: 60, // Card height
                   ),
@@ -62,7 +69,7 @@ class PlayerPanel extends StatelessWidget {
             top: 0,
             child: CircleAvatar(
               backgroundImage: AssetImage( playerName != '' ? 'assets/images/avatar_default.png'
-              : 'assets/images/avatar_empty.png'), // Player image path
+              : 'assets/images/avatar_plus.png'), // Player image path
               radius: 40, // Adjust size
               child: Container(
                 decoration: BoxDecoration(

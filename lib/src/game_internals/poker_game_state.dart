@@ -1,22 +1,22 @@
 import 'package:flutter/foundation.dart';
 
-import '../../proto/message.pb.dart';
+import '../../proto/message.pb.dart' as $proto;
 
 class PlayingSlot {
-  String? _state;
-  String? _name;
-  int? _chips;
-  List<String>? _cards;
+  String _state = '';
+  String _name = '';
+  int _chips = 0;
+  List<$proto.Card> _cards = [];
   bool _showCards = false;
 
-  String get getState => _state!;
-  String get getName => _name!;
-  int get getChips => _chips!;
-  List<String> get getCards => _cards!;
+  String get getState => _state;
+  String get getName => _name;
+  int get getChips => _chips;
+  List<$proto.Card> get getCards => _cards;
   bool get showCards => _showCards;
 
-  void addCard(String card) {
-    _cards?.add(card);
+  void addCard($proto.Card card) {
+    _cards.add(card);
   }
   void setState(String newState) {
     _state = newState;
@@ -53,7 +53,7 @@ class PokerGameState extends ChangeNotifier {
   int _playerMainIndex = 0;
   int _currentTurnIndex = 0;
 
-  List<Card> _communityCards = [];
+  List<$proto.Card> _communityCards = [];
   int _totalPot = 0;
 
   PlayingSlot get playerMain => _players[_playerMainIndex % _maxPlayers];
@@ -67,7 +67,7 @@ class PokerGameState extends ChangeNotifier {
   PlayingSlot get player8 => _players[(_playerMainIndex+ 8) % _maxPlayers];
   PlayingSlot get player9 => _players[(_playerMainIndex+ 9) % _maxPlayers];
 
-  List<Card> get communityCards => _communityCards;
+  List<$proto.Card> get communityCards => _communityCards;
   int get totalPot => _totalPot;
   int get currentTurnIndex => _currentTurnIndex;
 
@@ -80,7 +80,7 @@ class PokerGameState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void dealCommunityCard(Card card) {
+  void dealCommunityCard($proto.Card card) {
     _communityCards.add(card);
     notifyListeners();
   }

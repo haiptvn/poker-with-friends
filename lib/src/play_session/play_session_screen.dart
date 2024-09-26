@@ -128,6 +128,8 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       playerName: pokerGameState.playerMain.getName, // Replace with player's name
                       chips: pokerGameState.playerMain.getChips.toString(), // Replace with chips amount
                       showCards: true,
+                      card1: pokerGameState.playerMain.getCards[0],
+                      card2: pokerGameState.playerMain.getCards[1],
                     );
                   },
                 ),
@@ -141,6 +143,8 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                   playerName: "Toan", // Replace with player's name
                   chips: "4000", // Replace with chips amount
                   showCards: false  ,
+                  card1: context.read<PokerGameState>().player1.getCards[0],
+                  card2: context.read<PokerGameState>().player1.getCards[1],
                 ),
               ),
 
@@ -152,6 +156,8 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                   playerName: "Mo", // Replace with player's name
                   chips: "2000", // Replace with chips amount
                   showCards: false,
+                  card1: context.read<PokerGameState>().player2.getCards[0],
+                  card2: context.read<PokerGameState>().player2.getCards[1],
                 ),
               ),
 
