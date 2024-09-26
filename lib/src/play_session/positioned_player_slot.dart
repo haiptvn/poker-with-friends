@@ -10,19 +10,21 @@ class PlayerPanel extends StatelessWidget {
   final String playerName;
   final String chips;
   final bool active = false;
-  final bool showCards;
   final $proto.Card card1;
   final $proto.Card card2;
+
+  late final bool isEmptySlot;
+  late final bool showCards;
 
   PlayerPanel({
     super.key,
     required this.state,
     required this.playerName,
     required this.chips,
-    required this.showCards,
     required this.card1,
     required this.card2,
-  });
+  }) : isEmptySlot = playerName == '',
+       showCards = card1.rank != $proto.RankType.UNSPECIFIED_RANK && card2.rank != $proto.RankType.UNSPECIFIED_RANK;
 
   String cardToImagePath($proto.Card card) => 'assets/cards/${card.suit.value}_${card.rank.value + 1}.png';
 
@@ -35,6 +37,7 @@ class PlayerPanel extends StatelessWidget {
         alignment: Alignment.centerLeft,
         children: [
           // Player 2 cards
+
           showCards ? Positioned(
             top: 10,
             left: 85,
@@ -64,12 +67,28 @@ class PlayerPanel extends StatelessWidget {
             ),
           ) : const SizedBox.shrink(),
 
-          // Circular avatar for player image
+          // Circular avatar for player image or empty slot
+          isEmptySlot ?
+          Positioned(
+            top: 15,
+            child: CircleAvatar(
+              backgroundImage: const AssetImage('assets/images/avatar_plus.png'), // Player image path
+              radius: 20, // Adjust size
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.grey, // Border color
+                    width: 5, // Border width
+                  ),
+                ),
+              ),
+            ),
+          ):
           Positioned(
             top: 0,
             child: CircleAvatar(
-              backgroundImage: AssetImage( playerName != '' ? 'assets/images/avatar_default.png'
-              : 'assets/images/avatar_plus.png'), // Player image path
+              backgroundImage: const AssetImage('assets/images/avatar_default.png'), // Player image path
               radius: 40, // Adjust size
               child: Container(
                 decoration: BoxDecoration(
@@ -103,7 +122,7 @@ class PlayerPanel extends StatelessWidget {
             ),
 
           // Player name and star count with chip
-          if (playerName != "" && chips != "")
+          if (!isEmptySlot)
           Positioned(
             top: 64,
             child: Container(

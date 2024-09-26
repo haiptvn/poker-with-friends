@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
+import 'package:poker_with_friends/src/game_internals/poker_game_state.dart';
 import 'package:poker_with_friends/src/game_lobby/game_lobby_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -207,6 +208,9 @@ class MyApp extends StatelessWidget {
           ),
           Provider(
             create: (context) => Palette(),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => PokerGameState(), // Provide PokerGameState
           ),
         ],
         child: Builder(builder: (context) {
