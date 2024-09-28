@@ -33,6 +33,7 @@ import 'src/settings/settings_screen.dart';
 import 'src/style/my_transition.dart';
 import 'src/style/palette.dart';
 import 'src/style/snack_bar.dart';
+import 'src/play_session/raiser_menu.dart';
 
 Future<void> main() async {
   // Subscribe to log messages.
@@ -144,7 +145,7 @@ class MyApp extends StatelessWidget {
                         2,
                         key: Key('play-session'),
                       ),
-                      color: context.watch<Palette>().trueWhite,
+                      color: context.watch<Palette>().darkGreen,
                       //flipHorizontally: true,
                     );
                   },
@@ -185,6 +186,7 @@ class MyApp extends StatelessWidget {
               return progress;
             },
           ),
+          ChangeNotifierProvider(create: (context) => RaiserProvider()),
           Provider<SettingsController>(
             lazy: false,
             create: (context) => SettingsController(

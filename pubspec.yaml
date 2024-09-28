@@ -20,6 +20,7 @@ dependencies:
   provider: ^6.0.2
   shared_preferences: ^2.0.13
   protobuf: ^3.1.0
+  web_socket_channel: ^2.2.0
 
   # If you don't need one of the following dependencies,
   # delete the relevant line below, and get rid of any Dart code
@@ -48,3 +49,4 @@ flutter:
     - assets/cards/
     - assets/music/
     - assets/sfx/
+    - assets/ca/

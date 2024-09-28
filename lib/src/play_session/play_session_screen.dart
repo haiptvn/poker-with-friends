@@ -6,10 +6,13 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart' hide Level;
 import 'package:poker_with_friends/src/game_internals/poker_game_state.dart';
-import 'package:provider/provider.dart';
+import 'package:poker_with_friends/src/play_session/dropdown_menu.dart';
+import 'package:poker_with_friends/src/play_session/player_panel.dart';
+import 'package:poker_with_friends/src/play_session/raiser_menu.dart';
 
 import '../audio/audio_controller.dart';
 import '../audio/sounds.dart';
@@ -19,12 +22,66 @@ import '../style/confetti.dart';
 import '../style/palette.dart';
 import '../cards/cards.dart';
 
-import 'positioned_player_slot.dart';
+import 'dealer.dart';
+import 'dropdown_menu.dart' as custom;
 import '../../proto/message.pb.dart' as $proto;
+import '../network_agent/network_agent.dart';
+
+
+Widget _buildPlayerBetContainer(BuildContext context, int playerIndex) {
+  final gameState = context.read<PokerGameState>();
+  final player = gameState.getPlayerByIndex(playerIndex);
+
+  final List<Offset> positions = [
+    const Offset(380, 245), // main
+    const Offset(245, 245), // player 1
+    const Offset(180, 210), // player 2
+    const Offset(180, 150), // player 3
+    const Offset(245, 100), // player 4
+    const Offset(380, 100), // player 5
+    const Offset(550, 100), // player 6
+    const Offset(580, 150), // player 7
+    const Offset(580, 210), // player 8
+    const Offset(530, 245), // player 9
+  ];
+  return Positioned(
+    top: positions[playerIndex].dy,
+    left: positions[playerIndex].dx,
+    child: Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(5),
+      ),
+
+      child: Row(
+        children: [
+          ColorFiltered(
+            colorFilter:const ColorFilter.mode(
+              Colors.transparent,
+              BlendMode.multiply,
+            ),
+            child: Image.asset(
+              'assets/images/chip.png',
+              width: 12,
+              height: 12,
+            ),
+          ),
+          Text(
+            '${player.getBet} ', // Replace with actual bet amount
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.85),
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
 class PlaySessionScreen extends StatefulWidget {
   final int level;
-
   const PlaySessionScreen(this.level, {super.key});
 
   @override
@@ -35,16 +92,33 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   static final _log = Logger('PlaySessionScreen');
 
   // static const _celebrationDuration = Duration(milliseconds: 2000);
-
   static const _preCelebrationDuration = Duration(milliseconds: 500);
 
   bool _duringCelebration = false;
 
   // late DateTime _startOfPlay;
+  late NetworkAgent _networkAgent;
+
+  @override
+  void initState() {
+    super.initState();
+    final gameState = Provider.of<PokerGameState>(context, listen: false);
+    _networkAgent = NetworkAgent('wss://10.0.2.2:28888/ws', gameState);
+    _networkAgent.ws_connect();
+  }
+
+  @override
+  void dispose() {
+    _networkAgent.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final palette = context.watch<Palette>();
+    _log.info('Building PlaySessionScreen for level ${widget.level}');
+    _log.info('Height: ${MediaQuery.of(context).size.height}');
+    _log.info('Width: ${MediaQuery.of(context).size.width}');
 
     return MultiProvider(
       providers: [
@@ -54,9 +128,9 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
             onWin: _playerWon,
           ),
         ),
-        // ChangeNotifierProvider(
-        //   create: (context) => PokerGameState(), // Provide PokerGameState
-        // ),
+        ChangeNotifierProvider(
+          create: (context) => DropdownProvider(), // Provide PokerGameState
+        ),
       ],
       child: IgnorePointer(
         ignoring: _duringCelebration,
@@ -67,47 +141,90 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               // Poker table background
               Positioned.fill(
                 child: Image.asset(
-                  'assets/images/poker_table_2.jpg', // Add your poker table background image here
+                  'assets/images/poker_table.png', // Add your poker table background image here
                   fit: BoxFit.cover,
                 ),
               ),
 
               Positioned(
-                top: MediaQuery.of(context).size.height / 2 - 30,
-                left:  MediaQuery.of(context).size.width / 2 - 120,
+                top: MediaQuery.of(context).size.height / 2 - 40,
+                left:  MediaQuery.of(context).size.width / 2 - 115,
                 child: Row(
                   children: [
                     // Community cards
                     buildCard("assets/cards/3_11.png"), // Replace with actual card image
                     buildCard("assets/cards/2_12.png"), // Replace with actual card image
                     buildCard("assets/cards/1_13.png"), // Replace with actual card image
-                    //buildCard("assets/cards/2_14.png"), // Replace with actual card image
-                    //buildCard("assets/cards/2_10.png"), // Replace with actual card image
+                    buildCard("assets/cards/2_14.png"), // Replace with actual card image
+                    buildCard("assets/cards/2_10.png"), // Replace with actual card image
                   ],
               ),
               ),
 
+              // Total pot
+              Align(
+                alignment: const Alignment(0, -0.30), // Adjust this value for top alignment (-1 is top, 1 is bottom)
+                child: Container(
+                  width: 140,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Consumer<PokerGameState>(
+                    builder: (context, pokerGameState, child) => Text(
+                      'Total Pot: ${pokerGameState.totalPot}', // Replace with actual total pot amount
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.85),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Dealer icon
               Positioned(
-                top: MediaQuery.of(context).size.height / 1.32,
-                left: MediaQuery.of(context).size.width / 2 - 90,
+                child: Consumer<PokerGameState>(
+                  builder: (context, pokerGameState, child) => DealerIcon(currentIndex: pokerGameState.currentTurnIndex),
+                ),
+              ),
+
+              ...List.generate(10, (i) {
+                if (context.watch<PokerGameState>().getPlayerByIndex(i).getBet > 0) {
+                  return _buildPlayerBetContainer(context, i);
+                }
+                return const SizedBox.shrink();
+              }),
+
+              // Main player
+              Positioned(
+                top: MediaQuery.of(context).size.height / 2 + 79,
+                left: MediaQuery.of(context).size.width / 2 - 70,
                 child: Consumer<PokerGameState>(
                   builder: (context, pokerGameState, child) {
                     return PlayerPanel(
-                      state: pokerGameState.playerMain.getState, // Replace with actual state
-                      playerName: pokerGameState.playerMain.getName, // Replace with player's name
-                      chips: pokerGameState.playerMain.getChips.toString(), // Replace with chips amount
-                      card1: pokerGameState.playerMain.getCard1,
-                      card2: pokerGameState.playerMain.getCard2
+                      isMainPlayer: true,
+                      playerUiIndex: 0,
+                      state: pokerGameState.playerC.getState, // Replace with actual state
+                      playerName: pokerGameState.playerC.getName, // Replace with player's name
+                      chips: pokerGameState.playerC.getChips.toString(), // Replace with chips amount
+                      card1: pokerGameState.playerC.getCard1,
+                      card2: pokerGameState.playerC.getCard2
                     );
                   },
                 ),
               ),
+              // Player 1
               Positioned(
-                top: 270,
-                left: 110,
+                top: MediaQuery.of(context).size.height / 2 + 75,
+                left: MediaQuery.of(context).size.width / 2 - 225,
                 child: Consumer<PokerGameState>(
                   builder: (context, pokerGameState, child) {
                     return PlayerPanel(
+                      isMainPlayer: false,
+                      playerUiIndex: 1,
                       state: pokerGameState.player1.getState, // Replace with actual state
                       playerName: pokerGameState.player1.getName, // Replace with player's name
                       chips: pokerGameState.player1.getChips.toString(), // Replace with chips amount
@@ -117,12 +234,15 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                   },
                 ),
               ),
+              // Player 2
               Positioned(
-                top: 130,
-                left: 62,
+                top: MediaQuery.of(context).size.height / 2 + 20,
+                left: MediaQuery.of(context).size.width / 2 - 350,
                 child: Consumer<PokerGameState>(
                   builder: (context, pokerGameState, child) {
                     return PlayerPanel(
+                      isMainPlayer: false,
+                      playerUiIndex: 2,
                       state: pokerGameState.player2.getState, // Replace with actual state
                       playerName: pokerGameState.player2.getName, // Replace with player's name
                       chips: pokerGameState.player2.getChips.toString(), // Replace with chips amount
@@ -132,12 +252,15 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                   },
                 ),
               ),
+              // Player 3
               Positioned(
-                top: 15,
-                left: MediaQuery.of(context).size.width / 2 - 260,
+                top: MediaQuery.of(context).size.height / 2 - 115,
+                left: MediaQuery.of(context).size.width / 2 - 350,
                 child: Consumer<PokerGameState>(
                   builder: (context, pokerGameState, child) {
                     return PlayerPanel(
+                      isMainPlayer: false,
+                      playerUiIndex: 3,
                       state: pokerGameState.player3.getState, // Replace with actual state
                       playerName: pokerGameState.player3.getName, // Replace with player's name
                       chips: pokerGameState.player3.getChips.toString(), // Replace with chips amount
@@ -147,12 +270,15 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                   },
                 ),
               ),
+              // Player 4, top left
               Positioned(
-                top: 5,
-                left: MediaQuery.of(context).size.width / 2 - 80,
+                top: 6,
+                left: MediaQuery.of(context).size.width / 2 - 225,
                 child: Consumer<PokerGameState>(
                   builder: (context, pokerGameState, child) {
                     return PlayerPanel(
+                      isMainPlayer: false,
+                      playerUiIndex: 4,
                       state: pokerGameState.player4.getState, // Replace with actual state
                       playerName: pokerGameState.player4.getName, // Replace with player's name
                       chips: pokerGameState.player4.getChips.toString(), // Replace with chips amount
@@ -162,12 +288,16 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                   },
                 ),
               ),
+
+              // Player 5, top center player
               Positioned(
                 top: 5,
-                left: MediaQuery.of(context).size.width / 2 + 100,
+                left: MediaQuery.of(context).size.width / 2 - 70,
                 child: Consumer<PokerGameState>(
                   builder: (context, pokerGameState, child) {
                     return PlayerPanel(
+                      isMainPlayer: false,
+                      playerUiIndex: 5,
                       state: pokerGameState.player5.getState, // Replace with actual state
                       playerName: pokerGameState.player5.getName, // Replace with player's name
                       chips: pokerGameState.player5.getChips.toString(), // Replace with chips amount
@@ -177,12 +307,15 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                   },
                 ),
               ),
+              // Player 6, top right
               Positioned(
-                top: 80,
-                left: MediaQuery.of(context).size.width / 2 + 260,
+                top: 6,
+                left: MediaQuery.of(context).size.width / 2 + 90,
                 child: Consumer<PokerGameState>(
                   builder: (context, pokerGameState, child) {
                     return PlayerPanel(
+                      isMainPlayer: false,
+                      playerUiIndex: 6,
                       state: pokerGameState.player6.getState, // Replace with actual state
                       playerName: pokerGameState.player6.getName, // Replace with player's name
                       chips: pokerGameState.player6.getChips.toString(), // Replace with chips amount
@@ -192,12 +325,15 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                   },
                 ),
               ),
+              // player 7
               Positioned(
-                top: 220,
-                left: MediaQuery.of(context).size.width / 2 + 265,
+                top: MediaQuery.of(context).size.height / 2 - 115,
+                left: MediaQuery.of(context).size.width / 2 + 225,
                 child: Consumer<PokerGameState>(
                   builder: (context, pokerGameState, child) {
                     return PlayerPanel(
+                      isMainPlayer: false,
+                      playerUiIndex: 7,
                       state: pokerGameState.player7.getState, // Replace with actual state
                       playerName: pokerGameState.player7.getName, // Replace with player's name
                       chips: pokerGameState.player7.getChips.toString(), // Replace with chips amount
@@ -207,12 +343,15 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                   },
                 ),
               ),
+              // player 8
               Positioned(
-                top: MediaQuery.of(context).size.height / 1.32,
-                left: MediaQuery.of(context).size.width / 2 + 130,
+                top: MediaQuery.of(context).size.height / 2 + 20,
+                left: MediaQuery.of(context).size.width / 2 + 225,
                 child: Consumer<PokerGameState>(
                   builder: (context, pokerGameState, child) {
                     return PlayerPanel(
+                      isMainPlayer: false,
+                      playerUiIndex: 8,
                       state: pokerGameState.player8.getState, // Replace with actual state
                       playerName: pokerGameState.player8.getName, // Replace with player's name
                       chips: pokerGameState.player8.getChips.toString(), // Replace with chips amount
@@ -222,81 +361,124 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                   },
                 ),
               ),
-
-              // Other widgets can go here
+              // player 9
               Positioned(
-                bottom: 4,  // Distance from the bottom
-                right: 2,   // Distance from the right
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    SizedBox(
-                      width: 80, // Fixed width for the button
-                      height: 25, // Fixed height for the button
-                      child: OutlinedButton(
-                        onPressed: () => context.read<PokerGameState>().touch(),
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.all(2), // Remove default padding since size is fixed
-                          textStyle: TextStyle(fontSize: 13),
-                        ),
-                        child: const Text('RAISE'),
-                      ),
-                    ),
-                    const SizedBox(height: 5), // Space between buttons
-                    SizedBox(
-                      width: 120, // Fixed width for the button
-                      height: 25, // Fixed height for the button
-                      child: OutlinedButton(
-                        onPressed: () => context.read<PokerGameState>().touch(),
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.all(2), // Remove default padding since size is fixed
-                          textStyle: TextStyle(fontSize: 13),
-                        ),
-                        child: const Text('CALL'),
-                      ),
-                    ),
-                  ],
+                top: MediaQuery.of(context).size.height / 2 + 75,
+                left: MediaQuery.of(context).size.width / 2 + 90,
+                child: Consumer<PokerGameState>(
+                  builder: (context, pokerGameState, child) {
+                    return PlayerPanel(
+                      isMainPlayer: false,
+                      playerUiIndex: 9,
+                      state: pokerGameState.player9.getState, // Replace with actual state
+                      playerName: pokerGameState.player9.getName, // Replace with player's name
+                      chips: pokerGameState.player9.getChips.toString(), // Replace with chips amount
+                      card1: pokerGameState.player9.getCard1,
+                      card2: pokerGameState.player9.getCard2
+                    );
+                  },
                 ),
               ),
 
+              // Other widgets can go here
               Positioned(
-              bottom: 4,  // Distance from the bottom
-              left: 2,   // Distance from the right
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                // Align buttons to left
-                crossAxisAlignment: CrossAxisAlignment.start,
+                bottom: 0,  // Distance from the bottom
+                right: 0,   // Distance from the right
+                left: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SizedBox(
-                      width: 80, // Fixed width for the button
-                      height: 25, // Fixed height for the button
-                      child: OutlinedButton(
-                        onPressed: () => context.read<PokerGameState>().touch(),
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.all(2), // Remove default padding since size is fixed
-                          textStyle: TextStyle(fontSize: 13),
+                      width: 185, // Fixed width for the button
+                      height: 28, // Fixed height for the button
+                      child: ElevatedButton(
+                        onPressed: () => context.read<PokerGameState>().setCurrentTurnIndex(0),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
+                          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
                         ),
                         child: const Text('FOLD'),
                       ),
                     ),
-                    const SizedBox(height: 5), // Space between buttons
+                    const SizedBox(width: 4), // Space between buttons
                     SizedBox(
-                      width: 120, // Fixed width for the button
-                      height: 25, // Fixed height for the button
-                      child: OutlinedButton(
+                      width: 185, // Fixed width for the button
+                      height: 28, // Fixed height for the button
+                      child: ElevatedButton(
                         onPressed: () => context.read<PokerGameState>().touch(),
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.all(2), // Remove default padding since size is fixed
-                          textStyle: TextStyle(fontSize: 13),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.read<PokerGameState>().currentBet == 0 ? Colors.white60 :  const Color(0xfff4f3fa),
+                          padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
+                          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                          // padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
                         ),
                         child: const Text('CHECK'),
+                      ),
+                    ),
+                    const SizedBox(width: 4), // Space between buttons
+                    SizedBox(
+                      width: 185, // Fixed width for the button
+                      height: 28, // Fixed height for the button
+                      child: ElevatedButton(
+                        onPressed: () => context.read<PokerGameState>().touch(),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
+                          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: Text('CALL ${() {
+                          final gameState = context.watch<PokerGameState>();
+                          final callAmount = gameState.currentBet - gameState.playerC.getBet;
+                          return (callAmount == 0) ? '' : callAmount.toString();
+                        }()}'),
+                      ),
+                    ),
+                    const SizedBox(width: 4), // Space between buttons
+                    SizedBox(
+                      width: 185, // Fixed width for the button
+                      height: 28, // Fixed height for the button
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.read<RaiserProvider>().toggleRaiserVisibility();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
+                          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: Text(context.watch<RaiserProvider>().isRaiserVisible ? 'CONFIRM' : 'RAISE'),
                       ),
                     ),
                   ],
                 ),
               ),
+
+              // Dropdown menu first
+              Positioned(
+                top: 0,
+                right: 0,
+                child: custom.DropdownMenu(),
+              ),
+
+              // Raiser menu
+              Positioned(
+              bottom: 30,
+              left: MediaQuery.of(context).size.width / 2 + 250,
+              child: RaiseSliderScreen(),
+            ),
             ],  // End of children
+
 
 
             // children: [
@@ -357,21 +539,6 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    // _startOfPlay = DateTime.now();
-
-    // Preload ad for the win screen.
-    // final adsRemoved =
-    //     context.read<InAppPurchaseController?>()?.adRemoval.active ?? false;
-    // if (!adsRemoved) {
-    //   final adsController = context.read<AdsController?>();
-    //   adsController?.preloadAd();
-    // }
   }
 
   Future<void> _playerWon() async {
