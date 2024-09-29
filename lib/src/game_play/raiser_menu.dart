@@ -20,6 +20,7 @@ class RaiserProvider extends ChangeNotifier {
   void setMinRaiseValue(int min) {
     _min = min.toDouble();
     _max = _min * 10;
+    _currentRaiseAmount = _min;
   }
 
   // Toggle the visibility of the raiser
@@ -36,6 +37,8 @@ class RaiserProvider extends ChangeNotifier {
 }
 
 class RaiseSliderScreen extends StatelessWidget {
+  const RaiseSliderScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -55,7 +58,7 @@ class RaiseSliderScreen extends StatelessWidget {
         ): const SizedBox.shrink(),
         // Conditionally show the slider based on the state in the provider
         if (context.watch<RaiserProvider>().isRaiserVisible)
-          Container(
+          SizedBox(
             height: 240,
             child: Stack(
               alignment: Alignment.center,
@@ -73,7 +76,7 @@ class RaiseSliderScreen extends StatelessWidget {
                     value: context.watch<RaiserProvider>().currentRaiseAmount,
                     min: context.watch<RaiserProvider>().min,
                     max:context.watch<RaiserProvider>().max,
-                    divisions: 10, // 10 steps for the slider
+                    divisions: 9, // 9 steps for the slider
                     onChanged: (double newValue) {
                       context.read<RaiserProvider>().setRaiseAmount(newValue);
                     },

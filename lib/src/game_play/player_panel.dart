@@ -83,10 +83,6 @@ class PlayerPanel extends StatelessWidget {
     state == $proto.PlayerStatusType.BB;
   }
   void _handleSelectingSlot(NetworkAgent networkAgent,PokerGameState gameState, int selectedSlot) {
-    if (gameState.hasPlayerMainIndex) {
-      _log.info('Player already in slot ${gameState.playerMainIndex}');
-      return;
-    }
     final requestedSlot = (selectedSlot+gameState.playerMainIndex) % gameState.maxPlayers;
     _log.info('Empty slot $selectedSlot tapped, Requested slot: $requestedSlot');
     final joinGameMsg = $proto.ClientMessage()
@@ -114,6 +110,10 @@ class PlayerPanel extends StatelessWidget {
             top: _getPlusIconTopAlignment(),
             child: GestureDetector(
               onTap: () {
+                if (gameState.hasPlayerMainIndex) {
+                  _log.info('Player already in slot ${gameState.playerMainIndex}');
+                  return;
+                }
                 audioController.playSfx(SfxType.buttonTap);
                 _handleSelectingSlot(networkAgent, gameState, playerUiIndex);
               },
