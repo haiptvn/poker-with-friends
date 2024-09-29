@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:provider/provider.dart';
 
-
-import '../cards/cards.dart';
 import '../../proto/message.pb.dart' as $proto;
+import '../network_agent/network_agent.dart';
+import '../game_internals/poker_game_state.dart';
+import '../audio/audio_controller.dart';
+import '../audio/sounds.dart';
 
 
 class PlayerPanel extends StatelessWidget {
@@ -67,9 +70,38 @@ class PlayerPanel extends StatelessWidget {
         return 14;
     }
   }
+  bool _isPlayingState() {
+    return state == $proto.PlayerStatusType.Playing ||
+    state == $proto.PlayerStatusType.Call ||
+    state == $proto.PlayerStatusType.Check ||
+    state == $proto.PlayerStatusType.Raise ||
+    state == $proto.PlayerStatusType.Wait4Act ||
+    state == $proto.PlayerStatusType.AllIn ||
+    state == $proto.PlayerStatusType.WINNER ||
+    state == $proto.PlayerStatusType.LOSER ||
+    state == $proto.PlayerStatusType.SB ||
+    state == $proto.PlayerStatusType.BB;
+  }
+  void _handleSelectingSlot(NetworkAgent networkAgent,PokerGameState gameState, int selectedSlot) {
+    if (gameState.hasPlayerMainIndex) {
+      _log.info('Player already in slot ${gameState.playerMainIndex}');
+      return;
+    }
+    final requestedSlot = (selectedSlot+gameState.playerMainIndex) % gameState.maxPlayers;
+    _log.info('Empty slot $selectedSlot tapped, Requested slot: $requestedSlot');
+    final joinGameMsg = $proto.ClientMessage()
+      ..joinGame = $proto.JoinGame()
+      ..joinGame.chooseSlot = requestedSlot;
+    gameState.setPlayerMainIndex(requestedSlot);
+    networkAgent.sendMessageAsync(joinGameMsg.writeToBuffer());
+  }
 
   @override
   Widget build(BuildContext context) {
+    final networkAgent = context.read<NetworkAgent>();
+    final gameState = context.read<PokerGameState>();
+    final audioController = context.read<AudioController>();
+    // _log.info('PlayerPanel: $playerName, $playerUiIndex, $state, $chips, $hasCards, $card1, $card2');
     return SizedBox(
       width: 130, // Adjust width as needed
       height: 100, // Adjust height as needed
@@ -82,7 +114,8 @@ class PlayerPanel extends StatelessWidget {
             top: _getPlusIconTopAlignment(),
             child: GestureDetector(
               onTap: () {
-                _log.info('Empty slot $playerUiIndex tapped');
+                audioController.playSfx(SfxType.buttonTap);
+                _handleSelectingSlot(networkAgent, gameState, playerUiIndex);
               },
               child:
               CircleAvatar(
@@ -120,7 +153,7 @@ class PlayerPanel extends StatelessWidget {
           ),
 
           // Cards
-          hasCards && !isEmptySlot ? Positioned(
+          !isEmptySlot && _isPlayingState() && hasCards ? Positioned(
             top: 5,
             left: 35,
             child: SizedBox(
@@ -133,7 +166,7 @@ class PlayerPanel extends StatelessWidget {
                     Transform.rotate(
                       angle: -0.1, // Adjust the angle as needed
                       child: Image.asset(
-                        isMainPlayer ? _cardToImagePath(card1): _faceDownCardImagePath,
+                        isMainPlayer || hasCards ? _cardToImagePath(card1): _faceDownCardImagePath,
                         width: 40, // Card width
                         height: 60, // Card height
                       ),
@@ -143,7 +176,7 @@ class PlayerPanel extends StatelessWidget {
                       child: Transform.rotate(
                         angle: 0.1, // Adjust the angle as needed
                         child: Image.asset(
-                          isMainPlayer ? _cardToImagePath(card2): _faceDownCardImagePath,
+                          isMainPlayer || hasCards ? _cardToImagePath(card2): _faceDownCardImagePath,
                           width: 40, // Card width
                           height: 60, // Card height
                         ),
@@ -192,13 +225,13 @@ class PlayerPanel extends StatelessWidget {
                     playerName,
                     style: TextStyle(
                       color: isActive ? Colors.black: Colors.white.withOpacity(0.85),
-                      fontSize: isActive ? 14 : 11,
+                      fontSize: isActive ? 12 : 11,
                       fontWeight: isActive ? FontWeight.w800: FontWeight.normal,
                       fontFamily: 'Permanent Marker',
                       height: 1,
                     ),
                   ),
-                  SizedBox(width: isActive ? 10 : 4), // Space between name and star
+                  SizedBox(width: isActive ? 6 : 4), // Space between name and star
                   Row(
                     children: [
                       Icon(
@@ -210,7 +243,7 @@ class PlayerPanel extends StatelessWidget {
                         chips,
                         style: TextStyle(
                           color: isActive ? Colors.black: Colors.white.withOpacity(0.85),
-                          fontSize: isActive ? 14 : 11,
+                          fontSize: isActive ? 12 : 11,
                           fontWeight: FontWeight.w500,
                           fontFamily: 'Permanent Marker',
                           height: 2,

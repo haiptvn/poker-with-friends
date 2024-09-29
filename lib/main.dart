@@ -21,7 +21,7 @@ import 'package:provider/provider.dart';
 
 import 'src/app_lifecycle/app_lifecycle.dart';
 import 'src/audio/audio_controller.dart';
-import 'src/play_session/play_session_screen.dart';
+import 'src/game_play/play_screen.dart';
 import 'src/main_menu/main_menu_screen.dart';
 import 'src/player_progress/persistence/local_storage_player_progress_persistence.dart';
 import 'src/player_progress/persistence/player_progress_persistence.dart';
@@ -33,7 +33,7 @@ import 'src/settings/settings_screen.dart';
 import 'src/style/my_transition.dart';
 import 'src/style/palette.dart';
 import 'src/style/snack_bar.dart';
-import 'src/play_session/raiser_menu.dart';
+import 'src/game_play/raiser_menu.dart';
 
 Future<void> main() async {
   // Subscribe to log messages.

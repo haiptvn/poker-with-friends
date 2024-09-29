@@ -5,9 +5,22 @@ import 'dart:math';
 class RaiserProvider extends ChangeNotifier {
   bool _isRaiserVisible = false;
   double _currentRaiseAmount = 0.0;
+  double _min = 0.0;
+  double _max = 1000.0;
 
   bool get isRaiserVisible => _isRaiserVisible;
   double get currentRaiseAmount => _currentRaiseAmount;
+  int get currentRaiseAmountAsInt {
+    return _currentRaiseAmount.toInt();
+  }
+  double get min => _min;
+  double get max => _max;
+  bool get isMax => _currentRaiseAmount == _max;
+
+  void setMinRaiseValue(int min) {
+    _min = min.toDouble();
+    _max = _min * 10;
+  }
 
   // Toggle the visibility of the raiser
   void toggleRaiserVisibility() {
@@ -28,6 +41,18 @@ class RaiseSliderScreen extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        // Toggle the raiser slider visibility using the Provider
+        context.watch<RaiserProvider>().isRaiserVisible ? ElevatedButton(
+          onPressed: () {
+            context.read<RaiserProvider>().toggleRaiserVisibility();
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor:  const Color(0xfff4f3fa).withOpacity(0.85),
+            textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            // padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12
+          ),
+          child: const Text('CANCEL'),
+        ): const SizedBox.shrink(),
         // Conditionally show the slider based on the state in the provider
         if (context.watch<RaiserProvider>().isRaiserVisible)
           Container(
@@ -37,7 +62,7 @@ class RaiseSliderScreen extends StatelessWidget {
               children: [
                 // Background Shape for Raise slider
                 CustomPaint(
-                  size: Size(110, 340),
+                  size: const Size(110, 340),
                   painter: RaiseBackgroundPainter(),
                 ),
 
@@ -46,9 +71,9 @@ class RaiseSliderScreen extends StatelessWidget {
                   angle: -pi / 2, // Rotate slider vertically
                   child: Slider(
                     value: context.watch<RaiserProvider>().currentRaiseAmount,
-                    min: 0.0,
-                    max: 1000.0,
-                    divisions: 50, // 10 steps for the slider
+                    min: context.watch<RaiserProvider>().min,
+                    max:context.watch<RaiserProvider>().max,
+                    divisions: 10, // 10 steps for the slider
                     onChanged: (double newValue) {
                       context.read<RaiserProvider>().setRaiseAmount(newValue);
                     },
@@ -61,7 +86,7 @@ class RaiseSliderScreen extends StatelessWidget {
                 Positioned(
                   top: 5,
                   child: Text(
-                    '${context.watch<RaiserProvider>().currentRaiseAmount.toInt()}',
+                    context.watch<RaiserProvider>().isMax ? 'ALL IN' : '${context.watch<RaiserProvider>().currentRaiseAmount.toInt()}',
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),

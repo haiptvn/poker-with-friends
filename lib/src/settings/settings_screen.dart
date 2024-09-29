@@ -10,6 +10,7 @@ import '../player_progress/player_progress.dart';
 import '../style/palette.dart';
 import '../style/responsive_screen.dart';
 import 'custom_name_dialog.dart';
+import 'custom_server_name_dialog.dart';
 import 'settings.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -33,11 +34,13 @@ class SettingsScreen extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Permanent Marker',
-                fontSize: 55,
+                fontSize: 30,
                 height: 1,
               ),
+            ),_gap,
+            const _ServerChangeLine(
+              'Server Address',
             ),
-            _gap,
             const _NameChangeLine(
               'Name',
             ),
@@ -105,6 +108,46 @@ class SettingsScreen extends StatelessWidget {
             GoRouter.of(context).pop();
           },
           child: const Text('Back'),
+        ),
+      ),
+    );
+  }
+}
+
+class _ServerChangeLine extends StatelessWidget {
+  final String title;
+
+  const _ServerChangeLine(this.title);
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<SettingsController>();
+
+    return InkResponse(
+      highlightShape: BoxShape.rectangle,
+      onTap: () => showCustomServerAddressDialog(context),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(title,
+                style: const TextStyle(
+                  fontFamily: 'Permanent Marker',
+                  fontSize: 30,
+                )),
+            const Spacer(),
+            ValueListenableBuilder(
+              valueListenable: settings.serverAddress,
+              builder: (context, name, child) => Text(
+                '‘$name’',
+                style: const TextStyle(
+                  fontFamily: 'Permanent Marker',
+                  fontSize: 30,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -13,6 +13,8 @@ class MemoryOnlySettingsPersistence implements SettingsPersistence {
 
   bool muted = false;
 
+  String serverAddress = 'localhost';
+
   String playerName = 'Player';
 
   @override
@@ -20,6 +22,9 @@ class MemoryOnlySettingsPersistence implements SettingsPersistence {
 
   @override
   Future<bool> getMuted({required bool defaultValue}) async => muted;
+
+  @override
+  Future<String> getServerAddress() async => serverAddress;
 
   @override
   Future<String> getPlayerName() async => playerName;
@@ -32,6 +37,9 @@ class MemoryOnlySettingsPersistence implements SettingsPersistence {
 
   @override
   Future<void> saveMuted(bool value) async => muted = value;
+
+  @override
+  Future<void> saveServerAddress(String value) async => serverAddress = value;
 
   @override
   Future<void> savePlayerName(String value) async => playerName = value;

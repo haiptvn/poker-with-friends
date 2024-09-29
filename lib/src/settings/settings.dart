@@ -15,6 +15,8 @@ class SettingsController {
   /// and sound.
   ValueNotifier<bool> muted = ValueNotifier(false);
 
+  ValueNotifier<String> serverAddress = ValueNotifier('localhost');
+
   ValueNotifier<String> playerName = ValueNotifier('Player');
 
   ValueNotifier<bool> soundsOn = ValueNotifier(false);
@@ -36,8 +38,14 @@ class SettingsController {
           .then((value) => muted.value = value),
       _persistence.getSoundsOn().then((value) => soundsOn.value = value),
       _persistence.getMusicOn().then((value) => musicOn.value = value),
+      _persistence.getServerAddress().then((value) => serverAddress.value = value),
       _persistence.getPlayerName().then((value) => playerName.value = value),
     ]);
+  }
+
+  void setServerAddress(String address) {
+    serverAddress.value = address;
+    _persistence.saveServerAddress(serverAddress.value);
   }
 
   void setPlayerName(String name) {

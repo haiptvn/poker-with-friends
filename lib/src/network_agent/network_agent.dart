@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -21,17 +22,81 @@ class NetworkAgent {
   static final _log = Logger('NetworkAgent');
 
   final String url;
+  final String playerName;
   WebSocketChannel? _channel;
   final PokerGameState gameState;
   Timer? _reconnectTimer;
 
-  NetworkAgent(this.url, this.gameState);
+  final Queue<dynamic> _messageQueue = Queue();
+  bool _isSending = false;
+  final int maxRetries;
+  final Duration retryDelay;
+
+  NetworkAgent(this.url,
+          this.playerName,
+          this.gameState,
+          {this.maxRetries = 3,
+          this.retryDelay = const Duration(seconds: 1)});
+
+  Future<void> sendMessageAsync(dynamic message) async {
+    _messageQueue.add(message);
+    _processQueue();
+    // _log.info('sendMessageAsync sent: $message');
+  }
+
+  Future<void> _processQueue() async {
+    if (_isSending || _messageQueue.isEmpty) return;
+
+    _isSending = true;
+    while (_messageQueue.isNotEmpty) {
+      final message = _messageQueue.first;
+      bool success = await _sendToServer(message);
+      if (success) {
+        _log.info('Async message sent successfully: $message');
+        _messageQueue.removeFirst();
+      } else {
+        // If sending failed, we'll try again later
+        _log.warning('Failed to send message: $message');
+        break;
+      }
+    }
+    _isSending = false;
+  }
+
+  Future<bool> _sendToServer(dynamic message) async {
+    int attempts = 0;
+    while (attempts < maxRetries) {
+      try {
+        if (_channel != null) {
+          _channel!.sink.add(message);
+          return true;
+        }
+        _log.warning('Channel is null, cannot send message: $message');
+        return false;
+      } catch (e) {
+        _log.warning('Error sending message: $e');
+        attempts++;
+        await Future.delayed(retryDelay * attempts);
+      }
+    }
+    _log.warning('Failed to send message after $maxRetries attempts: $message');
+    return false;
+  }
 
   // ignore: non_constant_identifier_names
   Future<void> ws_connect() async {
     try {
-      final ws = await _secureWebSocket();
-      _channel = IOWebSocketChannel(ws);
+      SecurityContext context = SecurityContext(withTrustedRoots: true);
+      // Load server certificate for verification
+      final ByteData data = await rootBundle.load('assets/ca/cert.pem');
+      context.setTrustedCertificatesBytes(data.buffer.asUint8List());
+
+      _channel = IOWebSocketChannel.connect(
+        url,
+        protocols: ['wss'],
+        customClient: HttpClient()
+          ..badCertificateCallback = (X509Certificate cert, String host, int port) => true,
+      );
       // appState.setConnectionStatus(true);
       _channel!.stream.listen(
         _onMessage,
@@ -42,65 +107,24 @@ class NetworkAgent {
       // Send login message
       final loginMessage = $proto.ClientMessage()
         ..joinRoom = $proto.JoinRoom()
-        ..joinRoom.room = 'room1'
-        ..joinRoom.nameId = 'Harry'
-        ..joinRoom.passcode = '2';
+        ..joinRoom.room = '2'
+        ..joinRoom.nameId = playerName
+        ..joinRoom.passcode = '1';
+
+      _log.info('Sending login message: $loginMessage');
 
       final encodedMessage = loginMessage.writeToBuffer();
       _channel!.sink.add(encodedMessage);
-
     } catch (e) {
       _log.warning('WebSocket connection error: $e');
       // _scheduleReconnect();
     }
   }
 
-  Future<WebSocket> _secureWebSocket() async {
-    SecurityContext context = SecurityContext(withTrustedRoots: true);
-
-        // Load server certificate for verification
-    final ByteData data = await rootBundle.load('assets/ca/cert.pem');
-    context.setTrustedCertificatesBytes(data.buffer.asUint8List());
-
-    Uri uri = Uri.parse(url);
-    HttpClient client = HttpClient(context: context);
-    client.badCertificateCallback = (X509Certificate cert, String host, int port) {
-      // Implement certificate verification logic here if needed
-      _log.warning('Warning: untrusted certificate ${cert.subject}');
-      return true; // Return true to allow connection despite certificate issues
-    };
-
-    Socket socket = await SecureSocket.connect(
-      uri.host,
-      uri.port,
-      context: context,
-      onBadCertificate: (X509Certificate cert) {
-        // Implement certificate verification logic here if needed
-        _log.warning('Warning: untrusted certificate ${cert.subject}');
-        return true; // Return true to allow connection despite certificate issues
-      },
-    );
-
-    return WebSocket.fromUpgradedSocket(
-      socket,
-      serverSide: false,
-      protocol: 'wss',
-    );
-  }
-
   void _onMessage(dynamic message) {
-    final decodedMessage = json.decode(message);
-    // appState.updateMessage(decodedMessage['message']);
-    // Handle different message types here
-    switch (decodedMessage['type']) {
-      case 'update':
-        // Handle update message
-        break;
-      case 'alert':
-        // Handle alert message
-        break;
-      // Add more cases as needed
-    }
+    final decodedMessage = $proto.ServerMessage.fromBuffer(message);
+    _log.info('Received message: $decodedMessage');
+    gameState.updateGameState(decodedMessage);
   }
 
   void _onError(error) {
@@ -122,11 +146,20 @@ class NetworkAgent {
 
   void sendMessage(String message) {
     if (_channel != null) {
+      _log.info('Sending message: $message');
       _channel!.sink.add(json.encode({'message': message}));
     }
   }
 
+  void sendMessageSync(dynamic message) {
+    if (_channel != null) {
+      _log.info('Sending message: $message');
+      _channel!.sink.add(message);
+    }
+  }
+
   void dispose() {
+    _log.info('Disposing NetworkAgent');
     _channel?.sink.close();
     _reconnectTimer?.cancel();
   }

@@ -10,11 +10,12 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart' hide Level;
 import 'package:poker_with_friends/src/game_internals/poker_game_state.dart';
-import 'package:poker_with_friends/src/play_session/dropdown_menu.dart';
-import 'package:poker_with_friends/src/play_session/player_panel.dart';
-import 'package:poker_with_friends/src/play_session/raiser_menu.dart';
+import 'package:poker_with_friends/src/game_play/dropdown_menu.dart';
+import 'package:poker_with_friends/src/game_play/player_panel.dart';
+import 'package:poker_with_friends/src/game_play/raiser_menu.dart';
 
 import '../audio/audio_controller.dart';
+import '../settings/settings.dart';
 import '../audio/sounds.dart';
 import '../game_internals/level_state.dart';
 import '../game_internals/poker_game_state.dart';
@@ -100,25 +101,11 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   late NetworkAgent _networkAgent;
 
   @override
-  void initState() {
-    super.initState();
-    final gameState = Provider.of<PokerGameState>(context, listen: false);
-    _networkAgent = NetworkAgent('wss://10.0.2.2:28888/ws', gameState);
-    _networkAgent.ws_connect();
-  }
-
-  @override
-  void dispose() {
-    _networkAgent.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final palette = context.watch<Palette>();
-    _log.info('Building PlaySessionScreen for level ${widget.level}');
-    _log.info('Height: ${MediaQuery.of(context).size.height}');
-    _log.info('Width: ${MediaQuery.of(context).size.width}');
+    final gameState = context.watch<PokerGameState>();
+    final audioController = context.watch<AudioController>();
+    _log.info('Building PlaySessionScreen for level ${widget.level}, Height: ${MediaQuery.of(context).size.height}, Width: ${MediaQuery.of(context).size.width}');
 
     return MultiProvider(
       providers: [
@@ -131,6 +118,9 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
         ChangeNotifierProvider(
           create: (context) => DropdownProvider(), // Provide PokerGameState
         ),
+        Provider(
+          create: (context) => _networkAgent,
+        ),
       ],
       child: IgnorePointer(
         ignoring: _duringCelebration,
@@ -138,7 +128,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
           backgroundColor: palette.trueWhite,
           body: Stack(
             children: <Widget>[
-              // Poker table background
+              // table background
               Positioned.fill(
                 child: Image.asset(
                   'assets/images/poker_table.png', // Add your poker table background image here
@@ -152,11 +142,9 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                 child: Row(
                   children: [
                     // Community cards
-                    buildCard("assets/cards/3_11.png"), // Replace with actual card image
-                    buildCard("assets/cards/2_12.png"), // Replace with actual card image
-                    buildCard("assets/cards/1_13.png"), // Replace with actual card image
-                    buildCard("assets/cards/2_14.png"), // Replace with actual card image
-                    buildCard("assets/cards/2_10.png"), // Replace with actual card image
+                    ...List.generate(gameState.communityCards.length,
+                      (i) => buildCommCardFromProtoCard(gameState.communityCards[i]),
+                    ),
                   ],
               ),
               ),
@@ -187,7 +175,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               // Dealer icon
               Positioned(
                 child: Consumer<PokerGameState>(
-                  builder: (context, pokerGameState, child) => DealerIcon(currentIndex: pokerGameState.currentTurnIndex),
+                  builder: (context, pokerGameState, child) => DealerIcon(currentIndex: pokerGameState.currentButtonIndex),
                 ),
               ),
 
@@ -381,7 +369,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               ),
 
               // Other widgets can go here
-              Positioned(
+              gameState.hasPlayerMainIndex ? Positioned(
                 bottom: 0,  // Distance from the bottom
                 right: 0,   // Distance from the right
                 left: 0,
@@ -393,7 +381,10 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       width: 185, // Fixed width for the button
                       height: 28, // Fixed height for the button
                       child: ElevatedButton(
-                        onPressed: () => context.read<PokerGameState>().setCurrentTurnIndex(0),
+                        onPressed: () {
+                          audioController.playSfx(SfxType.buttonTap);
+                          _handleButtonPress('FOLD', gameState.playerMainIndex);
+                        },
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
                           textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
@@ -409,9 +400,12 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       width: 185, // Fixed width for the button
                       height: 28, // Fixed height for the button
                       child: ElevatedButton(
-                        onPressed: () => context.read<PokerGameState>().touch(),
+                        onPressed: () {
+                          audioController.playSfx(SfxType.buttonTap);
+                          _handleButtonPress('CHECK', gameState.playerMainIndex);
+                        },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: context.read<PokerGameState>().currentBet == 0 ? Colors.white60 :  const Color(0xfff4f3fa),
+                          backgroundColor: gameState.currentBet == gameState.playerC.getBet ? const Color(0xfff4f3fa): Colors.white60,
                           padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
                           textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                           // padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -419,7 +413,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                         ),
-                        child: const Text('CHECK'),
+                        child: gameState.currentBet == gameState.playerC.getBet ? const Text('CHECK'): const SizedBox.shrink(),
                       ),
                     ),
                     const SizedBox(width: 4), // Space between buttons
@@ -427,16 +421,19 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       width: 185, // Fixed width for the button
                       height: 28, // Fixed height for the button
                       child: ElevatedButton(
-                        onPressed: () => context.read<PokerGameState>().touch(),
+                        onPressed: () {
+                          audioController.playSfx(SfxType.buttonTap);
+                          _handleButtonPress('CALL', gameState.playerMainIndex);
+                        },
                         style: ElevatedButton.styleFrom(
+                          backgroundColor: gameState.currentBet == gameState.playerC.getBet ? Colors.white60:const Color(0xfff4f3fa),
                           padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
                           textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(6),
                           ),
                         ),
-                        child: Text('CALL ${() {
-                          final gameState = context.watch<PokerGameState>();
+                        child: gameState.currentBet == gameState.playerC.getBet ? const SizedBox.shrink() : Text('CALL ${() {
                           final callAmount = gameState.currentBet - gameState.playerC.getBet;
                           return (callAmount == 0) ? '' : callAmount.toString();
                         }()}'),
@@ -448,7 +445,13 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       height: 28, // Fixed height for the button
                       child: ElevatedButton(
                         onPressed: () {
-                          context.read<RaiserProvider>().toggleRaiserVisibility();
+                          audioController.playSfx(SfxType.buttonTap);
+                          final raiserProvider = context.read<RaiserProvider>();
+                          if (raiserProvider.isRaiserVisible) {
+                            raiserProvider.isMax ? _handleRaiseButtonPress(gameState.playerMainIndex, 0x7FFFFFFF) :
+                              _handleRaiseButtonPress(gameState.playerMainIndex, raiserProvider.currentRaiseAmountAsInt);
+                          }
+                          raiserProvider.toggleRaiserVisibility();
                         },
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
@@ -457,12 +460,12 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                         ),
-                        child: Text(context.watch<RaiserProvider>().isRaiserVisible ? 'CONFIRM' : 'RAISE'),
+                        child: Text(context.watch<RaiserProvider>().isRaiserVisible ? 'CONFIRM' : gameState.currentBet == 0 ? 'BET' : 'RAISE'),
                       ),
                     ),
                   ],
                 ),
-              ),
+              ): const SizedBox.shrink(),
 
               // Dropdown menu first
               Positioned(
@@ -539,6 +542,69 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final gameState = Provider.of<PokerGameState>(context, listen: false);
+    final serverAddress = Provider.of<SettingsController>(context, listen: false).serverAddress.value;
+    final playerName = Provider.of<SettingsController>(context, listen: false).playerName.value;
+    gameState.reinit();
+    _networkAgent = NetworkAgent('wss://$serverAddress:28888/ws', playerName, gameState);
+    _networkAgent.ws_connect();
+  }
+
+  @override
+  void dispose() {
+    _networkAgent.dispose();
+    super.dispose();
+  }
+
+  void _handleRaiseButtonPress(int id, int amount) {
+    _log.info('Raise button pressed at $id with amount $amount');
+    if (amount == 0x7FFFFFFF) {
+      $proto.ClientMessage outgoingMessage = $proto.ClientMessage();
+      outgoingMessage.playerAction = $proto.PlayerAction()
+            ..playerId = id.toString()
+            ..actionType = 'allin';
+      _networkAgent.sendMessageAsync(outgoingMessage.writeToBuffer());
+      return;
+    }
+    $proto.ClientMessage outgoingMessage = $proto.ClientMessage();
+    outgoingMessage.playerAction = $proto.PlayerAction()
+          ..playerId = id.toString()
+          ..actionType = $proto.PlayerGameActionType.RAISE.toString().toLowerCase()
+          ..raiseAmount = amount;
+    _networkAgent.sendMessageAsync(outgoingMessage.writeToBuffer());
+  }
+
+  void _handleButtonPress(String buttonName, int id) {
+    _log.info('Button pressed');
+
+    $proto.ClientMessage outgoingMessage = $proto.ClientMessage();
+
+    switch (buttonName) {
+      case 'FOLD':
+        outgoingMessage.playerAction = $proto.PlayerAction()
+          ..playerId = id.toString()
+          ..actionType = $proto.PlayerGameActionType.FOLD.toString().toLowerCase();
+        break;
+      case 'CHECK':
+        outgoingMessage.playerAction = $proto.PlayerAction()
+          ..playerId = id.toString()
+          ..actionType = $proto.PlayerGameActionType.CHECK.toString().toLowerCase();
+        break;
+      case 'CALL':
+        outgoingMessage.playerAction = $proto.PlayerAction()
+          ..playerId = id.toString()
+          ..actionType = $proto.PlayerGameActionType.CALL.toString().toLowerCase();
+        break;
+      default:
+        break;
+    }
+    _networkAgent.sendMessageAsync(outgoingMessage.writeToBuffer());
+    _log.info('Sent message for $buttonName');
   }
 
   Future<void> _playerWon() async {

@@ -25,6 +25,12 @@ class LocalStorageSettingsPersistence extends SettingsPersistence {
   }
 
   @override
+  Future<String> getServerAddress() async {
+    final prefs = await instanceFuture;
+    return prefs.getString('serverAddress') ?? 'localhost';
+  }
+
+  @override
   Future<String> getPlayerName() async {
     final prefs = await instanceFuture;
     return prefs.getString('playerName') ?? 'Player';
@@ -46,6 +52,12 @@ class LocalStorageSettingsPersistence extends SettingsPersistence {
   Future<void> saveMuted(bool value) async {
     final prefs = await instanceFuture;
     await prefs.setBool('mute', value);
+  }
+
+  @override
+  Future<void> saveServerAddress(String value) async {
+    final prefs = await instanceFuture;
+    await prefs.setString('serverAddress', value);
   }
 
   @override

@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_function_literals_in_foreach_calls
 
 import 'package:flutter/foundation.dart';
-
+import 'package:logging/logging.dart';
 import '../../proto/message.pb.dart' as $proto;
 
 class PlayingSlot {
@@ -40,14 +40,33 @@ class PlayingSlot {
   void setBet(int finalBet) {
     _bet = finalBet;
   }
-  void reset() {
-    _bet = 0;
+  bool hasCards() {
+    return _card1.rank != $proto.RankType.UNSPECIFIED_RANK && _card2.rank != $proto.RankType.UNSPECIFIED_RANK;
+  }
+  void resetCards() {
     _card1 = $proto.Card();
     _card2 = $proto.Card();
+  }
+  void reset() {
+    _state = $proto.PlayerStatusType.Playing;
+    _name = '';
+    _chips = 0;
+    _showCards = false;
+    _bet = 0;
+  }
+  void reinit() {
+    _state = $proto.PlayerStatusType.Playing;
+    _name = '';
+    _chips = 0;
+    _showCards = false;
+    _card1 = $proto.Card();
+    _card2 = $proto.Card();
+    _bet = 0;
   }
 }
 
 class PokerGameState extends ChangeNotifier {
+  static final _log = Logger('PokerGameState');
   final int _maxPlayers = 10;
   final List<PlayingSlot> _players = [
     PlayingSlot(), // 0
@@ -61,27 +80,31 @@ class PokerGameState extends ChangeNotifier {
     PlayingSlot(), // 8
     PlayingSlot(), // 9
   ];
+  bool _hasPlayerMainIndex = false;
   int _playerMainIndex = 0;
+  int _forUiDisplayIndex = 0;
   int _currentButtonIndex = 0;
-  int _currentTurnIndex = 0;
   final List<$proto.Card> _communityCards = [];
   int _totalPot = 0;
   int _currentBet = 0;
 
-  PlayingSlot get playerC => _players[_playerMainIndex % _maxPlayers];
-  PlayingSlot get player1 => _players[(_playerMainIndex+ 1) % _maxPlayers];
-  PlayingSlot get player2 => _players[(_playerMainIndex+ 2) % _maxPlayers];
-  PlayingSlot get player3 => _players[(_playerMainIndex+ 3) % _maxPlayers];
-  PlayingSlot get player4 => _players[(_playerMainIndex+ 4) % _maxPlayers];
-  PlayingSlot get player5 => _players[(_playerMainIndex+ 5) % _maxPlayers];
-  PlayingSlot get player6 => _players[(_playerMainIndex+ 6) % _maxPlayers];
-  PlayingSlot get player7 => _players[(_playerMainIndex+ 7) % _maxPlayers];
-  PlayingSlot get player8 => _players[(_playerMainIndex+ 8) % _maxPlayers];
-  PlayingSlot get player9 => _players[(_playerMainIndex+ 9) % _maxPlayers];
+  PlayingSlot get playerC => _players[0];
+  PlayingSlot get player1 => _players[1];
+  PlayingSlot get player2 => _players[2];
+  PlayingSlot get player3 => _players[3];
+  PlayingSlot get player4 => _players[4];
+  PlayingSlot get player5 => _players[5];
+  PlayingSlot get player6 => _players[6];
+  PlayingSlot get player7 => _players[7];
+  PlayingSlot get player8 => _players[8];
+  PlayingSlot get player9 => _players[9];
 
+  bool get hasPlayerMainIndex => _hasPlayerMainIndex;
+  int get playerMainIndex => _playerMainIndex;
+  int get maxPlayers => _maxPlayers;
+  int get forUiDisplayIndex => _forUiDisplayIndex;
   List<$proto.Card> get communityCards => _communityCards;
   int get totalPot => _totalPot;
-  int get currentTurnIndex => _currentTurnIndex;
   int get currentButtonIndex => _currentButtonIndex;
   int get currentBet => _currentBet;
   PlayingSlot getPlayerByIndex(int index) => _players[index];
@@ -170,6 +193,7 @@ class PokerGameState extends ChangeNotifier {
 
   void setPlayerMainIndex(int index) {
     _playerMainIndex = index;
+    _hasPlayerMainIndex = true;
     notifyListeners();
   }
 
@@ -179,12 +203,6 @@ class PokerGameState extends ChangeNotifier {
 
   void dealCommunityCard($proto.Card card) {
     _communityCards.add(card);
-    notifyListeners();
-  }
-
-  void setCurrentTurnIndex(int index) {
-    // _currentTurnIndex = index;
-    _currentTurnIndex = (_currentTurnIndex + 1) % (_maxPlayers);
     notifyListeners();
   }
 
@@ -198,11 +216,78 @@ class PokerGameState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateGameState($proto.ServerMessage message) {
+    if (message.hasGameState()) {
+      _players.forEach((player) => player.reset());
+      if (_forUiDisplayIndex != _playerMainIndex) {
+        _forUiDisplayIndex = _playerMainIndex;
+      }
+
+      _communityCards.clear();
+      message.gameState.communityCards.forEach((card) {
+        _communityCards.add(card);
+      });
+
+      _currentButtonIndex = (_maxPlayers - _forUiDisplayIndex +  message.gameState.dealerId) % _maxPlayers;
+      _currentBet = message.gameState.currentBet;
+      _totalPot = message.gameState.potSize;
+
+      if (message.gameState.currentRound == $proto.RoundStateType.SHOWDOWN &&
+          message.gameState.hasFinalResult()) {
+          message.gameState.finalResult.showingCards.forEach((showingCard) {
+          final index = (_maxPlayers - _forUiDisplayIndex + showingCard.tablePos) % _maxPlayers;
+          if (showingCard.playerCards.isNotEmpty) {
+            _log.info('Showing card: $showingCard, UX index: $index');
+            _players[index].addCard(showingCard.playerCards[0], showingCard.playerCards[1]);
+          }
+        });
+      } else if (message.gameState.currentRound == $proto.RoundStateType.INITIAL) {
+        resetGame();
+        _players.forEach((player) => player.reinit());
+      } else if (message.gameState.currentRound == $proto.RoundStateType.PREFLOP) {
+        for (var i = 1; i < _maxPlayers; i++) { _players[i].resetCards(); }
+      }
+
+      message.gameState.players.forEach((player) {
+        final index = (_maxPlayers - _forUiDisplayIndex + player.tablePosition) % _maxPlayers;
+        _players[index].setState(player.status);
+        _players[index].setName(player.name);
+        _players[index].setChips(player.chips);
+        _players[index].setBet(player.currentBet);
+      });
+    }
+
+    if (message.hasPeerState()) {
+      if (_hasPlayerMainIndex && message.peerState.playerCards.isNotEmpty) {
+        _players[0].addCard(message.peerState.playerCards[0], message.peerState.playerCards[1]);
+      }
+    }
+
+    notifyListeners();
+  }
+
   void resetGame() {
     _players.forEach((player) => player.reset());
-    _currentTurnIndex = 0;
+    _currentBet = 0;
     _totalPot = 0;
     _communityCards.clear();
     notifyListeners();
+  }
+
+  void mainPlayerLeave() {
+    _players[_playerMainIndex].reset();
+    _hasPlayerMainIndex = false;
+    notifyListeners();
+  }
+
+  void reinit() {
+    _log.info('Reinitializing game state');
+    _players.forEach((player) => player.reinit());
+    _totalPot = 0;
+    _communityCards.clear();
+    _currentButtonIndex = 0;
+    _currentBet = 0;
+    _hasPlayerMainIndex = false;
+    _forUiDisplayIndex = 0;
   }
 }

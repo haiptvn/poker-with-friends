@@ -23,7 +23,8 @@ List<String> soundTypeToFilename(SfxType type) {
       ];
     case SfxType.buttonTap:
       return const [
-        'button-pressed2.mp3',
+        'Tick-DeepFrozenApps.mp3',
+        'beep-6.mp3',
       ];
     case SfxType.congrats:
       return const [
