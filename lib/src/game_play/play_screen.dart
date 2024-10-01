@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart' hide Level;
@@ -102,9 +103,11 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     final palette = context.watch<Palette>();
     final gameState = context.watch<PokerGameState>();
     final audioController = context.watch<AudioController>();
+    gameState.attachAudioController(audioController);
     _log.info('Building PlaySessionScreen for level ${widget.level}, Height: ${MediaQuery.of(context).size.height}, Width: ${MediaQuery.of(context).size.width}');
 
     return MultiProvider(
@@ -125,6 +128,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
       child: IgnorePointer(
         ignoring: _duringCelebration,
         child: Scaffold(
+          appBar: null,
           backgroundColor: palette.trueWhite,
           body: Stack(
             children: <Widget>[
@@ -382,7 +386,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       height: 28, // Fixed height for the button
                       child: ElevatedButton(
                         onPressed: () {
-                          audioController.playSfx(SfxType.buttonTap);
+                          audioController.playSfx(SfxType.btnTap);
                           _handleButtonPress('FOLD', gameState.playerMainIndex);
                         },
                         style: ElevatedButton.styleFrom(
@@ -401,7 +405,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       height: 28, // Fixed height for the button
                       child: ElevatedButton(
                         onPressed: () {
-                          audioController.playSfx(SfxType.buttonTap);
+                          audioController.playSfx(SfxType.btnTap);
                           _handleButtonPress('CHECK', gameState.playerMainIndex);
                         },
                         style: ElevatedButton.styleFrom(
@@ -422,7 +426,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       height: 28, // Fixed height for the button
                       child: ElevatedButton(
                         onPressed: () {
-                          audioController.playSfx(SfxType.buttonTap);
+                          audioController.playSfx(SfxType.btnTap);
                           _handleButtonPress('CALL', gameState.playerMainIndex);
                         },
                         style: ElevatedButton.styleFrom(
@@ -445,7 +449,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       height: 28, // Fixed height for the button
                       child: ElevatedButton(
                         onPressed: () {
-                          audioController.playSfx(SfxType.buttonTap);
+                          audioController.playSfx(SfxType.btnTap);
                           final raiserProvider = context.read<RaiserProvider>();
                           if (raiserProvider.isRaiserVisible) {
                             raiserProvider.isMax ? _handleRaiseButtonPress(gameState.playerMainIndex, 0x7FFFFFFF) :
@@ -623,7 +627,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
     });
 
     final audioController = context.read<AudioController>();
-    audioController.playSfx(SfxType.congrats);
+    audioController.playSfx(SfxType.collect);
 
   }
 }

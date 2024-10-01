@@ -18,6 +18,7 @@ class RaiserProvider extends ChangeNotifier {
   bool get isMax => _currentRaiseAmount == _max;
 
   void setMinRaiseValue(int min) {
+    if (min <= 0) { min = 20; }
     _min = min.toDouble();
     _max = _min * 10;
     _currentRaiseAmount = _min;

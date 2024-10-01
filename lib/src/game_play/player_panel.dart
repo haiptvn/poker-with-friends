@@ -41,12 +41,16 @@ class PlayerPanel extends StatelessWidget {
   static const String _faceDownCardImagePath = 'assets/cards/0_0.png';
   String _showStatus() {
     switch (state) {
-      case $proto.PlayerStatusType.Playing:
-        return '';
       case $proto.PlayerStatusType.SB:
         return 'SM. BLIND';
       case $proto.PlayerStatusType.BB:
         return 'BIG BLIND';
+      case $proto.PlayerStatusType.Check:
+        return 'CHECK';
+      case $proto.PlayerStatusType.Call:
+        return 'CALL';
+      case $proto.PlayerStatusType.Raise:
+        return 'RAISE';
       case $proto.PlayerStatusType.Fold:
         return 'FOLD';
       case $proto.PlayerStatusType.AllIn:
@@ -58,6 +62,17 @@ class PlayerPanel extends StatelessWidget {
       default:
         return '';
     }
+  }
+  bool _needShowStatus() {
+    switch (state) {
+      case $proto.PlayerStatusType.Wait4Act:
+      case $proto.PlayerStatusType.Sat_Out:
+      case $proto.PlayerStatusType.Playing:
+        return false;
+      default:
+        return true;
+    }
+
   }
   double _getPlusIconTopAlignment() {
     switch (playerUiIndex) {
@@ -98,6 +113,7 @@ class PlayerPanel extends StatelessWidget {
     final gameState = context.read<PokerGameState>();
     final audioController = context.read<AudioController>();
     // _log.info('PlayerPanel: $playerName, $playerUiIndex, $state, $chips, $hasCards, $card1, $card2');
+
     return SizedBox(
       width: 130, // Adjust width as needed
       height: 100, // Adjust height as needed
@@ -114,7 +130,7 @@ class PlayerPanel extends StatelessWidget {
                   _log.info('Player already in slot ${gameState.playerMainIndex}');
                   return;
                 }
-                audioController.playSfx(SfxType.buttonTap);
+                audioController.playSfx(SfxType.btnTap);
                 _handleSelectingSlot(networkAgent, gameState, playerUiIndex);
               },
               child:
@@ -187,8 +203,8 @@ class PlayerPanel extends StatelessWidget {
               ),
           ) : const SizedBox.shrink(),
 
-          // Role (e.g., SM. BLIND)
-          if (!isEmptySlot && _showStatus() != "")
+          // Role/Action (e.g., SM. BLIND, BIG BLIND, CHECK, CALL, RAISE, FOLD, ALL IN, WINNER, LOSER)
+          if (!isEmptySlot && _needShowStatus())
             Positioned(
               top: 39,
               child: Container(

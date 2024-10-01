@@ -61,7 +61,7 @@ class GameLobbyScreen extends StatelessWidget {
                       enabled: true,
                       onTap: () {
                         final audioController = context.read<AudioController>();
-                        audioController.playSfx(SfxType.buttonTap);
+                        audioController.playSfx(SfxType.btnTap);
 
                         GoRouter.of(context)
                             .go('/lobby/playing');
@@ -77,7 +77,7 @@ class GameLobbyScreen extends StatelessWidget {
         rectangularMenuArea: FilledButton(
           onPressed: () {
             final audioController = context.read<AudioController>();
-            audioController.playSfx(SfxType.buttonTap);
+            audioController.playSfx(SfxType.btnTap);
 
             GoRouter.of(context).go('/');
           },

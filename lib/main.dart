@@ -77,7 +77,7 @@ Future<void> main() async {
 
   _log.info('Going full screen');
   SystemChrome.setEnabledSystemUIMode(
-    SystemUiMode.immersiveSticky,
+    SystemUiMode.immersive,
   );
 
   // TODO: When ready, uncomment the following lines to enable integrations.
@@ -176,6 +176,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight
+    ]);
     return AppLifecycleObserver(
       child: MultiProvider(
         providers: [

@@ -11,7 +11,7 @@ import '../audio/sounds.dart';
 // This class will manage the state of the selected dropdown value.
 class DropdownProvider with ChangeNotifier {
   // List of dropdown items
-  final List<String> _items = ['Balance Board', 'Start Game', 'Take 1 Buy-In', 'Return 1 Buy-In', 'Stand Up'];
+  final List<String> _items = ['Balance Board', 'Start Game', '+1 Buy-In', '-1 Buy-In', 'Stand Up'];
 
   late String _selectedItem;
 
@@ -51,10 +51,10 @@ class DropdownMenu extends StatelessWidget {
           networkAgent.sendMessageAsync(ClientMessageBuilder.build('leave_game', gameState.playerMainIndex).toProto());
         }
         break;
-      case 'Take 1 Buy-In':
+      case '+1 Buy-In':
         networkAgent.sendMessageAsync(ClientMessageBuilder.build('request_buyin', gameState.playerMainIndex).toProto());
         break;
-      case 'Return 1 Buy-In':
+      case '-1 Buy-In':
         networkAgent.sendMessageAsync(ClientMessageBuilder.build('payback_buyin', gameState.playerMainIndex).toProto());
         break;
       default:
@@ -81,7 +81,7 @@ class DropdownMenu extends StatelessWidget {
       onChanged: (String? newValue) {
         // Update selected item in the provider
         if (newValue != null) {
-          audioControler.playSfx(SfxType.buttonTap);
+          audioControler.playSfx(SfxType.btnTap);
           _handleMenu(newValue, networkAgent, gameState);
           dropdownProvider.updateSelectedItem(newValue);
         }

@@ -2,12 +2,9 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
-import 'package:provider/provider.dart';
+import 'package:poker_with_friends/src/audio/audio_controller.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -31,6 +28,8 @@ class NetworkAgent {
   bool _isSending = false;
   final int maxRetries;
   final Duration retryDelay;
+
+  AudioController? audioController;
 
   NetworkAgent(this.url,
           this.playerName,
@@ -123,7 +122,7 @@ class NetworkAgent {
 
   void _onMessage(dynamic message) {
     final decodedMessage = $proto.ServerMessage.fromBuffer(message);
-    _log.info('Received message: $decodedMessage');
+    // _log.info('Received message: $decodedMessage');
     gameState.updateGameState(decodedMessage);
   }
 

@@ -2,16 +2,20 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
+import 'package:poker_with_friends/src/audio/audio_controller.dart';
+import 'package:poker_with_friends/src/audio/sounds.dart';
 import '../../proto/message.pb.dart' as $proto;
 
 class PlayingSlot {
   $proto.PlayerStatusType _state = $proto.PlayerStatusType.Playing;
+  bool _isStateChanged = false;
   String _name = '';
   int _chips = 0;
   bool _showCards = false;
   $proto.Card _card1 = $proto.Card();
   $proto.Card _card2 = $proto.Card();
   int _bet = 0;
+  bool _isFolded = false;
 
   $proto.PlayerStatusType get getState => _state;
   String get getName => _name;
@@ -20,12 +24,20 @@ class PlayingSlot {
   $proto.Card get getCard1 => _card1;
   $proto.Card get getCard2 => _card2;
   int get getBet => _bet;
+  bool get isFolded => _isFolded;
+
+  bool get isStateChanged => _isStateChanged;
+
+  void clearStateChanged() {
+    _isStateChanged = false;
+  }
 
   void addCard($proto.Card card1, $proto.Card card2) {
     _card1 = card1;
     _card2 = card2;
   }
   void setState($proto.PlayerStatusType newState) {
+    _isStateChanged = _state != newState;
     _state = newState;
   }
   void setName(String newName) {
@@ -40,6 +52,9 @@ class PlayingSlot {
   void setBet(int finalBet) {
     _bet = finalBet;
   }
+  void setFolded(bool folded) {
+    _isFolded = folded;
+  }
   bool hasCards() {
     return _card1.rank != $proto.RankType.UNSPECIFIED_RANK && _card2.rank != $proto.RankType.UNSPECIFIED_RANK;
   }
@@ -53,6 +68,7 @@ class PlayingSlot {
     _chips = 0;
     _showCards = false;
     _bet = 0;
+    _isFolded = false;
   }
   void reinit() {
     _state = $proto.PlayerStatusType.Playing;
@@ -62,11 +78,22 @@ class PlayingSlot {
     _card1 = $proto.Card();
     _card2 = $proto.Card();
     _bet = 0;
+    _isFolded = false;
   }
 }
 
 class PokerGameState extends ChangeNotifier {
   static final _log = Logger('PokerGameState');
+  AudioController? audioController;
+
+  int _internalCurrentTurn = 0;
+  int _internalLastTurn = 0;
+  $proto.RoundStateType _internalLastRound = $proto.RoundStateType.INITIAL;
+
+  attachAudioController(AudioController audioController) {
+    this.audioController = audioController;
+  }
+
   final int _maxPlayers = 10;
   final List<PlayingSlot> _players = [
     PlayingSlot(), // 0
@@ -217,16 +244,22 @@ class PokerGameState extends ChangeNotifier {
   }
 
   void updateGameState($proto.ServerMessage message) {
+    _log.info('============================== Updating game state ==============================');
     if (message.hasGameState()) {
       _players.forEach((player) => player.reset());
       if (_forUiDisplayIndex != _playerMainIndex) {
         _forUiDisplayIndex = _playerMainIndex;
       }
 
+      final prevNumOfCards = _communityCards.length;
       _communityCards.clear();
       message.gameState.communityCards.forEach((card) {
         _communityCards.add(card);
       });
+      final newNumOfCards = _communityCards.length - prevNumOfCards;
+      if ( newNumOfCards > 0) {
+        audioController?.playSfx(SfxType.dealCommunity);
+      }
 
       _currentButtonIndex = (_maxPlayers - _forUiDisplayIndex +  message.gameState.dealerId) % _maxPlayers;
       _currentBet = message.gameState.currentBet;
@@ -248,18 +281,74 @@ class PokerGameState extends ChangeNotifier {
         for (var i = 1; i < _maxPlayers; i++) { _players[i].resetCards(); }
       }
 
+      if (_internalLastRound != message.gameState.currentRound) {
+        _log.info('New round detected: from $_internalLastRound to ${message.gameState.currentRound}');
+        _internalLastRound = message.gameState.currentRound;
+        _internalLastTurn = -1;
+        _players.forEach((player) {
+          if (player._state == $proto.PlayerStatusType.Fold) {
+            player.setFolded(true);
+          }
+        });
+      }
+
+      _internalCurrentTurn = -1; // Invalidate current turn index every time we receive a new game state about players
       message.gameState.players.forEach((player) {
         final index = (_maxPlayers - _forUiDisplayIndex + player.tablePosition) % _maxPlayers;
         _players[index].setState(player.status);
         _players[index].setName(player.name);
         _players[index].setChips(player.chips);
         _players[index].setBet(player.currentBet);
+        _log.info('Player: ${player.name}, status: ${player.status}, chips: ${player.chips}, bet: ${player.currentBet}, ui index: $index');
+
+        if (player.status == $proto.PlayerStatusType.Wait4Act) {
+          _internalCurrentTurn = index;
+          _log.info('Store current turn index: $index');
+        }
       });
     }
+
+    if (_internalCurrentTurn == 0 &&
+        _players[_internalCurrentTurn]._state == $proto.PlayerStatusType.Wait4Act) {
+      audioController?.playSfx(SfxType.yourTurn);
+    }
+    if (message.gameState.currentRound == $proto.RoundStateType.SHOWDOWN &&
+        _players[0]._state == $proto.PlayerStatusType.WINNER) {
+      audioController?.playSfx(SfxType.collect);
+    }
+
+    _log.info('Last turn index: $_internalLastTurn');
+    if (_internalLastTurn >= 0) {
+      _log.info('Playing sound for ${_players[_internalLastTurn]._name} status: ${_players[_internalLastTurn]._state}');
+      switch (_players[_internalLastTurn]._state) {
+        case $proto.PlayerStatusType.Check:
+          _log.info('Playing check sound');
+          audioController?.playSfx(SfxType.check);
+          break;
+        case $proto.PlayerStatusType.Call:
+        case $proto.PlayerStatusType.SB:
+        case $proto.PlayerStatusType.BB:
+          audioController?.playSfx(SfxType.callBet);
+          break;
+        case $proto.PlayerStatusType.Raise:
+        case $proto.PlayerStatusType.AllIn:
+          audioController?.playSfx(SfxType.raise);
+          break;
+        case $proto.PlayerStatusType.Fold:
+          audioController?.playSfx(SfxType.fold);
+          break;
+        default:
+          _log.info('Unknown player status to play sound: ${_players[_internalLastTurn]._name}');
+          break;
+      }
+    }
+    _internalLastTurn = _internalCurrentTurn;
+    _log.info('Store last turn index: $_internalLastTurn');
 
     if (message.hasPeerState()) {
       if (_hasPlayerMainIndex && message.peerState.playerCards.isNotEmpty) {
         _players[0].addCard(message.peerState.playerCards[0], message.peerState.playerCards[1]);
+        audioController?.playSfx(SfxType.dealCommunity);
       }
     }
 

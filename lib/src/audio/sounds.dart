@@ -2,43 +2,51 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+enum SfxType {
+  btnTap,
+  check,
+  callBet,
+  raise,
+  fold,
+  collect,
+  dealCommunity,
+  yourTurn,
+}
+
+
 List<String> soundTypeToFilename(SfxType type) {
   switch (type) {
-    case SfxType.huhsh:
+    case SfxType.btnTap:
       return const [
-        'hash1.mp3',
-        'hash2.mp3',
-        'hash3.mp3',
+        'btn_tap.mp3',
       ];
-    case SfxType.wssh:
+    case SfxType.check:
       return const [
-        'wssh1.mp3',
-        'wssh2.mp3',
-        'dsht1.mp3',
-        'ws1.mp3',
-        'spsh1.mp3',
-        'hh1.mp3',
-        'hh2.mp3',
-        'kss1.mp3',
+        'check.mp3',
       ];
-    case SfxType.buttonTap:
+    case SfxType.callBet:
       return const [
-        'Tick-DeepFrozenApps.mp3',
+        'call_bet.mp3',
       ];
-    case SfxType.congrats:
+    case SfxType.raise:
       return const [
-        'yay1.mp3',
-        'wehee1.mp3',
-        'oo1.mp3',
+        'raise.mp3',
       ];
-    case SfxType.erase:
+    case SfxType.fold:
       return const [
-        'fwfwfwfwfw1.mp3',
-        'fwfwfwfw1.mp3',
+        'fold.mp3',
       ];
-    case SfxType.swishSwish:
+    case SfxType.collect:
       return const [
-        'swishswish1.mp3',
+        'collect.mp3',
+      ];
+    case SfxType.dealCommunity:
+      return const [
+        'deal_community.mp3',
+      ];
+    case SfxType.yourTurn:
+      return const [
+        'your_turn.mp3',
       ];
   }
 }
@@ -46,23 +54,14 @@ List<String> soundTypeToFilename(SfxType type) {
 /// Allows control over loudness of different SFX types.
 double soundTypeToVolume(SfxType type) {
   switch (type) {
-    case SfxType.huhsh:
-      return 0.4;
-    case SfxType.wssh:
-      return 0.2;
-    case SfxType.buttonTap:
-    case SfxType.congrats:
-    case SfxType.erase:
-    case SfxType.swishSwish:
-      return 1.0;
+    case SfxType.btnTap:
+    case SfxType.check:
+    case SfxType.callBet:
+    case SfxType.raise:
+    case SfxType.fold:
+    case SfxType.collect:
+    case SfxType.dealCommunity:
+    case SfxType.yourTurn:
+      return 0.5;
   }
-}
-
-enum SfxType {
-  huhsh,
-  wssh,
-  buttonTap,
-  congrats,
-  erase,
-  swishSwish,
 }
