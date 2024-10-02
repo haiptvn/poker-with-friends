@@ -176,6 +176,26 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                 ),
               ),
 
+               // Total pot
+              gameState.handRanking != '' ? Align(
+                alignment: const Alignment(0, 0.18), // Adjust this value for top alignment (-1 is top, 1 is bottom)
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: Text(
+                    gameState.handRanking,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.yellowAccent,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ): const SizedBox.shrink(),
+
               // Dealer icon
               Positioned(
                 child: Consumer<PokerGameState>(
@@ -483,7 +503,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               Positioned(
               bottom: 30,
               left: MediaQuery.of(context).size.width / 2 + 250,
-              child: RaiseSliderScreen(),
+              child: const RaiseSliderScreen(),
             ),
             ],  // End of children
 

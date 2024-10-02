@@ -52,8 +52,13 @@ class PlayingSlot {
   void setBet(int finalBet) {
     _bet = finalBet;
   }
-  void setFolded(bool folded) {
-    _isFolded = folded;
+  void setFolded() {
+    if (!_isFolded) {
+      _state = $proto.PlayerStatusType.Fold;
+      _isFolded = true;
+      _card1 = $proto.Card();
+      _card2 = $proto.Card();
+    }
   }
   bool hasCards() {
     return _card1.rank != $proto.RankType.UNSPECIFIED_RANK && _card2.rank != $proto.RankType.UNSPECIFIED_RANK;
@@ -114,6 +119,7 @@ class PokerGameState extends ChangeNotifier {
   final List<$proto.Card> _communityCards = [];
   int _totalPot = 0;
   int _currentBet = 0;
+  String _handRanking = '';
 
   PlayingSlot get playerC => _players[0];
   PlayingSlot get player1 => _players[1];
@@ -134,6 +140,7 @@ class PokerGameState extends ChangeNotifier {
   int get totalPot => _totalPot;
   int get currentButtonIndex => _currentButtonIndex;
   int get currentBet => _currentBet;
+  String get handRanking => _handRanking;
   PlayingSlot getPlayerByIndex(int index) => _players[index];
 
   int count = 0;
@@ -265,20 +272,26 @@ class PokerGameState extends ChangeNotifier {
       _currentBet = message.gameState.currentBet;
       _totalPot = message.gameState.potSize;
 
-      if (message.gameState.currentRound == $proto.RoundStateType.SHOWDOWN &&
-          message.gameState.hasFinalResult()) {
-          message.gameState.finalResult.showingCards.forEach((showingCard) {
-          final index = (_maxPlayers - _forUiDisplayIndex + showingCard.tablePos) % _maxPlayers;
-          if (showingCard.playerCards.isNotEmpty) {
-            _log.info('Showing card: $showingCard, UX index: $index');
-            _players[index].addCard(showingCard.playerCards[0], showingCard.playerCards[1]);
+      switch (message.gameState.currentRound) {
+        case $proto.RoundStateType.SHOWDOWN:
+          if (message.gameState.hasFinalResult()) {
+            message.gameState.finalResult.showingCards.forEach((showingCard) {
+              final index = (_maxPlayers - _forUiDisplayIndex + showingCard.tablePos) % _maxPlayers;
+              if (showingCard.playerCards.isNotEmpty) {
+                _log.info('Showing card: $showingCard, UX index: $index');
+                _players[index].addCard(showingCard.playerCards[0], showingCard.playerCards[1]);
+              }
+            });
           }
-        });
-      } else if (message.gameState.currentRound == $proto.RoundStateType.INITIAL) {
-        resetGame();
-        _players.forEach((player) => player.reinit());
-      } else if (message.gameState.currentRound == $proto.RoundStateType.PREFLOP) {
-        for (var i = 1; i < _maxPlayers; i++) { _players[i].resetCards(); }
+          break;
+        case $proto.RoundStateType.INITIAL:
+            resetGame();
+            _players.forEach((player) => player.reinit());
+          break;
+        case $proto.RoundStateType.PREFLOP:
+          for (var i = 1; i < _maxPlayers; i++) { _players[i].resetCards(); }
+        default:
+        _log.info('Not process this current round: ${message.gameState.currentRound}');
       }
 
       if (_internalLastRound != message.gameState.currentRound) {
@@ -287,9 +300,14 @@ class PokerGameState extends ChangeNotifier {
         _internalLastTurn = -1;
         _players.forEach((player) {
           if (player._state == $proto.PlayerStatusType.Fold) {
-            player.setFolded(true);
+            player.setFolded();
           }
         });
+      }
+      // To remove the hand ranking after show down to ready for the next game
+      if (message.gameState.currentRound == $proto.RoundStateType.PREFLOP ||
+          message.gameState.currentRound == $proto.RoundStateType.INITIAL) {
+        _handRanking = '';
       }
 
       _internalCurrentTurn = -1; // Invalidate current turn index every time we receive a new game state about players
@@ -301,20 +319,38 @@ class PokerGameState extends ChangeNotifier {
         _players[index].setBet(player.currentBet);
         _log.info('Player: ${player.name}, status: ${player.status}, chips: ${player.chips}, bet: ${player.currentBet}, ui index: $index');
 
-        if (player.status == $proto.PlayerStatusType.Wait4Act) {
+        if (player.status == $proto.PlayerStatusType.Wait4Act) { // To track the current turn index
           _internalCurrentTurn = index;
           _log.info('Store current turn index: $index');
         }
       });
-    }
 
-    if (_internalCurrentTurn == 0 &&
-        _players[_internalCurrentTurn]._state == $proto.PlayerStatusType.Wait4Act) {
-      audioController?.playSfx(SfxType.yourTurn);
-    }
-    if (message.gameState.currentRound == $proto.RoundStateType.SHOWDOWN &&
-        _players[0]._state == $proto.PlayerStatusType.WINNER) {
-      audioController?.playSfx(SfxType.collect);
+      if (_internalCurrentTurn == 0 &&
+          _players[_internalCurrentTurn]._state == $proto.PlayerStatusType.Wait4Act) {
+          audioController?.playSfx(SfxType.yourTurn);
+      }
+      if (message.gameState.currentRound == $proto.RoundStateType.SHOWDOWN) {
+        if (_players[0]._state == $proto.PlayerStatusType.WINNER) {
+            audioController?.playSfx(SfxType.collect);
+            if (message.gameState.hasFinalResult() && message.gameState.finalResult.showingCards.isNotEmpty) {
+              message.gameState.finalResult.showingCards.forEach((showingCard) {
+                final index = (_maxPlayers - _forUiDisplayIndex + showingCard.tablePos) % _maxPlayers;
+                if (showingCard.playerCards.isNotEmpty && index == 0) {
+                  _handRanking = showingCard.handRanking;
+                  _log.info('Showing hand ranking card: $_handRanking');
+                }
+              });
+            }
+        } else if (_players[0]._state == $proto.PlayerStatusType.Playing ) {
+          _communityCards.clear();
+          _players.forEach((player) {
+            if (player._state == $proto.PlayerStatusType.Playing) {
+              player.resetCards();
+              _handRanking = '';
+            }
+          });
+        }
+      }
     }
 
     _log.info('Last turn index: $_internalLastTurn');

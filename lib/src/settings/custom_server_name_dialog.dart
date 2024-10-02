@@ -39,7 +39,7 @@ class _CustomServerNameDialogState extends State<CustomServerNameDialog> {
           TextField(
             controller: _controller,
             autofocus: true,
-            maxLength: 12,
+            maxLength: 15,
             maxLengthEnforcement: MaxLengthEnforcement.enforced,
             textAlign: TextAlign.center,
             textCapitalization: TextCapitalization.words,

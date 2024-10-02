@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
@@ -11,7 +12,7 @@ import '../audio/sounds.dart';
 // This class will manage the state of the selected dropdown value.
 class DropdownProvider with ChangeNotifier {
   // List of dropdown items
-  final List<String> _items = ['Balance Board', 'Start Game', '+1 Buy-In', '-1 Buy-In', 'Stand Up'];
+  final List<String> _items = ['Balance Board', 'Start Game', '+1 Buy-In', '-1 Buy-In', 'Stand Up', 'Leave Room'];
 
   late String _selectedItem;
 
@@ -82,6 +83,10 @@ class DropdownMenu extends StatelessWidget {
         // Update selected item in the provider
         if (newValue != null) {
           audioControler.playSfx(SfxType.btnTap);
+          if(newValue == 'Leave Room') {
+               GoRouter.of(context).pop();
+               return;
+          }
           _handleMenu(newValue, networkAgent, gameState);
           dropdownProvider.updateSelectedItem(newValue);
         }

@@ -59,6 +59,10 @@ class PlayerPanel extends StatelessWidget {
         return 'WINNER';
       case $proto.PlayerStatusType.LOSER:
         return 'LOSER';
+      case $proto.PlayerStatusType.Sat_Out:
+        return 'SAT OUT';
+      case $proto.PlayerStatusType.Spectating:
+        return '...';
       default:
         return '';
     }
@@ -133,7 +137,7 @@ class PlayerPanel extends StatelessWidget {
                 audioController.playSfx(SfxType.btnTap);
                 _handleSelectingSlot(networkAgent, gameState, playerUiIndex);
               },
-              child:
+              child: !gameState.hasPlayerMainIndex ?
               CircleAvatar(
                 backgroundImage: const AssetImage('assets/images/avatar_plus.png'), // Player image path
                 radius: 20, // Adjust size
@@ -146,7 +150,7 @@ class PlayerPanel extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
+              ): const SizedBox.shrink(),
             ),
           ):
           Positioned(

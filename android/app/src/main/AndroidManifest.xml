@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="Poker With Friends"
+        android:label="PKWF"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

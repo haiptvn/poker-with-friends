@@ -60,8 +60,9 @@ double soundTypeToVolume(SfxType type) {
     case SfxType.raise:
     case SfxType.fold:
     case SfxType.collect:
-    case SfxType.dealCommunity:
     case SfxType.yourTurn:
       return 0.5;
+    case SfxType.dealCommunity:
+      return 1;
   }
 }
