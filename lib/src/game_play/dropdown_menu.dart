@@ -12,7 +12,7 @@ import '../audio/sounds.dart';
 // This class will manage the state of the selected dropdown value.
 class DropdownProvider with ChangeNotifier {
   // List of dropdown items
-  final List<String> _items = ['Balance Board', 'Start Game', '+1 Buy-In', '-1 Buy-In', 'Stand Up', 'Leave Room'];
+  final List<String> _items = ['Start Game', '+1 Buy-In', '-1 Buy-In', 'Stand Up', 'Leave Room'];
 
   late String _selectedItem;
 
@@ -37,12 +37,9 @@ class DropdownMenu extends StatelessWidget {
   final _log = Logger('DropdownMenu');
   DropdownMenu({super.key});
 
-  void _handleMenu(String command, NetworkAgent networkAgent, PokerGameState gameState) {
+  void _handleMenu(String command, NetworkAgent networkAgent, PokerGameStateProvider gameState) {
      _log.info('Selected item: $command, main player index: ${gameState.playerMainIndex}');
     switch (command) {
-      case 'Balance Board':
-        networkAgent.sendMessageAsync(ClientMessageBuilder.build('balance_board', gameState.playerMainIndex).toProto());
-        return ;
       case 'Start Game':
         networkAgent.sendMessageAsync(ClientMessageBuilder.build('start_game', gameState.playerMainIndex).toProto());
         return ;
@@ -68,7 +65,7 @@ class DropdownMenu extends StatelessWidget {
     // Access the provider using context.watch() or context.read()
     final dropdownProvider = context.watch<DropdownProvider>();
     final networkAgent = context.read<NetworkAgent>();
-    final gameState = context.read<PokerGameState>();
+    final gameState = context.read<PokerGameStateProvider>();
     final audioControler = context.read<AudioController>();
 
     return DropdownButton<String>(

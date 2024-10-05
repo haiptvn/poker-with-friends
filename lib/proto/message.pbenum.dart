@@ -81,7 +81,7 @@ class HankRankingType extends $pb.ProtobufEnum {
   static const HankRankingType FLUSH = HankRankingType._(5, _omitEnumNames ? '' : 'FLUSH');
   static const HankRankingType FULL_HOUSE = HankRankingType._(6, _omitEnumNames ? '' : 'FULL_HOUSE');
   static const HankRankingType FOUR_OF_A_KIND = HankRankingType._(7, _omitEnumNames ? '' : 'FOUR_OF_A_KIND');
-  static const HankRankingType STRAIGH_FLUSH = HankRankingType._(8, _omitEnumNames ? '' : 'STRAIGH_FLUSH');
+  static const HankRankingType STRAIGHT_FLUSH = HankRankingType._(8, _omitEnumNames ? '' : 'STRAIGHT_FLUSH');
   static const HankRankingType ROYAL_FLUSH = HankRankingType._(9, _omitEnumNames ? '' : 'ROYAL_FLUSH');
 
   static const $core.List<HankRankingType> values = <HankRankingType> [
@@ -93,7 +93,7 @@ class HankRankingType extends $pb.ProtobufEnum {
     FLUSH,
     FULL_HOUSE,
     FOUR_OF_A_KIND,
-    STRAIGH_FLUSH,
+    STRAIGHT_FLUSH,
     ROYAL_FLUSH,
   ];
 
@@ -107,21 +107,23 @@ class PlayerStatusType extends $pb.ProtobufEnum {
   static const PlayerStatusType Sat_Out = PlayerStatusType._(0, _omitEnumNames ? '' : 'Sat_Out');
   static const PlayerStatusType Spectating = PlayerStatusType._(1, _omitEnumNames ? '' : 'Spectating');
   static const PlayerStatusType Playing = PlayerStatusType._(2, _omitEnumNames ? '' : 'Playing');
-  static const PlayerStatusType Wait4Act = PlayerStatusType._(3, _omitEnumNames ? '' : 'Wait4Act');
-  static const PlayerStatusType Fold = PlayerStatusType._(4, _omitEnumNames ? '' : 'Fold');
-  static const PlayerStatusType Check = PlayerStatusType._(5, _omitEnumNames ? '' : 'Check');
-  static const PlayerStatusType Call = PlayerStatusType._(6, _omitEnumNames ? '' : 'Call');
-  static const PlayerStatusType Raise = PlayerStatusType._(7, _omitEnumNames ? '' : 'Raise');
-  static const PlayerStatusType AllIn = PlayerStatusType._(8, _omitEnumNames ? '' : 'AllIn');
-  static const PlayerStatusType LOSER = PlayerStatusType._(9, _omitEnumNames ? '' : 'LOSER');
-  static const PlayerStatusType WINNER = PlayerStatusType._(10, _omitEnumNames ? '' : 'WINNER');
-  static const PlayerStatusType SB = PlayerStatusType._(11, _omitEnumNames ? '' : 'SB');
-  static const PlayerStatusType BB = PlayerStatusType._(12, _omitEnumNames ? '' : 'BB');
+  static const PlayerStatusType Ready = PlayerStatusType._(3, _omitEnumNames ? '' : 'Ready');
+  static const PlayerStatusType Wait4Act = PlayerStatusType._(4, _omitEnumNames ? '' : 'Wait4Act');
+  static const PlayerStatusType Fold = PlayerStatusType._(5, _omitEnumNames ? '' : 'Fold');
+  static const PlayerStatusType Check = PlayerStatusType._(6, _omitEnumNames ? '' : 'Check');
+  static const PlayerStatusType Call = PlayerStatusType._(7, _omitEnumNames ? '' : 'Call');
+  static const PlayerStatusType Raise = PlayerStatusType._(8, _omitEnumNames ? '' : 'Raise');
+  static const PlayerStatusType AllIn = PlayerStatusType._(9, _omitEnumNames ? '' : 'AllIn');
+  static const PlayerStatusType LOSER = PlayerStatusType._(10, _omitEnumNames ? '' : 'LOSER');
+  static const PlayerStatusType WINNER = PlayerStatusType._(11, _omitEnumNames ? '' : 'WINNER');
+  static const PlayerStatusType SB = PlayerStatusType._(12, _omitEnumNames ? '' : 'SB');
+  static const PlayerStatusType BB = PlayerStatusType._(13, _omitEnumNames ? '' : 'BB');
 
   static const $core.List<PlayerStatusType> values = <PlayerStatusType> [
     Sat_Out,
     Spectating,
     Playing,
+    Ready,
     Wait4Act,
     Fold,
     Check,

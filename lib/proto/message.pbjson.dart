@@ -68,7 +68,7 @@ const HankRankingType$json = {
     {'1': 'FLUSH', '2': 5},
     {'1': 'FULL_HOUSE', '2': 6},
     {'1': 'FOUR_OF_A_KIND', '2': 7},
-    {'1': 'STRAIGH_FLUSH', '2': 8},
+    {'1': 'STRAIGHT_FLUSH', '2': 8},
     {'1': 'ROYAL_FLUSH', '2': 9},
   ],
 };
@@ -77,8 +77,8 @@ const HankRankingType$json = {
 final $typed_data.Uint8List hankRankingTypeDescriptor = $convert.base64Decode(
     'Cg9IYW5rUmFua2luZ1R5cGUSDQoJSElHSF9DQVJEEAASDAoIT05FX1BBSVIQARIMCghUV09fUE'
     'FJUhACEhMKD1RIUkVFX09GX0FfS0lORBADEgwKCFNUUkFJR0hUEAQSCQoFRkxVU0gQBRIOCgpG'
-    'VUxMX0hPVVNFEAYSEgoORk9VUl9PRl9BX0tJTkQQBxIRCg1TVFJBSUdIX0ZMVVNIEAgSDwoLUk'
-    '9ZQUxfRkxVU0gQCQ==');
+    'VUxMX0hPVVNFEAYSEgoORk9VUl9PRl9BX0tJTkQQBxISCg5TVFJBSUdIVF9GTFVTSBAIEg8KC1'
+    'JPWUFMX0ZMVVNIEAk=');
 
 @$core.Deprecated('Use playerStatusTypeDescriptor instead')
 const PlayerStatusType$json = {
@@ -87,25 +87,26 @@ const PlayerStatusType$json = {
     {'1': 'Sat_Out', '2': 0},
     {'1': 'Spectating', '2': 1},
     {'1': 'Playing', '2': 2},
-    {'1': 'Wait4Act', '2': 3},
-    {'1': 'Fold', '2': 4},
-    {'1': 'Check', '2': 5},
-    {'1': 'Call', '2': 6},
-    {'1': 'Raise', '2': 7},
-    {'1': 'AllIn', '2': 8},
-    {'1': 'LOSER', '2': 9},
-    {'1': 'WINNER', '2': 10},
-    {'1': 'SB', '2': 11},
-    {'1': 'BB', '2': 12},
+    {'1': 'Ready', '2': 3},
+    {'1': 'Wait4Act', '2': 4},
+    {'1': 'Fold', '2': 5},
+    {'1': 'Check', '2': 6},
+    {'1': 'Call', '2': 7},
+    {'1': 'Raise', '2': 8},
+    {'1': 'AllIn', '2': 9},
+    {'1': 'LOSER', '2': 10},
+    {'1': 'WINNER', '2': 11},
+    {'1': 'SB', '2': 12},
+    {'1': 'BB', '2': 13},
   ],
 };
 
 /// Descriptor for `PlayerStatusType`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List playerStatusTypeDescriptor = $convert.base64Decode(
     'ChBQbGF5ZXJTdGF0dXNUeXBlEgsKB1NhdF9PdXQQABIOCgpTcGVjdGF0aW5nEAESCwoHUGxheW'
-    'luZxACEgwKCFdhaXQ0QWN0EAMSCAoERm9sZBAEEgkKBUNoZWNrEAUSCAoEQ2FsbBAGEgkKBVJh'
-    'aXNlEAcSCQoFQWxsSW4QCBIJCgVMT1NFUhAJEgoKBldJTk5FUhAKEgYKAlNCEAsSBgoCQkIQDA'
-    '==');
+    'luZxACEgkKBVJlYWR5EAMSDAoIV2FpdDRBY3QQBBIICgRGb2xkEAUSCQoFQ2hlY2sQBhIICgRD'
+    'YWxsEAcSCQoFUmFpc2UQCBIJCgVBbGxJbhAJEgkKBUxPU0VSEAoSCgoGV0lOTkVSEAsSBgoCU0'
+    'IQDBIGCgJCQhAN');
 
 @$core.Deprecated('Use playerGameActionTypeDescriptor instead')
 const PlayerGameActionType$json = {

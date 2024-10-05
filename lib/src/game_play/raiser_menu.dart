@@ -7,6 +7,7 @@ class RaiserProvider extends ChangeNotifier {
   double _currentRaiseAmount = 0.0;
   double _min = 0.0;
   double _max = 1000.0;
+  int _division = 10;
 
   bool get isRaiserVisible => _isRaiserVisible;
   double get currentRaiseAmount => _currentRaiseAmount;
@@ -16,11 +17,13 @@ class RaiserProvider extends ChangeNotifier {
   double get min => _min;
   double get max => _max;
   bool get isMax => _currentRaiseAmount == _max;
+  int get division => _division;
 
-  void setMinRaiseValue(int min) {
+  void setMinRaiseValue(int min, int max) {
     if (min <= 0) { min = 20; }
+     _division = max~/min;
     _min = min.toDouble();
-    _max = _min * 10;
+    _max = _min * (_division+1);
     _currentRaiseAmount = _min;
   }
 
@@ -77,7 +80,7 @@ class RaiseSliderScreen extends StatelessWidget {
                     value: context.watch<RaiserProvider>().currentRaiseAmount,
                     min: context.watch<RaiserProvider>().min,
                     max:context.watch<RaiserProvider>().max,
-                    divisions: 9, // 9 steps for the slider
+                    divisions: context.watch<RaiserProvider>().division, // 9 steps for the slider
                     onChanged: (double newValue) {
                       context.read<RaiserProvider>().setRaiseAmount(newValue);
                     },

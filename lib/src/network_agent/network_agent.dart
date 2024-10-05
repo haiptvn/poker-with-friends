@@ -8,7 +8,7 @@ import 'package:poker_with_friends/src/audio/audio_controller.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../../proto/message.pb.dart' as $proto;
+import '../../proto/message.pb.dart' as proto;
 
 
 // State model to be updated by the NetworkAgent
@@ -21,7 +21,7 @@ class NetworkAgent {
   final String url;
   final String playerName;
   WebSocketChannel? _channel;
-  final PokerGameState gameState;
+  final PokerGameStateProvider gameState;
   Timer? _reconnectTimer;
 
   final Queue<dynamic> _messageQueue = Queue();
@@ -104,8 +104,8 @@ class NetworkAgent {
       );
 
       // Send login message
-      final loginMessage = $proto.ClientMessage()
-        ..joinRoom = $proto.JoinRoom()
+      final loginMessage = proto.ClientMessage()
+        ..joinRoom = proto.JoinRoom()
         ..joinRoom.room = '2'
         ..joinRoom.nameId = playerName
         ..joinRoom.passcode = '1';
@@ -121,7 +121,7 @@ class NetworkAgent {
   }
 
   void _onMessage(dynamic message) {
-    final decodedMessage = $proto.ServerMessage.fromBuffer(message);
+    final decodedMessage = proto.ServerMessage.fromBuffer(message);
     // _log.info('Received message: $decodedMessage');
     gameState.updateGameState(decodedMessage);
   }

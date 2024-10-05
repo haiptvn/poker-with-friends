@@ -4,27 +4,30 @@ import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:poker_with_friends/src/audio/audio_controller.dart';
 import 'package:poker_with_friends/src/audio/sounds.dart';
-import '../../proto/message.pb.dart' as $proto;
+import 'package:poker_with_friends/src/game_play/balance_board.dart';
+import '../../proto/message.pb.dart' as proto;
 
 class PlayingSlot {
-  $proto.PlayerStatusType _state = $proto.PlayerStatusType.Playing;
+  proto.PlayerStatusType _state = proto.PlayerStatusType.Playing;
   bool _isStateChanged = false;
   String _name = '';
   int _chips = 0;
   bool _showCards = false;
-  $proto.Card _card1 = $proto.Card();
-  $proto.Card _card2 = $proto.Card();
+  proto.Card _card1 = proto.Card();
+  proto.Card _card2 = proto.Card();
   int _bet = 0;
   bool _isFolded = false;
+  String _handRanking = '';
 
-  $proto.PlayerStatusType get getState => _state;
+  proto.PlayerStatusType get getState => _state;
   String get getName => _name;
   int get getChips => _chips;
   bool get showCards => _showCards;
-  $proto.Card get getCard1 => _card1;
-  $proto.Card get getCard2 => _card2;
+  proto.Card get getCard1 => _card1;
+  proto.Card get getCard2 => _card2;
   int get getBet => _bet;
   bool get isFolded => _isFolded;
+  String get handRanking => _handRanking;
 
   bool get isStateChanged => _isStateChanged;
 
@@ -32,11 +35,11 @@ class PlayingSlot {
     _isStateChanged = false;
   }
 
-  void addCard($proto.Card card1, $proto.Card card2) {
+  void addCard(proto.Card card1, proto.Card card2) {
     _card1 = card1;
     _card2 = card2;
   }
-  void setState($proto.PlayerStatusType newState) {
+  void setState(proto.PlayerStatusType newState) {
     _isStateChanged = _state != newState;
     _state = newState;
   }
@@ -54,46 +57,51 @@ class PlayingSlot {
   }
   void setFolded() {
     if (!_isFolded) {
-      _state = $proto.PlayerStatusType.Fold;
+      _state = proto.PlayerStatusType.Fold;
       _isFolded = true;
-      _card1 = $proto.Card();
-      _card2 = $proto.Card();
+      _card1 = proto.Card();
+      _card2 = proto.Card();
     }
   }
+  void setHandRanking(String ranking) {
+    _handRanking = ranking;
+  }
   bool hasCards() {
-    return _card1.rank != $proto.RankType.UNSPECIFIED_RANK && _card2.rank != $proto.RankType.UNSPECIFIED_RANK;
+    return _card1.rank != proto.RankType.UNSPECIFIED_RANK && _card2.rank != proto.RankType.UNSPECIFIED_RANK;
   }
   void resetCards() {
-    _card1 = $proto.Card();
-    _card2 = $proto.Card();
+    _card1 = proto.Card();
+    _card2 = proto.Card();
   }
   void reset() {
-    _state = $proto.PlayerStatusType.Playing;
+    _state = proto.PlayerStatusType.Playing;
     _name = '';
     _chips = 0;
     _showCards = false;
     _bet = 0;
     _isFolded = false;
+    _handRanking = '';
   }
   void reinit() {
-    _state = $proto.PlayerStatusType.Playing;
+    _state = proto.PlayerStatusType.Playing;
     _name = '';
     _chips = 0;
     _showCards = false;
-    _card1 = $proto.Card();
-    _card2 = $proto.Card();
+    _card1 = proto.Card();
+    _card2 = proto.Card();
     _bet = 0;
     _isFolded = false;
+    _handRanking = '';
   }
 }
 
-class PokerGameState extends ChangeNotifier {
-  static final _log = Logger('PokerGameState');
+class PokerGameStateProvider extends ChangeNotifier {
+  static final _log = Logger('PokerGameStateProvider');
   AudioController? audioController;
 
   int _internalCurrentTurn = 0;
   int _internalLastTurn = 0;
-  $proto.RoundStateType _internalLastRound = $proto.RoundStateType.INITIAL;
+  proto.RoundStateType _internalLastRound = proto.RoundStateType.INITIAL;
 
   attachAudioController(AudioController audioController) {
     this.audioController = audioController;
@@ -116,10 +124,10 @@ class PokerGameState extends ChangeNotifier {
   int _playerMainIndex = 0;
   int _forUiDisplayIndex = 0;
   int _currentButtonIndex = 0;
-  final List<$proto.Card> _communityCards = [];
+  final List<proto.Card> _communityCards = [];
   int _totalPot = 0;
   int _currentBet = 0;
-  String _handRanking = '';
+  List<proto.PlayerBalance> _playerBalances = [];
 
   PlayingSlot get playerC => _players[0];
   PlayingSlot get player1 => _players[1];
@@ -136,12 +144,12 @@ class PokerGameState extends ChangeNotifier {
   int get playerMainIndex => _playerMainIndex;
   int get maxPlayers => _maxPlayers;
   int get forUiDisplayIndex => _forUiDisplayIndex;
-  List<$proto.Card> get communityCards => _communityCards;
+  List<proto.Card> get communityCards => _communityCards;
   int get totalPot => _totalPot;
   int get currentButtonIndex => _currentButtonIndex;
   int get currentBet => _currentBet;
-  String get handRanking => _handRanking;
   PlayingSlot getPlayerByIndex(int index) => _players[index];
+  List<proto.PlayerBalance> get playerBalances => _playerBalances;
 
   int count = 0;
 
@@ -151,10 +159,10 @@ class PokerGameState extends ChangeNotifier {
     }
 
     // Try to change the state for testing
-    playerC.setState($proto.PlayerStatusType.Playing);
-    player1.setState($proto.PlayerStatusType.SB);
-    player2.setState($proto.PlayerStatusType.BB);
-    player3.setState($proto.PlayerStatusType.Wait4Act);
+    playerC.setState(proto.PlayerStatusType.Playing);
+    player1.setState(proto.PlayerStatusType.SB);
+    player2.setState(proto.PlayerStatusType.BB);
+    player3.setState(proto.PlayerStatusType.Wait4Act);
 
     playerC.setBet(100);
     player1.setBet(100);
@@ -192,27 +200,35 @@ class PokerGameState extends ChangeNotifier {
     player9.setChips(count++);
     count += 1000;
 
-    playerC.addCard($proto.Card(rank: $proto.RankType.ACE, suit: $proto.SuitType.HEARTS),
-     $proto.Card(rank: $proto.RankType.ACE, suit: $proto.SuitType.DIAMONDS));
-    player1.addCard($proto.Card(rank: $proto.RankType.KING, suit: $proto.SuitType.HEARTS),
-      $proto.Card(rank: $proto.RankType.KING, suit: $proto.SuitType.DIAMONDS));
-    player2.addCard($proto.Card(rank: $proto.RankType.QUEEN, suit: $proto.SuitType.HEARTS),
-      $proto.Card(rank: $proto.RankType.QUEEN, suit: $proto.SuitType.DIAMONDS));
-    player3.addCard($proto.Card(rank: $proto.RankType.JACK, suit: $proto.SuitType.HEARTS),
-      $proto.Card(rank: $proto.RankType.JACK, suit: $proto.SuitType.DIAMONDS));
-    player4.addCard($proto.Card(rank: $proto.RankType.TEN, suit: $proto.SuitType.HEARTS),
-      $proto.Card(rank: $proto.RankType.TEN, suit: $proto.SuitType.DIAMONDS));
-    player5.addCard($proto.Card(rank: $proto.RankType.NINE, suit: $proto.SuitType.HEARTS),
-      $proto.Card(rank: $proto.RankType.NINE, suit: $proto.SuitType.DIAMONDS));
-    player6.addCard($proto.Card(rank: $proto.RankType.EIGHT, suit: $proto.SuitType.HEARTS),
-      $proto.Card(rank: $proto.RankType.EIGHT, suit: $proto.SuitType.DIAMONDS));
-    player7.addCard($proto.Card(rank: $proto.RankType.SEVEN, suit: $proto.SuitType.HEARTS),
-      $proto.Card(rank: $proto.RankType.SEVEN, suit: $proto.SuitType.DIAMONDS));
-    player8.addCard($proto.Card(rank: $proto.RankType.SIX, suit: $proto.SuitType.HEARTS),
-      $proto.Card(rank: $proto.RankType.SIX, suit: $proto.SuitType.DIAMONDS));
-    player9.addCard($proto.Card(rank: $proto.RankType.FIVE, suit: $proto.SuitType.HEARTS),
-      $proto.Card(rank: $proto.RankType.FIVE, suit: $proto.SuitType.DIAMONDS));
+    playerC.addCard(proto.Card(rank: proto.RankType.ACE, suit: proto.SuitType.HEARTS),
+     proto.Card(rank: proto.RankType.ACE, suit: proto.SuitType.DIAMONDS));
+    player1.addCard(proto.Card(rank: proto.RankType.KING, suit: proto.SuitType.HEARTS),
+      proto.Card(rank: proto.RankType.KING, suit: proto.SuitType.DIAMONDS));
+    player2.addCard(proto.Card(rank: proto.RankType.QUEEN, suit: proto.SuitType.HEARTS),
+      proto.Card(rank: proto.RankType.QUEEN, suit: proto.SuitType.DIAMONDS));
+    player3.addCard(proto.Card(rank: proto.RankType.JACK, suit: proto.SuitType.HEARTS),
+      proto.Card(rank: proto.RankType.JACK, suit: proto.SuitType.DIAMONDS));
+    player4.addCard(proto.Card(rank: proto.RankType.TEN, suit: proto.SuitType.HEARTS),
+      proto.Card(rank: proto.RankType.TEN, suit: proto.SuitType.DIAMONDS));
+    player5.addCard(proto.Card(rank: proto.RankType.NINE, suit: proto.SuitType.HEARTS),
+      proto.Card(rank: proto.RankType.NINE, suit: proto.SuitType.DIAMONDS));
+    player6.addCard(proto.Card(rank: proto.RankType.EIGHT, suit: proto.SuitType.HEARTS),
+      proto.Card(rank: proto.RankType.EIGHT, suit: proto.SuitType.DIAMONDS));
+    player7.addCard(proto.Card(rank: proto.RankType.SEVEN, suit: proto.SuitType.HEARTS),
+      proto.Card(rank: proto.RankType.SEVEN, suit: proto.SuitType.DIAMONDS));
+    player8.addCard(proto.Card(rank: proto.RankType.SIX, suit: proto.SuitType.HEARTS),
+      proto.Card(rank: proto.RankType.SIX, suit: proto.SuitType.DIAMONDS));
+    player9.addCard(proto.Card(rank: proto.RankType.FIVE, suit: proto.SuitType.HEARTS),
+      proto.Card(rank: proto.RankType.FIVE, suit: proto.SuitType.DIAMONDS));
 
+    communityCards.clear();
+    communityCards.add(proto.Card(rank: proto.RankType.ACE, suit: proto.SuitType.CLUBS));
+    communityCards.add(proto.Card(rank: proto.RankType.KING, suit: proto.SuitType.CLUBS));
+    communityCards.add(proto.Card(rank: proto.RankType.QUEEN, suit: proto.SuitType.CLUBS));
+    communityCards.add(proto.Card(rank: proto.RankType.JACK, suit: proto.SuitType.CLUBS));
+    communityCards.add(proto.Card(rank: proto.RankType.TEN, suit: proto.SuitType.CLUBS));
+
+    playerC.setHandRanking('Royal Flush');
 
     if (count > 10000) {
       resetGame();
@@ -235,7 +251,7 @@ class PokerGameState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void dealCommunityCard($proto.Card card) {
+  void dealCommunityCard(proto.Card card) {
     _communityCards.add(card);
     notifyListeners();
   }
@@ -250,7 +266,7 @@ class PokerGameState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateGameState($proto.ServerMessage message) {
+  void updateGameState(proto.ServerMessage message) {
     _log.info('============================== Updating game state ==============================');
     if (message.hasGameState()) {
       _players.forEach((player) => player.reset());
@@ -264,16 +280,17 @@ class PokerGameState extends ChangeNotifier {
         _communityCards.add(card);
       });
       final newNumOfCards = _communityCards.length - prevNumOfCards;
-      if ( newNumOfCards > 0) {
+      if ( newNumOfCards == 3 || newNumOfCards == 1) {
         audioController?.playSfx(SfxType.dealCommunity);
       }
 
       _currentButtonIndex = (_maxPlayers - _forUiDisplayIndex +  message.gameState.dealerId) % _maxPlayers;
       _currentBet = message.gameState.currentBet;
       _totalPot = message.gameState.potSize;
+      _log.info('Current button index: $_currentButtonIndex, current bet: $_currentBet, total pot: $_totalPot');
 
       switch (message.gameState.currentRound) {
-        case $proto.RoundStateType.SHOWDOWN:
+        case proto.RoundStateType.SHOWDOWN:
           if (message.gameState.hasFinalResult()) {
             message.gameState.finalResult.showingCards.forEach((showingCard) {
               final index = (_maxPlayers - _forUiDisplayIndex + showingCard.tablePos) % _maxPlayers;
@@ -284,11 +301,11 @@ class PokerGameState extends ChangeNotifier {
             });
           }
           break;
-        case $proto.RoundStateType.INITIAL:
+        case proto.RoundStateType.INITIAL:
             resetGame();
             _players.forEach((player) => player.reinit());
           break;
-        case $proto.RoundStateType.PREFLOP:
+        case proto.RoundStateType.PREFLOP:
           for (var i = 1; i < _maxPlayers; i++) { _players[i].resetCards(); }
         default:
         _log.info('Not process this current round: ${message.gameState.currentRound}');
@@ -299,16 +316,16 @@ class PokerGameState extends ChangeNotifier {
         _internalLastRound = message.gameState.currentRound;
         _internalLastTurn = -1;
         _players.forEach((player) {
-          if (player._state == $proto.PlayerStatusType.Fold) {
+          if (player._state == proto.PlayerStatusType.Fold) {
             player.setFolded();
           }
         });
       }
       // To remove the hand ranking after show down to ready for the next game
-      if (message.gameState.currentRound == $proto.RoundStateType.PREFLOP ||
-          message.gameState.currentRound == $proto.RoundStateType.INITIAL) {
-        _handRanking = '';
-      }
+      // if (message.gameState.currentRound == proto.RoundStateType.PREFLOP ||
+      //     message.gameState.currentRound == proto.RoundStateType.INITIAL) {
+      //   _handRanking = '';
+      // }
 
       _internalCurrentTurn = -1; // Invalidate current turn index every time we receive a new game state about players
       message.gameState.players.forEach((player) {
@@ -319,58 +336,65 @@ class PokerGameState extends ChangeNotifier {
         _players[index].setBet(player.currentBet);
         _log.info('Player: ${player.name}, status: ${player.status}, chips: ${player.chips}, bet: ${player.currentBet}, ui index: $index');
 
-        if (player.status == $proto.PlayerStatusType.Wait4Act) { // To track the current turn index
+        if (player.status == proto.PlayerStatusType.Wait4Act) { // To track the current turn index
           _internalCurrentTurn = index;
           _log.info('Store current turn index: $index');
         }
       });
 
       if (_internalCurrentTurn == 0 &&
-          _players[_internalCurrentTurn]._state == $proto.PlayerStatusType.Wait4Act) {
+          _players[_internalCurrentTurn]._state == proto.PlayerStatusType.Wait4Act) {
           audioController?.playSfx(SfxType.yourTurn);
       }
-      if (message.gameState.currentRound == $proto.RoundStateType.SHOWDOWN) {
-        if (_players[0]._state == $proto.PlayerStatusType.WINNER) {
-            audioController?.playSfx(SfxType.collect);
-            if (message.gameState.hasFinalResult() && message.gameState.finalResult.showingCards.isNotEmpty) {
-              message.gameState.finalResult.showingCards.forEach((showingCard) {
-                final index = (_maxPlayers - _forUiDisplayIndex + showingCard.tablePos) % _maxPlayers;
-                if (showingCard.playerCards.isNotEmpty && index == 0) {
-                  _handRanking = showingCard.handRanking;
-                  _log.info('Showing hand ranking card: $_handRanking');
-                }
-              });
+      if (message.gameState.currentRound == proto.RoundStateType.SHOWDOWN) {
+        if (message.gameState.hasFinalResult() && message.gameState.finalResult.showingCards.isNotEmpty) {
+          message.gameState.finalResult.showingCards.forEach((showingCard) {
+            final index = (_maxPlayers - _forUiDisplayIndex + showingCard.tablePos) % _maxPlayers;
+            if (showingCard.playerCards.isNotEmpty) {
+              _players[index].setHandRanking(showingCard.handRanking);
+              _log.info('Showing hand ranking card player: ${_players[index]._name}, ranking: ${showingCard.handRanking}');
             }
-        } else if (_players[0]._state == $proto.PlayerStatusType.Playing ) {
+          });
+        }
+        if (_players[0]._state == proto.PlayerStatusType.WINNER) {
+            audioController?.playSfx(SfxType.collect);
+        } else if (_players[0]._state == proto.PlayerStatusType.Playing ) {
           _communityCards.clear();
           _players.forEach((player) {
-            if (player._state == $proto.PlayerStatusType.Playing) {
+            if (player._state == proto.PlayerStatusType.Playing) {
               player.resetCards();
-              _handRanking = '';
+              // _handRanking = '';
             }
           });
         }
       }
     }
 
+    if (message.hasBalanceInfo()) {
+      message.balanceInfo.playerBalances.forEach((playerBalance) {
+        _log.info('Player: ${playerBalance.playerName}, balance: ${playerBalance.balance}');
+      });
+      _playerBalances = message.balanceInfo.playerBalances;
+    }
+
     _log.info('Last turn index: $_internalLastTurn');
     if (_internalLastTurn >= 0) {
       _log.info('Playing sound for ${_players[_internalLastTurn]._name} status: ${_players[_internalLastTurn]._state}');
       switch (_players[_internalLastTurn]._state) {
-        case $proto.PlayerStatusType.Check:
+        case proto.PlayerStatusType.Check:
           _log.info('Playing check sound');
           audioController?.playSfx(SfxType.check);
           break;
-        case $proto.PlayerStatusType.Call:
-        case $proto.PlayerStatusType.SB:
-        case $proto.PlayerStatusType.BB:
+        case proto.PlayerStatusType.Call:
+        case proto.PlayerStatusType.SB:
+        case proto.PlayerStatusType.BB:
           audioController?.playSfx(SfxType.callBet);
           break;
-        case $proto.PlayerStatusType.Raise:
-        case $proto.PlayerStatusType.AllIn:
+        case proto.PlayerStatusType.Raise:
+        case proto.PlayerStatusType.AllIn:
           audioController?.playSfx(SfxType.raise);
           break;
-        case $proto.PlayerStatusType.Fold:
+        case proto.PlayerStatusType.Fold:
           audioController?.playSfx(SfxType.fold);
           break;
         default:
@@ -382,7 +406,9 @@ class PokerGameState extends ChangeNotifier {
     _log.info('Store last turn index: $_internalLastTurn');
 
     if (message.hasPeerState()) {
+      _log.info('Peer state detected');
       if (_hasPlayerMainIndex && message.peerState.playerCards.isNotEmpty) {
+        _log.info('Peer cards detected: ${message.peerState.playerCards[0].rank}, ${message.peerState.playerCards[1].rank}');
         _players[0].addCard(message.peerState.playerCards[0], message.peerState.playerCards[1]);
         audioController?.playSfx(SfxType.dealCommunity);
       }
@@ -414,5 +440,19 @@ class PokerGameState extends ChangeNotifier {
     _currentBet = 0;
     _hasPlayerMainIndex = false;
     _forUiDisplayIndex = 0;
+    _playerBalances.clear();
   }
+
+  // Future<List<LeaderboardPlayer>> fetchLeaderboardData() async {
+  //   await Future.delayed(Duration(seconds: 2));
+
+  //   // Simulated leaderboard data from server
+  //   return [
+  //     LeaderboardPlayer(rank: 1, name: 'Player A', score: 1200),
+  //     LeaderboardPlayer(rank: 2, name: 'Player B', score: 1150),
+  //     LeaderboardPlayer(rank: 3, name: 'Player C', score: 1100),
+  //     LeaderboardPlayer(rank: 4, name: 'Player D', score: 1050),
+  //   ];
+  // }
 }
+

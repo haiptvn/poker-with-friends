@@ -1,4 +1,4 @@
-import '../../proto/message.pb.dart' as $proto;
+import '../../proto/message.pb.dart' as proto;
 
 class ClientMessageBuilder {
   final String controlType;
@@ -11,8 +11,8 @@ class ClientMessageBuilder {
   }
 
   dynamic toProto() {
-    final msg = $proto.ClientMessage()
-      ..controlAction = $proto.ControlAction()
+    final msg = proto.ClientMessage()
+      ..controlAction = proto.ControlAction()
       ..controlAction.controlType = controlType
       ..controlAction.options.addAll(options);
 

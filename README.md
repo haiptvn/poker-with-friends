@@ -25,5 +25,5 @@ images](https://flutter.dev/to/resolution-aware-images).
 ## Progo gen
 
 ```
-protoc --dart_out=lib/ proto/message.proto
+protoc --dart_out=lib/ --plugin=protoc-gen-dart=$HOME/.pub-cache/bin/protoc-gen-dart proto/message.proto
 ```

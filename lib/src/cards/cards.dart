@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../proto/message.pb.dart' as $proto;
+import '../../proto/message.pb.dart' as proto;
 
 // Helper function to display community cards
 Widget buildCard(String imagePath) {
@@ -11,6 +11,6 @@ Widget buildCard(String imagePath) {
   );
 }
 
-Widget buildCommCardFromProtoCard($proto.Card card) {
+Widget buildCommCardFromProtoCard(proto.Card card) {
   return buildCard('assets/cards/${card.suit.value}_${card.rank.value + 1}.png');
 }
