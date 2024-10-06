@@ -8,9 +8,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:poker_with_friends/src/game_play/balance_board.dart';
-import 'package:poker_with_friends/src/game_play/slide_bet.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart' hide Level;
 import 'package:poker_with_friends/src/game_internals/poker_game_state.dart';
 import 'package:poker_with_friends/src/game_play/dropdown_menu.dart';
@@ -21,14 +19,11 @@ import '../audio/audio_controller.dart';
 import '../settings/settings.dart';
 import '../audio/sounds.dart';
 import '../game_internals/level_state.dart';
-import '../game_internals/poker_game_state.dart';
-import '../style/confetti.dart';
 import '../style/palette.dart';
 import '../cards/cards.dart';
 
 import 'dealer.dart';
 import 'dropdown_menu.dart' as custom;
-import 'balance_board.dart';
 import '../../proto/message.pb.dart' as proto;
 import '../network_agent/network_agent.dart';
 
