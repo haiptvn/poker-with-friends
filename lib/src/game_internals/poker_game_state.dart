@@ -122,6 +122,7 @@ class PokerGameStateProvider extends ChangeNotifier {
   ];
   bool _hasPlayerMainIndex = false;
   int _playerMainIndex = 0;
+  bool _shouldShowButton = false;
   int _forUiDisplayIndex = 0;
   int _currentButtonIndex = 0;
   final List<proto.Card> _communityCards = [];
@@ -129,6 +130,7 @@ class PokerGameStateProvider extends ChangeNotifier {
   int _currentBet = 0;
   List<proto.PlayerBalance> _playerBalances = [];
 
+  // Getters
   PlayingSlot get playerC => _players[0];
   PlayingSlot get player1 => _players[1];
   PlayingSlot get player2 => _players[2];
@@ -144,12 +146,14 @@ class PokerGameStateProvider extends ChangeNotifier {
   int get playerMainIndex => _playerMainIndex;
   int get maxPlayers => _maxPlayers;
   int get forUiDisplayIndex => _forUiDisplayIndex;
+  bool get shouldShowButton => _shouldShowButton;
   List<proto.Card> get communityCards => _communityCards;
   int get totalPot => _totalPot;
   int get currentButtonIndex => _currentButtonIndex;
   int get currentBet => _currentBet;
   PlayingSlot getPlayerByIndex(int index) => _players[index];
   List<proto.PlayerBalance> get playerBalances => _playerBalances;
+
 
   int count = 0;
 
@@ -289,6 +293,7 @@ class PokerGameStateProvider extends ChangeNotifier {
       _totalPot = message.gameState.potSize;
       _log.info('Current button index: $_currentButtonIndex, current bet: $_currentBet, total pot: $_totalPot');
 
+      _shouldShowButton = true;
       switch (message.gameState.currentRound) {
         case proto.RoundStateType.SHOWDOWN:
           if (message.gameState.hasFinalResult()) {
@@ -300,10 +305,12 @@ class PokerGameStateProvider extends ChangeNotifier {
               }
             });
           }
+          _shouldShowButton = false;
           break;
         case proto.RoundStateType.INITIAL:
-            resetGame();
-            _players.forEach((player) => player.reinit());
+          resetGame();
+          _players.forEach((player) => player.reinit());
+          _shouldShowButton = false;
           break;
         case proto.RoundStateType.PREFLOP:
           for (var i = 1; i < _maxPlayers; i++) { _players[i].resetCards(); }
@@ -353,6 +360,7 @@ class PokerGameStateProvider extends ChangeNotifier {
             if (showingCard.playerCards.isNotEmpty) {
               _players[index].setHandRanking(showingCard.handRanking);
               _log.info('Showing hand ranking card player: ${_players[index]._name}, ranking: ${showingCard.handRanking}');
+              _players[index].setShowCards(true);
             }
           });
         }

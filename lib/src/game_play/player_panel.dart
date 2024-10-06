@@ -20,14 +20,16 @@ class PlayerPanel extends StatelessWidget {
   final proto.Card card1;
   final proto.Card card2;
 
-
   late final bool isEmptySlot;
   late final bool hasCards;
   late final bool isActive;
 
   final String? handRank;
+  final bool? isShowHand;
+
   PlayerPanel({
     this.handRank,
+    this.isShowHand,
     super.key,
     required this.isMainPlayer,
     required this.playerUiIndex,
@@ -97,10 +99,10 @@ class PlayerPanel extends StatelessWidget {
   bool _needShowStatus() {
     switch (state) {
       case proto.PlayerStatusType.Wait4Act:
-      case proto.PlayerStatusType.Sat_Out:
       case proto.PlayerStatusType.Playing:
       case proto.PlayerStatusType.Spectating:
       case proto.PlayerStatusType.Ready:
+      case proto.PlayerStatusType.LOSER:
         return false;
       default:
         return true;
@@ -124,7 +126,7 @@ class PlayerPanel extends StatelessWidget {
       case proto.PlayerStatusType.Sat_Out:
       case proto.PlayerStatusType.Fold:
       case proto.PlayerStatusType.Ready:
-      case proto.PlayerStatusType.LOSER:
+      // case proto.PlayerStatusType.LOSER:
         return false;
       default:
         return true;
@@ -208,7 +210,7 @@ class PlayerPanel extends StatelessWidget {
           // Cards
           !isEmptySlot && _shouldShowCard() ? Positioned(
             top: 0,
-            left: 35,
+            left: (isShowHand ?? false) ? 30 : 35,
             child: SizedBox(
                 width: 80, // Adjust width as needed
                 height: 55, // Adjust height as needed
@@ -217,7 +219,7 @@ class PlayerPanel extends StatelessWidget {
                 Stack(
                   children: [
                     Transform.rotate(
-                      angle: -0.1, // Adjust the angle as needed
+                      angle: (isShowHand ?? false) ? 0 : -0.1, // Adjust the angle as needed
                       child: Image.asset(
                         hasCards ? _cardToImagePath(card1): _faceDownCardImagePath,
                         width: 40, // Card width
@@ -225,9 +227,10 @@ class PlayerPanel extends StatelessWidget {
                       ),
                     ),
                     Positioned(
-                      left: 20, // Adjust the overlap distance
+                      top : (isShowHand ?? false) ?- 2.5 : 0,
+                      left: (isShowHand ?? false) ? 30 : 20, // Adjust the overlap distance
                       child: Transform.rotate(
-                        angle: 0.1, // Adjust the angle as needed
+                        angle: (isShowHand ?? false) ? 0 : 0.1, // Adjust the angle as needed
                         child: Image.asset(
                           hasCards ? _cardToImagePath(card2): _faceDownCardImagePath,
                           width: 40, // Card width
@@ -243,7 +246,7 @@ class PlayerPanel extends StatelessWidget {
           // Role/Action (e.g., SM. BLIND, BIG BLIND, CHECK, CALL, RAISE, FOLD, ALL IN, WINNER, LOSER)
           if (!isEmptySlot && _needShowStatus())
             Positioned(
-              top: 34,
+              top: 32, // 35
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.6),
@@ -254,7 +257,7 @@ class PlayerPanel extends StatelessWidget {
                   _showStatus(),
                   style: const TextStyle(
                     color: Colors.yellowAccent,
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -264,7 +267,7 @@ class PlayerPanel extends StatelessWidget {
           // Player name and star count with chip
           if (!isEmptySlot)
           Positioned(
-            top: 55,
+            top: 52, // 55
             child: Container(
               decoration: BoxDecoration(
                   color: isActive? Colors.green
@@ -289,7 +292,7 @@ class PlayerPanel extends StatelessWidget {
                     children: [
                       Image.asset(
                         color: isActive ? Colors.black: Colors.white.withOpacity(0.85),
-                        'assets/images/chip-2.png',
+                        'assets/images/chip.png',
                         width: 10,
                         height: 10,
                       ),

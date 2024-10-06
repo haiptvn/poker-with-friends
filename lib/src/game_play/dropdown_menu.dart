@@ -51,6 +51,7 @@ class DropdownMenu extends StatelessWidget {
         break;
       case '+1 Buy-In':
         networkAgent.sendMessageAsync(ClientMessageBuilder.build('request_buyin', gameState.playerMainIndex).toProto());
+
         break;
       case '-1 Buy-In':
         networkAgent.sendMessageAsync(ClientMessageBuilder.build('payback_buyin', gameState.playerMainIndex).toProto());
@@ -85,6 +86,9 @@ class DropdownMenu extends StatelessWidget {
                return;
           }
           _handleMenu(newValue, networkAgent, gameState);
+          if (newValue.contains('1 Buy-In')) {
+            audioControler.playSfx(SfxType.chipRegister);
+          }
           dropdownProvider.updateSelectedItem(newValue);
         }
       },

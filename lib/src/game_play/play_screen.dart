@@ -242,6 +242,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       card1: pokerGameState.playerC.getCard1,
                       card2: pokerGameState.playerC.getCard2,
                       handRank: gameState.playerC.handRanking,
+                      isShowHand: gameState.playerC.showCards,
                     );
                   },
                 ),
@@ -261,6 +262,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       card1: pokerGameState.player1.getCard1,
                       card2: pokerGameState.player1.getCard2,
                       handRank: gameState.player1.handRanking,
+                      isShowHand: gameState.player1.showCards,
                     );
                   },
                 ),
@@ -280,6 +282,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       card1: pokerGameState.player2.getCard1,
                       card2: pokerGameState.player2.getCard2,
                       handRank: gameState.player2.handRanking,
+                      isShowHand: gameState.player2.showCards,
                     );
                   },
                 ),
@@ -299,6 +302,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       card1: pokerGameState.player3.getCard1,
                       card2: pokerGameState.player3.getCard2,
                       handRank: gameState.player3.handRanking,
+                      isShowHand: gameState.player3.showCards,
                     );
                   },
                 ),
@@ -318,6 +322,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       card1: pokerGameState.player4.getCard1,
                       card2: pokerGameState.player4.getCard2,
                       handRank: gameState.player4.handRanking,
+                      isShowHand: gameState.player4.showCards,
                     );
                   },
                 ),
@@ -338,6 +343,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       card1: pokerGameState.player5.getCard1,
                       card2: pokerGameState.player5.getCard2,
                       handRank: gameState.player5.handRanking,
+                      isShowHand: gameState.player5.showCards,
                     );
                   },
                 ),
@@ -357,6 +363,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       card1: pokerGameState.player6.getCard1,
                       card2: pokerGameState.player6.getCard2,
                       handRank: gameState.player6.handRanking,
+                      isShowHand: gameState.player6.showCards,
                     );
                   },
                 ),
@@ -376,6 +383,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       card1: pokerGameState.player7.getCard1,
                       card2: pokerGameState.player7.getCard2,
                       handRank: gameState.player7.handRanking,
+                      isShowHand: gameState.player7.showCards,
                     );
                   },
                 ),
@@ -384,43 +392,37 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               Positioned(
                 top: MediaQuery.of(context).size.height / 2 + playersCenterOffset[8].dy,
                 left: MediaQuery.of(context).size.width / 2 + playersCenterOffset[8].dx,
-                child: Consumer<PokerGameStateProvider>(
-                  builder: (context, pokerGameState, child) {
-                    return PlayerPanel(
-                      isMainPlayer: false,
-                      playerUiIndex: 8,
-                      state: pokerGameState.player8.getState, // Replace with actual state
-                      playerName: pokerGameState.player8.getName, // Replace with player's name
-                      chips: pokerGameState.player8.getChips.toString(), // Replace with chips amount
-                      card1: pokerGameState.player8.getCard1,
-                      card2: pokerGameState.player8.getCard2,
-                      handRank: gameState.player8.handRanking,
-                    );
-                  },
+                child: PlayerPanel(
+                  isMainPlayer: false,
+                  playerUiIndex: 8,
+                  state: gameState.player8.getState, // Replace with actual state
+                  playerName: gameState.player8.getName, // Replace with player's name
+                  chips: gameState.player8.getChips.toString(), // Replace with chips amount
+                  card1: gameState.player8.getCard1,
+                  card2: gameState.player8.getCard2,
+                  handRank: gameState.player8.handRanking,
+                  isShowHand: gameState.player8.showCards,
                 ),
               ),
               // player 9
               Positioned(
                 top: MediaQuery.of(context).size.height / 2 + playersCenterOffset[9].dy,
                 left: MediaQuery.of(context).size.width / 2 + playersCenterOffset[9].dx,
-                child: Consumer<PokerGameStateProvider>(
-                  builder: (context, pokerGameState, child) {
-                    return PlayerPanel(
-                      isMainPlayer: false,
-                      playerUiIndex: 9,
-                      state: pokerGameState.player9.getState, // Replace with actual state
-                      playerName: pokerGameState.player9.getName, // Replace with player's name
-                      chips: pokerGameState.player9.getChips.toString(), // Replace with chips amount
-                      card1: pokerGameState.player9.getCard1,
-                      card2: pokerGameState.player9.getCard2,
-                      handRank: gameState.player9.handRanking,
-                    );
-                  },
+                child: PlayerPanel(
+                  isMainPlayer: false,
+                  playerUiIndex: 9,
+                  state: gameState.player9.getState, // Replace with actual state
+                  playerName: gameState.player9.getName, // Replace with player's name
+                  chips: gameState.player9.getChips.toString(), // Replace with chips amount
+                  card1: gameState.player9.getCard1,
+                  card2: gameState.player9.getCard2,
+                  handRank: gameState.player9.handRanking,
+                  isShowHand: gameState.player9.showCards,
                 ),
               ),
 
               // Other widgets can go here
-              gameState.hasPlayerMainIndex ? Positioned(
+              gameState.hasPlayerMainIndex && gameState.shouldShowButton ? Positioned(
                 bottom: 20,  // Distance from the bottom
                 right: 0,   // Distance from the right
                 left: 0,
@@ -477,6 +479,9 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       height: buttonSizeHeight.toDouble(), // Fixed height for the button
                       child: ElevatedButton(
                         onPressed: () {
+                          if (gameState.currentBet == gameState.playerC.getBet) {
+                            return;
+                          }
                           audioController.playSfx(SfxType.btnTap);
                           _handleButtonPress('CALL', gameState.playerMainIndex);
                         },
@@ -490,6 +495,9 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                         ),
                         child: gameState.currentBet == gameState.playerC.getBet ? const SizedBox.shrink() : Text('CALL ${() {
                           final callAmount = gameState.currentBet - gameState.playerC.getBet;
+                          if (callAmount > gameState.playerC.getChips) {
+                            return gameState.playerC.getChips.toString();
+                          }
                           return (callAmount > 0 && gameState.playerC.getState == proto.PlayerStatusType.Wait4Act) ? callAmount.toString() : '';
                         }()}'),
                       ),
@@ -500,6 +508,9 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       height: buttonSizeHeight.toDouble(), // Fixed height for the button
                       child: ElevatedButton(
                         onPressed: () {
+                          if (gameState.playerC.getChips <= gameState.currentBet) {
+                            return;
+                          }
                           audioController.playSfx(SfxType.btnTap);
                           final raiserProvider = context.read<RaiserProvider>();
                           if (raiserProvider.isRaiserVisible) {
@@ -510,14 +521,15 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                           raiserProvider.toggleRaiserVisibility();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xfff4f3fa).withOpacity(0.85),
+                          backgroundColor: gameState.playerC.getChips <= gameState.currentBet ? Colors.white30 : const Color(0xfff4f3fa).withOpacity(0.85),
                           padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
                           textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(6),
                           ),
                         ),
-                        child: Text(context.watch<RaiserProvider>().isRaiserVisible ? 'CONFIRM' : gameState.currentBet == 0 ? 'BET' : 'RAISE'),
+                        child: gameState.playerC.getChips <= gameState.currentBet ? const SizedBox.shrink()
+                        : Text(context.watch<RaiserProvider>().isRaiserVisible ? 'CONFIRM' : gameState.currentBet == 0 ? 'BET' : 'RAISE'),
                       ),
                     ),
                   ],

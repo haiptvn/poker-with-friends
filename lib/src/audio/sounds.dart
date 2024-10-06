@@ -11,6 +11,7 @@ enum SfxType {
   collect,
   dealCommunity,
   yourTurn,
+  chipRegister,
 }
 
 
@@ -48,6 +49,10 @@ List<String> soundTypeToFilename(SfxType type) {
       return const [
         'your_turn.mp3',
       ];
+    case SfxType.chipRegister:
+      return const [
+        'chip_register.mp3',
+      ];
   }
 }
 
@@ -61,8 +66,10 @@ double soundTypeToVolume(SfxType type) {
     case SfxType.fold:
     case SfxType.collect:
     case SfxType.yourTurn:
-      return 0.5;
+      return 0.4;
     case SfxType.dealCommunity:
       return 1;
+    case SfxType.chipRegister:
+      return 0.6;
   }
 }
