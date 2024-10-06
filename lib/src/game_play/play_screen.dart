@@ -518,7 +518,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                             raiserProvider.isMax ? _handleRaiseButtonPress(gameState.playerMainIndex, 0x7FFFFFFF) :
                               _handleRaiseButtonPress(gameState.playerMainIndex, raiserProvider.currentRaiseAmountAsInt);
                           }
-                          raiserProvider.setMinRaiseValue(gameState.currentBet, gameState.playerC.getChips);
+                          raiserProvider.setMinRaiseValue(gameState.currentBet, gameState.playerC.getChips, gameState.totalPot);
                           raiserProvider.toggleRaiserVisibility();
                         },
                         style: ElevatedButton.styleFrom(
@@ -547,7 +547,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               // Raiser menu
               Positioned(
                 bottom: 60.5,
-                left: MediaQuery.of(context).size.width / 2 + 170,
+                left: MediaQuery.of(context).size.width / 2 + 150,
                 child: const RaiseSliderScreen(),
               ),
 

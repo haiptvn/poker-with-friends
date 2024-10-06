@@ -246,18 +246,18 @@ class PlayerPanel extends StatelessWidget {
           // Role/Action (e.g., SM. BLIND, BIG BLIND, CHECK, CALL, RAISE, FOLD, ALL IN, WINNER, LOSER)
           if (!isEmptySlot && _needShowStatus())
             Positioned(
-              top: 32, // 35
+              top: 29, // 35
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.6),
                   borderRadius: BorderRadius.circular(5),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                 child: Text(
                   _showStatus(),
                   style: const TextStyle(
                     color: Colors.yellowAccent,
-                    fontSize: 11,
+                    fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -267,49 +267,54 @@ class PlayerPanel extends StatelessWidget {
           // Player name and star count with chip
           if (!isEmptySlot)
           Positioned(
-            top: 52, // 55
+            top: 45, // 55
             child: Container(
+              width: 76,
               decoration: BoxDecoration(
                   color: isActive? Colors.green
-                    : Colors.black.withOpacity(0.55), // Adjust the color as needed
+                    : Colors.black87, // Adjust the color as needed
                   borderRadius: BorderRadius.circular(3),
+                  border: Border.all(
+                    color: Colors.grey.withOpacity(0.2), // Border color
+                    width: 1.5, // Border width
+                  ),
                 ),
-              child: Row(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(width: 5),
+                  const SizedBox(height: 3),
                   Text(
                     playerName,
                     style: TextStyle(
                       color: isActive ? Colors.black: Colors.white.withOpacity(0.85),
-                      fontSize: isActive ? 12 : 11,
-                      fontWeight: isActive ? FontWeight.w800: FontWeight.normal,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                       fontFamily: 'Permanent Marker',
                       height: 1,
                     ),
                   ),
-                  SizedBox(width: isActive ? 6 : 4), // Space between name and star
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(
                         color: isActive ? Colors.black: Colors.white.withOpacity(0.85),
                         'assets/images/chip.png',
-                        width: 10,
-                        height: 10,
+                        width: 9,
+                        height: 9,
                       ),
-                      const SizedBox(width: 1),
+                      const SizedBox(width: 2),
                       Text(
                         chips,
                         style: TextStyle(
                           color: isActive ? Colors.black: Colors.white.withOpacity(0.85),
-                          fontSize: isActive ? 12 : 11,
+                          fontSize: 10,
                           fontWeight: FontWeight.w500,
                           fontFamily: 'Permanent Marker',
-                          height: 2,
+                          height: 1.6,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(width: 5),
                 ],
               ),
             ),
