@@ -8,6 +8,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:poker_with_friends/src/game_play/balance_board.dart';
+import 'package:poker_with_friends/src/game_play/slide_bet.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart' hide Level;
@@ -545,8 +546,8 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
 
               // Raiser menu
               Positioned(
-                bottom: 20.5,
-                left: MediaQuery.of(context).size.width / 2 + 250,
+                bottom: 60.5,
+                left: MediaQuery.of(context).size.width / 2 + 170,
                 child: const RaiseSliderScreen(),
               ),
 

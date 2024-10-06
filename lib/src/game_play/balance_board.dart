@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:poker_with_friends/main.dart';
 import 'package:poker_with_friends/proto/message.pb.dart' as proto;
-import 'package:poker_with_friends/src/audio/audio_controller.dart';
 import 'package:provider/provider.dart';
 
 
