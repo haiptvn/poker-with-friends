@@ -136,9 +136,6 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
         ChangeNotifierProvider(
           create: (context) => DropdownProvider(), // Provide PokerGameStateProvider
         ),
-        Provider(
-          create: (context) => _networkAgent,
-        ),
       ],
       child: IgnorePointer(
         ignoring: _duringCelebration,
@@ -673,11 +670,9 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   void initState() {
     super.initState();
     final gameState = Provider.of<PokerGameStateProvider>(context, listen: false);
-    final serverAddress = Provider.of<SettingsController>(context, listen: false).serverAddress.value;
-    final playerName = Provider.of<SettingsController>(context, listen: false).playerName.value;
     gameState.reinit();
-    _networkAgent = NetworkAgent('wss://$serverAddress:28888/ws', playerName, gameState);
-    _networkAgent.ws_connect();
+    _networkAgent = Provider.of<NetworkAgent>(context, listen: false);
+    _networkAgent.sendMessageAsync(ClientMessageBuilder.build('sync_game_state', gameState.playerMainIndex).toProto());
   }
 
   @override

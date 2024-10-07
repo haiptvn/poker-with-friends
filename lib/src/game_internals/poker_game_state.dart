@@ -97,7 +97,7 @@ class PokerGameStateProvider extends ChangeNotifier {
 
   int _rxCount = 0;
   int _internalCurrentTurn = 0;
-  int _internalLastTurn = 0;
+  int _internalLastTurn = -1;
   proto.RoundStateType _internalLastRound = proto.RoundStateType.INITIAL;
 
   attachAudioController(AudioController audioController) {

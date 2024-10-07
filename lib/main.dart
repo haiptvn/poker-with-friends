@@ -18,6 +18,7 @@ import 'package:logging/logging.dart';
 import 'package:poker_with_friends/src/game_internals/poker_game_state.dart';
 import 'package:poker_with_friends/src/game_lobby/game_lobby_screen.dart';
 import 'package:poker_with_friends/src/game_play/balance_board.dart';
+import 'package:poker_with_friends/src/network_agent/network_agent.dart';
 import 'package:provider/provider.dart';
 
 import 'src/app_lifecycle/app_lifecycle.dart';
@@ -132,8 +133,8 @@ class MyApp extends StatelessWidget {
               path: 'lobby',
               pageBuilder: (context, state) => buildMyTransition<void>(
                 key: const ValueKey('lobby'),
-                child: const GameLobbyScreen(
-                  key: Key('lobby'),
+                child: GameLobbyScreen(
+                  key: const Key('lobby'),
                 ),
                 color: context.watch<Palette>().backgroundLevelSelection,
               ),
@@ -216,6 +217,9 @@ class MyApp extends StatelessWidget {
           ),
           Provider(
             create: (context) => Palette(),
+          ),
+          Provider(
+            create: (context) => NetworkAgent()..initialize(),
           ),
           ChangeNotifierProvider(
             create: (context) => PokerGameStateProvider(), // Provide PokerGameStateProvider
