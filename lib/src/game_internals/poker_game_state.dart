@@ -30,6 +30,7 @@ class PlayingSlot {
   String get handRanking => _handRanking;
 
   bool get isStateChanged => _isStateChanged;
+  bool get hasCards => _card1.rank != proto.RankType.UNSPECIFIED_RANK && _card2.rank != proto.RankType.UNSPECIFIED_RANK;
 
   void clearStateChanged() {
     _isStateChanged = false;
@@ -56,25 +57,17 @@ class PlayingSlot {
     _bet = finalBet;
   }
   void setFolded() {
-    if (!_isFolded) {
-      _state = proto.PlayerStatusType.Fold;
       _isFolded = true;
-      _card1 = proto.Card();
-      _card2 = proto.Card();
-    }
   }
   void setHandRanking(String ranking) {
     _handRanking = ranking;
-  }
-  bool hasCards() {
-    return _card1.rank != proto.RankType.UNSPECIFIED_RANK && _card2.rank != proto.RankType.UNSPECIFIED_RANK;
   }
   void resetCards() {
     _card1 = proto.Card();
     _card2 = proto.Card();
   }
   void reset() {
-    _state = proto.PlayerStatusType.Playing;
+    _state = proto.PlayerStatusType.Ready;
     _name = '';
     _chips = 0;
     _showCards = false;
@@ -83,7 +76,7 @@ class PlayingSlot {
     _handRanking = '';
   }
   void reinit() {
-    _state = proto.PlayerStatusType.Playing;
+    _state = proto.PlayerStatusType.Ready;
     _name = '';
     _chips = 0;
     _showCards = false;
@@ -99,6 +92,10 @@ class PokerGameStateProvider extends ChangeNotifier {
   static final _log = Logger('PokerGameStateProvider');
   AudioController? audioController;
 
+  // Todo remove this temp
+  bool? _isPlayWinnerSfx;
+
+  int _rxCount = 0;
   int _internalCurrentTurn = 0;
   int _internalLastTurn = 0;
   proto.RoundStateType _internalLastRound = proto.RoundStateType.INITIAL;
@@ -271,7 +268,8 @@ class PokerGameStateProvider extends ChangeNotifier {
   }
 
   void updateGameState(proto.ServerMessage message) {
-    _log.info('============================== Updating game state ==============================');
+    _log.info('============================== : $_rxCount ==============================');
+    _rxCount++;
     if (message.hasGameState()) {
       _players.forEach((player) => player.reset());
       if (_forUiDisplayIndex != _playerMainIndex) {
@@ -358,14 +356,21 @@ class PokerGameStateProvider extends ChangeNotifier {
           message.gameState.finalResult.showingCards.forEach((showingCard) {
             final index = (_maxPlayers - _forUiDisplayIndex + showingCard.tablePos) % _maxPlayers;
             if (showingCard.playerCards.isNotEmpty) {
+              _players[index].setShowCards(true);
               _players[index].setHandRanking(showingCard.handRanking);
               _log.info('Showing hand ranking card player: ${_players[index]._name}, ranking: ${showingCard.handRanking}');
-              _players[index].setShowCards(true);
+              // Todo: Find another way to replace this just not play sound for the main player when rx multiple show
+              if (_players[index].getState != proto.PlayerStatusType.Ready) {
+                audioController?.playSfx(SfxType.dealCommunity);
+              }
             }
           });
         }
         if (_players[0]._state == proto.PlayerStatusType.WINNER) {
+          if (_isPlayWinnerSfx == null || _isPlayWinnerSfx == false) {
             audioController?.playSfx(SfxType.collect);
+            _isPlayWinnerSfx = true;
+          }
         } else if (_players[0]._state == proto.PlayerStatusType.Playing ) {
           _communityCards.clear();
           _players.forEach((player) {
@@ -430,6 +435,10 @@ class PokerGameStateProvider extends ChangeNotifier {
     _currentBet = 0;
     _totalPot = 0;
     _communityCards.clear();
+
+    // internal states
+    _isPlayWinnerSfx = false;
+
     notifyListeners();
   }
 
@@ -449,6 +458,9 @@ class PokerGameStateProvider extends ChangeNotifier {
     _hasPlayerMainIndex = false;
     _forUiDisplayIndex = 0;
     _playerBalances.clear();
+
+    // internal states
+    _rxCount = 0;
   }
 
   // Future<List<LeaderboardPlayer>> fetchLeaderboardData() async {

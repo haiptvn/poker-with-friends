@@ -23,6 +23,7 @@ class PlayerPanel extends StatelessWidget {
   late final bool isEmptySlot;
   late final bool hasCards;
   late final bool isActive;
+  late final bool isFolded;
 
   final String? handRank;
   final bool? isShowHand;
@@ -40,7 +41,8 @@ class PlayerPanel extends StatelessWidget {
     required this.card2,
   }) : isEmptySlot = playerName == '',
        hasCards = card1.rank != proto.RankType.UNSPECIFIED_RANK && card2.rank != proto.RankType.UNSPECIFIED_RANK,
-       isActive = state == proto.PlayerStatusType.Wait4Act;
+       isActive = state == proto.PlayerStatusType.Wait4Act,
+       isFolded = state == proto.PlayerStatusType.Fold;
 
   String _cardToImagePath(proto.Card card) => 'assets/cards/${card.suit.value}_${card.rank.value + 1}.png';
   static const String _faceDownCardImagePath = 'assets/cards/0_0.png';
@@ -124,7 +126,6 @@ class PlayerPanel extends StatelessWidget {
     switch (state) {
       case proto.PlayerStatusType.Spectating:
       case proto.PlayerStatusType.Sat_Out:
-      case proto.PlayerStatusType.Fold:
       case proto.PlayerStatusType.Ready:
       // case proto.PlayerStatusType.LOSER:
         return false;
@@ -193,13 +194,20 @@ class PlayerPanel extends StatelessWidget {
             top: 0,
             child: CircleAvatar(
               backgroundImage: const AssetImage('assets/images/avatar_default.png'), // Player image path
-              radius: 34, // Adjust size
+              radius: 32, // Adjust size
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isActive ? Colors.green
-                    : Colors.grey, // Border color
+                    color: () {
+                      if (isActive) {
+                        return Colors.green;
+                      } else if (isFolded) {
+                        return Colors.black54;
+                      } else {
+                        return Colors.grey.withOpacity(0.2);
+                      }
+                    }(), // Border color
                     width: 5, // Border width
                   ),
                 ),
@@ -208,7 +216,7 @@ class PlayerPanel extends StatelessWidget {
           ),
 
           // Cards
-          !isEmptySlot && _shouldShowCard() ? Positioned(
+          !isEmptySlot && (_shouldShowCard() || (isShowHand ?? false)) ? Positioned(
             top: 0,
             left: (isShowHand ?? false) ? 30 : 35,
             child: SizedBox(
@@ -221,7 +229,9 @@ class PlayerPanel extends StatelessWidget {
                     Transform.rotate(
                       angle: (isShowHand ?? false) ? 0 : -0.1, // Adjust the angle as needed
                       child: Image.asset(
-                        hasCards ? _cardToImagePath(card1): _faceDownCardImagePath,
+                        hasCards ? _cardToImagePath(card1) : _faceDownCardImagePath,
+                        color: isFolded && !(isShowHand ?? false) ? Colors.black.withOpacity(0.6) : Colors.transparent,
+                        colorBlendMode : BlendMode.srcATop,
                         width: 40, // Card width
                         height: 60, // Card height
                       ),
@@ -233,6 +243,8 @@ class PlayerPanel extends StatelessWidget {
                         angle: (isShowHand ?? false) ? 0 : 0.1, // Adjust the angle as needed
                         child: Image.asset(
                           hasCards ? _cardToImagePath(card2): _faceDownCardImagePath,
+                          color: isFolded && !(isShowHand ?? false) ? Colors.black.withOpacity(0.6) : Colors.transparent,
+                          colorBlendMode : BlendMode.srcATop,
                           width: 40, // Card width
                           height: 60, // Card height
                         ),
@@ -273,7 +285,7 @@ class PlayerPanel extends StatelessWidget {
               decoration: BoxDecoration(
                   color: isActive? Colors.green
                     : Colors.black87, // Adjust the color as needed
-                  borderRadius: BorderRadius.circular(3),
+                  borderRadius: BorderRadius.circular(7),
                   border: Border.all(
                     color: Colors.grey.withOpacity(0.2), // Border color
                     width: 1.5, // Border width
@@ -298,7 +310,7 @@ class PlayerPanel extends StatelessWidget {
                     children: [
                       Image.asset(
                         color: isActive ? Colors.black: Colors.white.withOpacity(0.85),
-                        'assets/images/chip.png',
+                        'assets/images/chip-new.png',
                         width: 9,
                         height: 9,
                       ),

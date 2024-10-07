@@ -8,6 +8,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:poker_with_friends/src/game_play/balance_board.dart';
+import 'package:poker_with_friends/src/message_format/client_message_builder.dart';
 import 'package:provider/provider.dart';
 import 'package:logging/logging.dart' hide Level;
 import 'package:poker_with_friends/src/game_internals/poker_game_state.dart';
@@ -36,11 +37,11 @@ Widget _buildPlayerBetContainer(BuildContext context, int playerIndex) {
     const Offset(-20, 24), // main
     const Offset(-140, 20), // player 1
     const Offset(-210, 0), // player 2 x
-    const Offset(-210, -85), // player 3 x
+    const Offset(-205, -75), // player 3 x
     const Offset(-140, -103),  // player 4
-    const Offset(-20, -107),  // player 5
+    const Offset(-20, -105),  // player 5
     const Offset(112, -103),  // player 6
-    const Offset(170, -85), // player 7 x
+    const Offset(165, -75), // player 7 x
     const Offset(170, 0), // player 8 x
     const Offset(112, 20), // player 9
   ];
@@ -62,7 +63,7 @@ Widget _buildPlayerBetContainer(BuildContext context, int playerIndex) {
             ),
             child: Image.asset(
               color: Colors.white,
-              'assets/images/chip.png',
+              'assets/images/chip-new.png',
               width: 12,
               height: 12,
             ),
@@ -86,9 +87,9 @@ const List<Offset> playersCenterOffset = [
     Offset(-200, 45),   // player 1
     Offset(-315, 0),    // player 2 x
     Offset(-315, -125), // player 3 x
-    Offset(-200, 6),    // player 4
-    Offset(-65, 5),     // player 5
-    Offset(75, 6),      // player 6
+    Offset(-200, 1),    // player 4
+    Offset(-65, 0),     // player 5
+    Offset(75, 1),      // player 6
     Offset(190, -125),  // player 7 x
     Offset(190, 0),     // player 8 x
     Offset(75, 45),     // player 9
@@ -177,11 +178,12 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 5),
                   child: Text(
-                    'Pot: ${gameState.totalPot}', // Replace with actual total pot amount
+                    'Total Pot: ${gameState.totalPot}', // Replace with actual total pot amount
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.85),
-                      fontSize: 12,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
@@ -415,6 +417,39 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                   handRank: gameState.player9.handRanking,
                   isShowHand: gameState.player9.showCards,
                 ),
+              ),
+
+              if (!gameState.playerC.showCards && !gameState.shouldShowButton && gameState.playerC.hasCards && (gameState.playerC.getState != proto.PlayerStatusType.Ready))
+              Positioned(
+                bottom: 110,
+                left: MediaQuery.of(context).size.width / 2 + 40,
+                child: Container(
+                  height: 35,
+                  width: 45, // Fixed width for the button
+                  decoration: BoxDecoration(
+                  color : Colors.transparent, // Adjust the color as needed
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: Colors.grey.withOpacity(0.2), // Border color
+                    width: 1.5, // Border width
+                  ),
+                ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      audioController.playSfx(SfxType.btnTap);
+                      _handleButtonShow(gameState.playerMainIndex);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
+                      textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text('SHOW'),
+                  ),
+                )
               ),
 
               // Other widgets can go here
@@ -667,6 +702,12 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
           ..actionType = proto.PlayerGameActionType.RAISE.toString().toLowerCase()
           ..raiseAmount = amount;
     _networkAgent.sendMessageAsync(outgoingMessage.writeToBuffer());
+  }
+
+  void _handleButtonShow(int mainPlayerIndex) {
+    _log.info('Show button pressed');
+    _networkAgent.sendMessageAsync(ClientMessageBuilder.build('request_show_hand', mainPlayerIndex).toProto());
+    return;
   }
 
   void _handleButtonPress(String buttonName, int id) {
