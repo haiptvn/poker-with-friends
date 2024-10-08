@@ -112,7 +112,7 @@ class GameLobbyScreen extends StatelessWidget {
                 child: Text(
                   'Select room to join',
                   style:
-                      TextStyle(fontFamily: 'Permanent Marker', fontSize: 26),
+                      TextStyle(fontFamily: 'Permanent Marker', fontSize: 28, fontWeight: FontWeight.bold),
                 ),
               ),
             ),

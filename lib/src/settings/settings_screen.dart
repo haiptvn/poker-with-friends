@@ -34,8 +34,9 @@ class SettingsScreen extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Permanent Marker',
-                fontSize: 30,
+                fontSize: 40,
                 height: 1,
+                fontWeight: FontWeight.bold,
               ),
             ),_gap,
             const _ServerChangeLine(
