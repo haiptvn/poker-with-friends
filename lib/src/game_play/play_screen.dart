@@ -116,6 +116,10 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   // late DateTime _startOfPlay;
   late NetworkAgent _networkAgent;
 
+  // For settings
+  late bool? _disableMusic;
+  SettingsController? _settingsController;
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
@@ -669,15 +673,37 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   @override
   void initState() {
     super.initState();
+
+    final setting = Provider.of<SettingsController>(context, listen: false);
+    if (setting.musicOn.value == true) {
+      setting.toggleMusicOn();
+      _disableMusic = true;
+    } else {
+      _disableMusic = false;
+    }
+
     final gameState = Provider.of<PokerGameStateProvider>(context, listen: false);
     gameState.reinit();
+
     _networkAgent = Provider.of<NetworkAgent>(context, listen: false);
     _networkAgent.sendMessageAsync(ClientMessageBuilder.build('sync_game_state', gameState.playerMainIndex).toProto());
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Get the provider from the context and store it in the variable
+    _settingsController ??= Provider.of<SettingsController>(context, listen: false);
+  }
+
+  @override
   void dispose() {
     _networkAgent.dispose();
+
+    if (_disableMusic == true && _settingsController != null) {
+      _settingsController!.toggleMusicOn();
+    }
+
     super.dispose();
   }
 

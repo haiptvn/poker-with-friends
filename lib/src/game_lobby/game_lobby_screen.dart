@@ -66,13 +66,13 @@ class GameLobbyScreen extends StatelessWidget {
             },
           ),
           actions: <Widget>[
-            if (!isKeyboardVisible)
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-            ),
+            // if (!isKeyboardVisible)
+            // TextButton(
+            //   child: const Text('Cancel'),
+            //   onPressed: () {
+            //     Navigator.of(context).pop(); // Close the dialog
+            //   },
+            // ),
             if (!isKeyboardVisible)
             ElevatedButton(
               child: const Text('Confirm'),
