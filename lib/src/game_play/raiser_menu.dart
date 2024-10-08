@@ -20,6 +20,17 @@ class RaiserProvider extends ChangeNotifier {
   bool get isMax => _currentRaiseAmount == _max;
   int get division => _division;
 
+  double _adjustRaiseAmount(double amount) {
+    if (amount <= _min) {
+      amount = _min;
+    } else if (amount >= _max) {
+      amount = _max;
+    } else {
+      amount = (amount ~/ 10) * 10;
+    }
+    return amount;
+  }
+
   void setMinRaiseValue(int min, int max, int totalPot) {
     if (min <= 0) { min = 20; }
      _division = max~/min;
@@ -31,26 +42,24 @@ class RaiserProvider extends ChangeNotifier {
 
   void setEqualPotValue() {
     _currentRaiseAmount = _totalPot.toDouble();
-    if (_currentRaiseAmount < _min) {
-      _currentRaiseAmount = _min;
-    } else {
-      _currentRaiseAmount = (_currentRaiseAmount ~/ 10) * 10;
-    }
+    _currentRaiseAmount = _adjustRaiseAmount(_currentRaiseAmount);
     notifyListeners();
   }
 
   void setThreeQuarterPotValue() {
     _currentRaiseAmount = _totalPot.toDouble() * 0.75;
-    if (_currentRaiseAmount < _min) {
-      _currentRaiseAmount = _min;
-    } else {
-      _currentRaiseAmount = (_currentRaiseAmount ~/ 10) * 10;
-    }
+    _currentRaiseAmount = _adjustRaiseAmount(_currentRaiseAmount);
     notifyListeners();
   }
 
   void setHalfPotValue() {
     _currentRaiseAmount = _totalPot.toDouble() / 2;
+    _currentRaiseAmount = _adjustRaiseAmount(_currentRaiseAmount);
+    notifyListeners();
+  }
+
+  void setOneThirdPotValue() {
+    _currentRaiseAmount = _totalPot.toDouble() / 3;
     if (_currentRaiseAmount < _min) {
       _currentRaiseAmount = _min;
     } else {
@@ -93,133 +102,161 @@ class RaiseSliderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(children: [
       if (context.watch<RaiserProvider>().isRaiserVisible)
-      Column(
-        children: [
-          const SizedBox(height: 48),
-          ElevatedButton(
-            onPressed: () {
-              context.read<RaiserProvider>().setEqualPotValue();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xfff4f3fa).withOpacity(0.85),
-              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-            ),
-            child: const Text('POT'),
-          ),
-          const SizedBox(height: 2),
-          ElevatedButton(
-            onPressed: () {
-              context.read<RaiserProvider>().setThreeQuarterPotValue();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xfff4f3fa).withOpacity(0.85),
-              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-            ),
-            child: const Text('3/4'),
-          ),
-          const SizedBox(height: 2),
-          ElevatedButton(
-            onPressed: () {
-              context.read<RaiserProvider>().setHalfPotValue();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xfff4f3fa).withOpacity(0.85),
-              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-            ),
-            child: const Text('1/2'),
-          ),
-          const SizedBox(height: 2),
-          // Button +
-          Positioned(bottom: 50, left: 0, width: 50,
-            child: ElevatedButton(
-              onPressed: () {
-                context.read<RaiserProvider>().incrementRaiseAmount();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xfff4f3fa).withOpacity(0.85),
-                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+      SizedBox(
+        height: 290,
+        child:
+        Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            const SizedBox(height: 48),
+            Expanded(child:
+              ElevatedButton(
+                onPressed: () {
+                  context.read<RaiserProvider>().setEqualPotValue();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xfff4f3fa).withOpacity(0.85),
+                  textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+                child: const Text('POT'),
               ),
-              child: const Text('+'),
             ),
-          ),
-          const SizedBox(height: 2),
-          // Button -
-          Positioned(bottom: 0, left: 0, width: 55,
-          child: ElevatedButton(
-              onPressed: () {
-                context.read<RaiserProvider>().decrementRaiseAmount();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xfff4f3fa).withOpacity(0.85),
-                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            const SizedBox(height: 5),
+            Expanded(child:
+              ElevatedButton(
+                onPressed: () {
+                  context.read<RaiserProvider>().setThreeQuarterPotValue();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xfff4f3fa).withOpacity(0.85),
+                  textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+                child: const Text('3/4'),
               ),
-              child: const Text('-'),
             ),
-          ),
-        ],
+            const SizedBox(height: 5),
+            Expanded(child:
+              ElevatedButton(
+                onPressed: () {
+                  context.read<RaiserProvider>().setHalfPotValue();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xfff4f3fa).withOpacity(0.85),
+                  textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+                child: const Text('1/2'),
+              ),
+            ),
+            const SizedBox(height: 5),
+            Expanded(child:
+              ElevatedButton(
+                onPressed: () {
+                  context.read<RaiserProvider>().setOneThirdPotValue();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xfff4f3fa).withOpacity(0.85),
+                  textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+                child: const Text('1/3'),
+              ),
+            ),
+            const SizedBox(height: 10),
+            // Button +
+            Expanded(child:
+              ElevatedButton(
+                onPressed: () {
+                  context.read<RaiserProvider>().incrementRaiseAmount();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xfff4f3fa).withOpacity(0.85),
+                  textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+                child: const Text('+'),
+              ),
+            ),
+            const SizedBox(height: 5),
+            // Button -
+            Expanded(child:
+            ElevatedButton(
+                onPressed: () {
+                  context.read<RaiserProvider>().decrementRaiseAmount();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xfff4f3fa).withOpacity(0.85),
+                  textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+                child: const Text('-'),
+              ),
+            ),
+          ],
+        ),
       ),
       const SizedBox(width: 10),
-      Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          // Toggle the raiser slider visibility using the Provider
-          context.watch<RaiserProvider>().isRaiserVisible ? ElevatedButton(
-            onPressed: () {
-              context.read<RaiserProvider>().toggleRaiserVisibility();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor:  const Color(0xfff4f3fa).withOpacity(0.85),
-              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-              // padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12
-            ),
-            child: const Text('CANCEL'),
-          ): const SizedBox.shrink(),
+      SizedBox(
+        height: 300,
+        child:
+        Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            // Toggle the raiser slider visibility using the Provider
+            context.watch<RaiserProvider>().isRaiserVisible ? ElevatedButton(
+              onPressed: () {
+                context.read<RaiserProvider>().toggleRaiserVisibility();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor:  const Color(0xfff4f3fa).withOpacity(0.85),
+                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                // padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12
+              ),
+              child: const Text('CANCEL'),
+            ): const SizedBox.shrink(),
 
-          // Conditionally show the slider based on the state in the provider
-          if (context.watch<RaiserProvider>().isRaiserVisible)
-            SizedBox(
-              height: 250,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Background Shape for Raise slider
-                  CustomPaint(
-                    size: const Size(100, 240),
-                    painter: RaiseBackgroundPainter(),
-                  ),
+            // Conditionally show the slider based on the state in the provider
+            if (context.watch<RaiserProvider>().isRaiserVisible)
+              SizedBox(
+                height: 250,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Background Shape for Raise slider
+                    CustomPaint(
+                      size: const Size(100, 243),
+                      painter: RaiseBackgroundPainter(),
+                    ),
 
-                  SizedBox(
-                    height: 200,
-                    width: 100,
-                    child: // Vertical Raise Slider
-                    RotatedBox(
-                      quarterTurns: 3, // Rotate slider vertically
-                      child: Slider(
-                        value: context.watch<RaiserProvider>().currentRaiseAmount,
-                        min: context.watch<RaiserProvider>().min,
-                        max:context.watch<RaiserProvider>().max,
-                        divisions: context.watch<RaiserProvider>().division, // 9 steps for the slider
-                        onChanged: (double newValue) {
-                          context.read<RaiserProvider>().setRaiseAmount(newValue);
-                        },
-                        activeColor: Colors.green,
-                        inactiveColor: Colors.white70,
+                    SizedBox(
+                      height: 200,
+                      width: 100,
+                      child: // Vertical Raise Slider
+                      RotatedBox(
+                        quarterTurns: 3, // Rotate slider vertically
+                        child: Slider(
+                          value: context.watch<RaiserProvider>().currentRaiseAmount,
+                          min: context.watch<RaiserProvider>().min,
+                          max:context.watch<RaiserProvider>().max,
+                          divisions: context.watch<RaiserProvider>().division, // 9 steps for the slider
+                          onChanged: (double newValue) {
+                            context.read<RaiserProvider>().setRaiseAmount(newValue);
+                          },
+                          activeColor: Colors.green,
+                          inactiveColor: Colors.white70,
+                        ),
                       ),
                     ),
-                  ),
 
-                  // Display the value of the slider
-                  Positioned(
-                    top: 10,
-                    child: Text(
-                      context.watch<RaiserProvider>().isMax ? 'ALL IN' : '${context.watch<RaiserProvider>().currentRaiseAmount.toInt()}',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    // Display the value of the slider
+                    Positioned(
+                      top: 10,
+                      child: Text(
+                        context.watch<RaiserProvider>().isMax ? 'ALL IN' : '${context.watch<RaiserProvider>().currentRaiseAmount.toInt()}',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     ]);
   }
