@@ -86,27 +86,28 @@ const PlayerStatusType$json = {
   '2': [
     {'1': 'Sat_Out', '2': 0},
     {'1': 'Spectating', '2': 1},
-    {'1': 'Playing', '2': 2},
+    {'1': 'Folded', '2': 2},
     {'1': 'Ready', '2': 3},
-    {'1': 'Wait4Act', '2': 4},
-    {'1': 'Fold', '2': 5},
-    {'1': 'Check', '2': 6},
-    {'1': 'Call', '2': 7},
-    {'1': 'Raise', '2': 8},
-    {'1': 'AllIn', '2': 9},
-    {'1': 'LOSER', '2': 10},
-    {'1': 'WINNER', '2': 11},
-    {'1': 'SB', '2': 12},
-    {'1': 'BB', '2': 13},
+    {'1': 'Playing', '2': 4},
+    {'1': 'Wait4Act', '2': 5},
+    {'1': 'Fold', '2': 6},
+    {'1': 'Check', '2': 7},
+    {'1': 'Call', '2': 8},
+    {'1': 'Raise', '2': 9},
+    {'1': 'AllIn', '2': 10},
+    {'1': 'LOSER', '2': 11},
+    {'1': 'WINNER', '2': 12},
+    {'1': 'SB', '2': 13},
+    {'1': 'BB', '2': 14},
   ],
 };
 
 /// Descriptor for `PlayerStatusType`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List playerStatusTypeDescriptor = $convert.base64Decode(
-    'ChBQbGF5ZXJTdGF0dXNUeXBlEgsKB1NhdF9PdXQQABIOCgpTcGVjdGF0aW5nEAESCwoHUGxheW'
-    'luZxACEgkKBVJlYWR5EAMSDAoIV2FpdDRBY3QQBBIICgRGb2xkEAUSCQoFQ2hlY2sQBhIICgRD'
-    'YWxsEAcSCQoFUmFpc2UQCBIJCgVBbGxJbhAJEgkKBUxPU0VSEAoSCgoGV0lOTkVSEAsSBgoCU0'
-    'IQDBIGCgJCQhAN');
+    'ChBQbGF5ZXJTdGF0dXNUeXBlEgsKB1NhdF9PdXQQABIOCgpTcGVjdGF0aW5nEAESCgoGRm9sZG'
+    'VkEAISCQoFUmVhZHkQAxILCgdQbGF5aW5nEAQSDAoIV2FpdDRBY3QQBRIICgRGb2xkEAYSCQoF'
+    'Q2hlY2sQBxIICgRDYWxsEAgSCQoFUmFpc2UQCRIJCgVBbGxJbhAKEgkKBUxPU0VSEAsSCgoGV0'
+    'lOTkVSEAwSBgoCU0IQDRIGCgJCQhAO');
 
 @$core.Deprecated('Use playerGameActionTypeDescriptor instead')
 const PlayerGameActionType$json = {

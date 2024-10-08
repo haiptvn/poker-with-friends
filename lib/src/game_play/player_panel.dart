@@ -42,7 +42,7 @@ class PlayerPanel extends StatelessWidget {
   }) : isEmptySlot = playerName == '',
        hasCards = card1.rank != proto.RankType.UNSPECIFIED_RANK && card2.rank != proto.RankType.UNSPECIFIED_RANK,
        isActive = state == proto.PlayerStatusType.Wait4Act,
-       isFolded = state == proto.PlayerStatusType.Fold;
+       isFolded = (state == proto.PlayerStatusType.Fold) || (state == proto.PlayerStatusType.Folded);
 
   String _cardToImagePath(proto.Card card) => 'assets/cards/${card.suit.value}_${card.rank.value + 1}.png';
   static const String _faceDownCardImagePath = 'assets/cards/0_0.png';
@@ -92,8 +92,6 @@ class PlayerPanel extends StatelessWidget {
         return _convertHandRankToStatus();
       case proto.PlayerStatusType.Sat_Out:
         return 'SAT OUT';
-      case proto.PlayerStatusType.Spectating:
-        return '...';
       default:
         return '';
     }
@@ -104,6 +102,7 @@ class PlayerPanel extends StatelessWidget {
       case proto.PlayerStatusType.Playing:
       case proto.PlayerStatusType.Spectating:
       case proto.PlayerStatusType.Ready:
+      case proto.PlayerStatusType.Folded:
       case proto.PlayerStatusType.LOSER:
         return false;
       default:
@@ -127,7 +126,7 @@ class PlayerPanel extends StatelessWidget {
       case proto.PlayerStatusType.Spectating:
       case proto.PlayerStatusType.Sat_Out:
       case proto.PlayerStatusType.Ready:
-      // case proto.PlayerStatusType.LOSER:
+      case proto.PlayerStatusType.Folded:
         return false;
       default:
         return true;
@@ -216,7 +215,8 @@ class PlayerPanel extends StatelessWidget {
           ),
 
           // Cards
-          !isEmptySlot && (_shouldShowCard() || (isShowHand ?? false)) ? Positioned(
+          !isEmptySlot && (_shouldShowCard() || (isShowHand ?? false)) || (isMainPlayer && state == proto.PlayerStatusType.Folded)?
+          Positioned(
             top: 0,
             left: (isShowHand ?? false) ? 30 : 35,
             child: SizedBox(

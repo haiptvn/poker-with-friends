@@ -106,24 +106,26 @@ class HankRankingType extends $pb.ProtobufEnum {
 class PlayerStatusType extends $pb.ProtobufEnum {
   static const PlayerStatusType Sat_Out = PlayerStatusType._(0, _omitEnumNames ? '' : 'Sat_Out');
   static const PlayerStatusType Spectating = PlayerStatusType._(1, _omitEnumNames ? '' : 'Spectating');
-  static const PlayerStatusType Playing = PlayerStatusType._(2, _omitEnumNames ? '' : 'Playing');
+  static const PlayerStatusType Folded = PlayerStatusType._(2, _omitEnumNames ? '' : 'Folded');
   static const PlayerStatusType Ready = PlayerStatusType._(3, _omitEnumNames ? '' : 'Ready');
-  static const PlayerStatusType Wait4Act = PlayerStatusType._(4, _omitEnumNames ? '' : 'Wait4Act');
-  static const PlayerStatusType Fold = PlayerStatusType._(5, _omitEnumNames ? '' : 'Fold');
-  static const PlayerStatusType Check = PlayerStatusType._(6, _omitEnumNames ? '' : 'Check');
-  static const PlayerStatusType Call = PlayerStatusType._(7, _omitEnumNames ? '' : 'Call');
-  static const PlayerStatusType Raise = PlayerStatusType._(8, _omitEnumNames ? '' : 'Raise');
-  static const PlayerStatusType AllIn = PlayerStatusType._(9, _omitEnumNames ? '' : 'AllIn');
-  static const PlayerStatusType LOSER = PlayerStatusType._(10, _omitEnumNames ? '' : 'LOSER');
-  static const PlayerStatusType WINNER = PlayerStatusType._(11, _omitEnumNames ? '' : 'WINNER');
-  static const PlayerStatusType SB = PlayerStatusType._(12, _omitEnumNames ? '' : 'SB');
-  static const PlayerStatusType BB = PlayerStatusType._(13, _omitEnumNames ? '' : 'BB');
+  static const PlayerStatusType Playing = PlayerStatusType._(4, _omitEnumNames ? '' : 'Playing');
+  static const PlayerStatusType Wait4Act = PlayerStatusType._(5, _omitEnumNames ? '' : 'Wait4Act');
+  static const PlayerStatusType Fold = PlayerStatusType._(6, _omitEnumNames ? '' : 'Fold');
+  static const PlayerStatusType Check = PlayerStatusType._(7, _omitEnumNames ? '' : 'Check');
+  static const PlayerStatusType Call = PlayerStatusType._(8, _omitEnumNames ? '' : 'Call');
+  static const PlayerStatusType Raise = PlayerStatusType._(9, _omitEnumNames ? '' : 'Raise');
+  static const PlayerStatusType AllIn = PlayerStatusType._(10, _omitEnumNames ? '' : 'AllIn');
+  static const PlayerStatusType LOSER = PlayerStatusType._(11, _omitEnumNames ? '' : 'LOSER');
+  static const PlayerStatusType WINNER = PlayerStatusType._(12, _omitEnumNames ? '' : 'WINNER');
+  static const PlayerStatusType SB = PlayerStatusType._(13, _omitEnumNames ? '' : 'SB');
+  static const PlayerStatusType BB = PlayerStatusType._(14, _omitEnumNames ? '' : 'BB');
 
   static const $core.List<PlayerStatusType> values = <PlayerStatusType> [
     Sat_Out,
     Spectating,
-    Playing,
+    Folded,
     Ready,
+    Playing,
     Wait4Act,
     Fold,
     Check,

@@ -43,20 +43,21 @@ enum HankRankingType {
 }
 
 enum PlayerStatusType {
-    Sat_Out = 0;      // Player is sat out the game
-    Spectating  = 1;  // Player is sat in but not playing
-    Playing = 2;      // Player is playing
-    Ready = 3;        // Player is ready to play a new game
-    Wait4Act = 4;     // Player is waiting for user action in their turn
-    Fold  = 5;        // Player has folded
-    Check = 6;        // Player has checked
-    Call  = 7;        // Player has called
-    Raise = 8;        // Player has raised
-    AllIn = 9;        // Player has all in
-    LOSER = 10;        // Loser
-    WINNER= 11;       // Winner
-    SB = 12;   // Small blind
-    BB = 13;   // Big blind
+    Sat_Out     = 0;    // Player is sat out the game
+    Spectating  = 1;    // Player is sat in but not playing
+    Folded      = 2;    // Player had folded
+    Ready       = 3;    // Player is ready to play a new hand
+    Playing     = 4;    // Player is playing
+    Wait4Act    = 5;    // Player is waiting for user action in their turn
+    Fold        = 6;    // Player has folded
+    Check       = 7;    // Player has checked
+    Call        = 8;    // Player has called
+    Raise       = 9;    // Player has raised
+    AllIn       = 10;   // Player has all in
+    LOSER       = 11;   // Loser
+    WINNER      = 12;   // Winner
+    SB          = 13;   // Small blind
+    BB          = 14;   // Big blind
 }
 
 enum PlayerGameActionType {
