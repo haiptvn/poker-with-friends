@@ -90,6 +90,8 @@ class PlayerPanel extends StatelessWidget {
         return 'ALL IN';
       case proto.PlayerStatusType.WINNER:
         return _convertHandRankToStatus();
+      case proto.PlayerStatusType.LOSER:
+        return _convertHandRankToStatus();
       case proto.PlayerStatusType.Sat_Out:
         return 'SAT OUT';
       default:
@@ -103,7 +105,6 @@ class PlayerPanel extends StatelessWidget {
       case proto.PlayerStatusType.Spectating:
       case proto.PlayerStatusType.Ready:
       case proto.PlayerStatusType.Folded:
-      case proto.PlayerStatusType.LOSER:
         return false;
       default:
         return true;
@@ -267,8 +268,8 @@ class PlayerPanel extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                 child: Text(
                   _showStatus(),
-                  style: const TextStyle(
-                    color: Colors.yellowAccent,
+                  style: TextStyle(
+                    color: state == proto.PlayerStatusType.LOSER ? Colors.white : Colors.yellowAccent,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
