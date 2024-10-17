@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -73,7 +74,7 @@ class GameLobbyScreen extends StatelessWidget {
             //     Navigator.of(context).pop(); // Close the dialog
             //   },
             // ),
-            if (!isKeyboardVisible)
+            if ((Platform.isIOS && isKeyboardVisible) || (Platform.isAndroid && !isKeyboardVisible))
             ElevatedButton(
               child: const Text('Confirm'),
               onPressed: () {
