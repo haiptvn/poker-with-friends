@@ -7,6 +7,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:poker_with_friends/src/game_play/balance_board.dart';
 import 'package:poker_with_friends/src/message_format/client_message_builder.dart';
 import 'package:provider/provider.dart';
@@ -687,6 +688,8 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
 
     _networkAgent = Provider.of<NetworkAgent>(context, listen: false);
     _networkAgent.sendMessageAsync(ClientMessageBuilder.build('sync_game_state', gameState.playerMainIndex).toProto());
+
+    WakelockPlus.enable();
   }
 
   @override
@@ -703,6 +706,8 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
     if (_disableMusic == true && _settingsController != null) {
       _settingsController!.toggleMusicOn();
     }
+
+    WakelockPlus.disable();
 
     super.dispose();
   }

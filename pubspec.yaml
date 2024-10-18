@@ -21,6 +21,7 @@ dependencies:
   shared_preferences: ^2.0.13
   protobuf: ^3.1.0
   web_socket_channel: ^2.2.0
+  wakelock_plus: ^1.2.8
 
   # If you don't need one of the following dependencies,
   # delete the relevant line below, and get rid of any Dart code
@@ -30,6 +31,9 @@ dependencies:
   # games_services: ^4.0.0  # Achievements and leaderboards
   # google_mobile_ads: ^5.0.0  # Ads
   # in_app_purchase: ^3.0.1  # In-app purchases
+
+# dependency_overrides:
+#   win32: ^5.5.4
 
 dev_dependencies:
   flutter_test:

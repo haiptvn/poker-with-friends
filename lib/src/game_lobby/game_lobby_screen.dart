@@ -74,7 +74,7 @@ class GameLobbyScreen extends StatelessWidget {
             //     Navigator.of(context).pop(); // Close the dialog
             //   },
             // ),
-            if ((Platform.isIOS && isKeyboardVisible) || (Platform.isAndroid && !isKeyboardVisible))
+            if ((Platform.isIOS) || (Platform.isAndroid && !isKeyboardVisible))
             ElevatedButton(
               child: const Text('Confirm'),
               onPressed: () {
