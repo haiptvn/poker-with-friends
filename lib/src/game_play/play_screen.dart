@@ -7,6 +7,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:poker_with_friends/src/game_play/action_buttons.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:poker_with_friends/src/game_play/balance_board.dart';
 import 'package:poker_with_friends/src/message_format/client_message_builder.dart';
@@ -24,7 +25,7 @@ import '../game_internals/level_state.dart';
 import '../style/palette.dart';
 import '../cards/cards.dart';
 
-import 'dealer.dart';
+import 'dealer_icon.dart';
 import 'dropdown_menu.dart' as custom;
 import '../../proto/message.pb.dart' as proto;
 import '../network_agent/network_agent.dart';
@@ -95,8 +96,6 @@ const List<Offset> playersCenterOffset = [
     Offset(190, 0),     // player 8 x
     Offset(75, 45),     // player 9
   ];
-const int buttonSizeWidth = 150;
-const int buttonSizeHeight = 35;
 
 class PlaySessionScreen extends StatefulWidget {
   final int level;
@@ -125,8 +124,8 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     final palette = context.watch<Palette>();
-    final gameState = context.watch<PokerGameStateProvider>();
-    final audioController = context.watch<AudioController>();
+    final gameState = context.read<PokerGameStateProvider>();
+    final audioController = context.read<AudioController>();
     gameState.attachAudioController(audioController);
     _log.info('Building PlaySessionScreen for level ${widget.level}, Height: ${MediaQuery.of(context).size.height}, Width: ${MediaQuery.of(context).size.width}');
 
@@ -160,14 +159,18 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               Positioned(
                 top: MediaQuery.of(context).size.height / 2 - 63,
                 left:  MediaQuery.of(context).size.width / 2 - 115,
-                child: Row(
-                  children: [
-                    // Community cards
-                    ...List.generate(gameState.communityCards.length,
-                      (i) => buildCommCardFromProtoCard(gameState.communityCards[i]),
-                    ),
-                  ],
-              ),
+                child: Selector<PokerGameStateProvider, int>(
+                  selector: (_, pokerGameState) => pokerGameState.communityCards.length,
+                  builder: (context, playerMainIndex, child) {
+                    return Row( children: [
+                        // Community cards
+                        ...List.generate(gameState.communityCards.length,
+                          (i) => buildCommCardFromProtoCard(gameState.communityCards[i]),
+                        ),
+                      ],
+                    );
+                  }, // End of builder
+                ),
               ),
 
               // Total pot
@@ -192,7 +195,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               ) : const SizedBox.shrink(),
 
                // Hank ranking
-              gameState.playerC.handRanking != '' ? Align(
+              gameState.playerM.handRanking != '' ? Align(
                 alignment: const Alignment(0, 0.05), // Adjust this value for top alignment (-1 is top, 1 is bottom)
                 child: Container(
                   decoration: BoxDecoration(
@@ -201,7 +204,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 5),
                   child: Text(
-                    gameState.playerC.handRanking,
+                    gameState.playerM.handRanking,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.yellowAccent,
@@ -221,29 +224,24 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
 
               // Player bets
               ...List.generate(10, (i) {
-                if (context.watch<PokerGameStateProvider>().getPlayerByIndex(i).getBet > 0) {
-                  return _buildPlayerBetContainer(context, i);
-                }
-                return const SizedBox.shrink();
+                return Consumer<PokerGameStateProvider>(
+                  builder: (context, pokerGameState, child) {
+                    if (pokerGameState.getPlayerByIndex(i).getBet > 0) {
+                      return _buildPlayerBetContainer(context, i);
+                    }
+                    return const SizedBox.shrink();
+                  }
+                );
               }),
 
               // Main player
               Positioned(
                 top: MediaQuery.of(context).size.height / 2 + playersCenterOffset[0].dy,
                 left: MediaQuery.of(context).size.width / 2 + playersCenterOffset[0].dx,
-                child: Consumer<PokerGameStateProvider>(
+                child: Selector<PokerGameStateProvider, int>(
+                  selector: (_, pokerGameState) => pokerGameState.playerM.getChangesCnt,
                   builder: (context, pokerGameState, child) {
-                    return PlayerPanel(
-                      isMainPlayer: true,
-                      playerUiIndex: 0,
-                      state: pokerGameState.playerC.getState, // Replace with actual state
-                      playerName: pokerGameState.playerC.getName, // Replace with player's name
-                      chips: pokerGameState.playerC.getChips.toString(), // Replace with chips amount
-                      card1: pokerGameState.playerC.getCard1,
-                      card2: pokerGameState.playerC.getCard2,
-                      handRank: gameState.playerC.handRanking,
-                      isShowHand: gameState.playerC.showCards,
-                    );
+                    return PlayerPanel(playerUiIndex: 0);
                   },
                 ),
               ),
@@ -251,19 +249,10 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               Positioned(
                 top: MediaQuery.of(context).size.height / 2 + playersCenterOffset[1].dy,
                 left: MediaQuery.of(context).size.width / 2 + playersCenterOffset[1].dx,
-                child: Consumer<PokerGameStateProvider>(
+                child: Selector<PokerGameStateProvider, int>(
+                  selector: (_, pokerGameState) => pokerGameState.player1.getChangesCnt,
                   builder: (context, pokerGameState, child) {
-                    return PlayerPanel(
-                      isMainPlayer: false,
-                      playerUiIndex: 1,
-                      state: pokerGameState.player1.getState, // Replace with actual state
-                      playerName: pokerGameState.player1.getName, // Replace with player's name
-                      chips: pokerGameState.player1.getChips.toString(), // Replace with chips amount
-                      card1: pokerGameState.player1.getCard1,
-                      card2: pokerGameState.player1.getCard2,
-                      handRank: gameState.player1.handRanking,
-                      isShowHand: gameState.player1.showCards,
-                    );
+                    return PlayerPanel(playerUiIndex: 1);
                   },
                 ),
               ),
@@ -271,19 +260,10 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               Positioned(
                 top: MediaQuery.of(context).size.height / 2 + playersCenterOffset[2].dy,
                 left: MediaQuery.of(context).size.width / 2 + playersCenterOffset[2].dx,
-                child: Consumer<PokerGameStateProvider>(
+                child: Selector<PokerGameStateProvider, int>(
+                  selector: (_, pokerGameState) => pokerGameState.player2.getChangesCnt,
                   builder: (context, pokerGameState, child) {
-                    return PlayerPanel(
-                      isMainPlayer: false,
-                      playerUiIndex: 2,
-                      state: pokerGameState.player2.getState, // Replace with actual state
-                      playerName: pokerGameState.player2.getName, // Replace with player's name
-                      chips: pokerGameState.player2.getChips.toString(), // Replace with chips amount
-                      card1: pokerGameState.player2.getCard1,
-                      card2: pokerGameState.player2.getCard2,
-                      handRank: gameState.player2.handRanking,
-                      isShowHand: gameState.player2.showCards,
-                    );
+                    return PlayerPanel(playerUiIndex: 2);
                   },
                 ),
               ),
@@ -291,19 +271,10 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               Positioned(
                 top: MediaQuery.of(context).size.height / 2 + playersCenterOffset[3].dy,
                 left: MediaQuery.of(context).size.width / 2 + playersCenterOffset[3].dx,
-                child: Consumer<PokerGameStateProvider>(
+                child: Selector<PokerGameStateProvider, int>(
+                  selector: (_, pokerGameState) => pokerGameState.player3.getChangesCnt,
                   builder: (context, pokerGameState, child) {
-                    return PlayerPanel(
-                      isMainPlayer: false,
-                      playerUiIndex: 3,
-                      state: pokerGameState.player3.getState, // Replace with actual state
-                      playerName: pokerGameState.player3.getName, // Replace with player's name
-                      chips: pokerGameState.player3.getChips.toString(), // Replace with chips amount
-                      card1: pokerGameState.player3.getCard1,
-                      card2: pokerGameState.player3.getCard2,
-                      handRank: gameState.player3.handRanking,
-                      isShowHand: gameState.player3.showCards,
-                    );
+                    return PlayerPanel(playerUiIndex: 3);
                   },
                 ),
               ),
@@ -311,19 +282,10 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               Positioned(
                 top: 6,
                 left: MediaQuery.of(context).size.width / 2 + playersCenterOffset[4].dx,
-                child: Consumer<PokerGameStateProvider>(
+                child: Selector<PokerGameStateProvider, int>(
+                  selector: (_, pokerGameState) => pokerGameState.player4.getChangesCnt,
                   builder: (context, pokerGameState, child) {
-                    return PlayerPanel(
-                      isMainPlayer: false,
-                      playerUiIndex: 4,
-                      state: pokerGameState.player4.getState, // Replace with actual state
-                      playerName: pokerGameState.player4.getName, // Replace with player's name
-                      chips: pokerGameState.player4.getChips.toString(), // Replace with chips amount
-                      card1: pokerGameState.player4.getCard1,
-                      card2: pokerGameState.player4.getCard2,
-                      handRank: gameState.player4.handRanking,
-                      isShowHand: gameState.player4.showCards,
-                    );
+                    return PlayerPanel(playerUiIndex: 4);
                   },
                 ),
               ),
@@ -332,19 +294,10 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               Positioned(
                 top: 5,
                 left: MediaQuery.of(context).size.width / 2 + playersCenterOffset[5].dx,
-                child: Consumer<PokerGameStateProvider>(
+                child: Selector<PokerGameStateProvider, int>(
+                  selector: (_, pokerGameState) => pokerGameState.player5.getChangesCnt,
                   builder: (context, pokerGameState, child) {
-                    return PlayerPanel(
-                      isMainPlayer: false,
-                      playerUiIndex: 5,
-                      state: pokerGameState.player5.getState, // Replace with actual state
-                      playerName: pokerGameState.player5.getName, // Replace with player's name
-                      chips: pokerGameState.player5.getChips.toString(), // Replace with chips amount
-                      card1: pokerGameState.player5.getCard1,
-                      card2: pokerGameState.player5.getCard2,
-                      handRank: gameState.player5.handRanking,
-                      isShowHand: gameState.player5.showCards,
-                    );
+                    return PlayerPanel(playerUiIndex: 5);
                   },
                 ),
               ),
@@ -352,19 +305,10 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               Positioned(
                 top: 6,
                 left: MediaQuery.of(context).size.width / 2 + playersCenterOffset[6].dx,
-                child: Consumer<PokerGameStateProvider>(
+                child: Selector<PokerGameStateProvider, int>(
+                  selector: (_, pokerGameState) => pokerGameState.player6.getChangesCnt,
                   builder: (context, pokerGameState, child) {
-                    return PlayerPanel(
-                      isMainPlayer: false,
-                      playerUiIndex: 6,
-                      state: pokerGameState.player6.getState, // Replace with actual state
-                      playerName: pokerGameState.player6.getName, // Replace with player's name
-                      chips: pokerGameState.player6.getChips.toString(), // Replace with chips amount
-                      card1: pokerGameState.player6.getCard1,
-                      card2: pokerGameState.player6.getCard2,
-                      handRank: gameState.player6.handRanking,
-                      isShowHand: gameState.player6.showCards,
-                    );
+                    return PlayerPanel(playerUiIndex: 6);
                   },
                 ),
               ),
@@ -372,19 +316,10 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               Positioned(
                 top: MediaQuery.of(context).size.height / 2 + playersCenterOffset[7].dy,
                 left: MediaQuery.of(context).size.width / 2 + playersCenterOffset[7].dx,
-                child: Consumer<PokerGameStateProvider>(
+                child: Selector<PokerGameStateProvider, int>(
+                  selector: (_, pokerGameState) => pokerGameState.player7.getChangesCnt,
                   builder: (context, pokerGameState, child) {
-                    return PlayerPanel(
-                      isMainPlayer: false,
-                      playerUiIndex: 7,
-                      state: pokerGameState.player7.getState, // Replace with actual state
-                      playerName: pokerGameState.player7.getName, // Replace with player's name
-                      chips: pokerGameState.player7.getChips.toString(), // Replace with chips amount
-                      card1: pokerGameState.player7.getCard1,
-                      card2: pokerGameState.player7.getCard2,
-                      handRank: gameState.player7.handRanking,
-                      isShowHand: gameState.player7.showCards,
-                    );
+                    return PlayerPanel(playerUiIndex: 7);
                   },
                 ),
               ),
@@ -392,36 +327,26 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               Positioned(
                 top: MediaQuery.of(context).size.height / 2 + playersCenterOffset[8].dy,
                 left: MediaQuery.of(context).size.width / 2 + playersCenterOffset[8].dx,
-                child: PlayerPanel(
-                  isMainPlayer: false,
-                  playerUiIndex: 8,
-                  state: gameState.player8.getState, // Replace with actual state
-                  playerName: gameState.player8.getName, // Replace with player's name
-                  chips: gameState.player8.getChips.toString(), // Replace with chips amount
-                  card1: gameState.player8.getCard1,
-                  card2: gameState.player8.getCard2,
-                  handRank: gameState.player8.handRanking,
-                  isShowHand: gameState.player8.showCards,
+                child: Selector<PokerGameStateProvider, int>(
+                  selector: (_, pokerGameState) => pokerGameState.player8.getChangesCnt,
+                  builder: (context, pokerGameState, child) {
+                    return PlayerPanel(playerUiIndex: 8);
+                  },
                 ),
               ),
               // player 9
               Positioned(
                 top: MediaQuery.of(context).size.height / 2 + playersCenterOffset[9].dy,
                 left: MediaQuery.of(context).size.width / 2 + playersCenterOffset[9].dx,
-                child: PlayerPanel(
-                  isMainPlayer: false,
-                  playerUiIndex: 9,
-                  state: gameState.player9.getState, // Replace with actual state
-                  playerName: gameState.player9.getName, // Replace with player's name
-                  chips: gameState.player9.getChips.toString(), // Replace with chips amount
-                  card1: gameState.player9.getCard1,
-                  card2: gameState.player9.getCard2,
-                  handRank: gameState.player9.handRanking,
-                  isShowHand: gameState.player9.showCards,
+                child: Selector<PokerGameStateProvider, int>(
+                  selector: (_, pokerGameState) => pokerGameState.player9.getChangesCnt,
+                  builder: (context, pokerGameState, child) {
+                    return PlayerPanel(playerUiIndex: 9);
+                  },
                 ),
               ),
 
-              if (!gameState.playerC.showCards && !gameState.shouldShowButton && gameState.playerC.hasCards && (gameState.playerC.getState != proto.PlayerStatusType.Ready))
+              if (!gameState.playerM.showCards && !gameState.shouldShowButton && gameState.playerM.hasCards && (gameState.playerM.getState != proto.PlayerStatusType.Ready))
               Positioned(
                 bottom: 110,
                 left: MediaQuery.of(context).size.width / 2 + 40,
@@ -455,119 +380,16 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               ),
 
               // Other widgets can go here
-              gameState.hasPlayerMainIndex && gameState.shouldShowButton ? Positioned(
+              Positioned(
                 bottom: 20,  // Distance from the bottom
                 right: 0,   // Distance from the right
                 left: 0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: buttonSizeWidth.toDouble(), // Fixed width for the button
-                      height: buttonSizeHeight.toDouble(), // Fixed height for the button
-                      child: ElevatedButton(
-                        onPressed: () {
-                          audioController.playSfx(SfxType.btnTap);
-                          _handleButtonPress('FOLD', gameState.playerMainIndex);
-                        },
-                        // onPressed: () => gameState.touch(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xfff4f3fa).withOpacity(0.85),
-                          padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
-                          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
-                        child: const Text('FOLD'),
-                      ),
-                    ),
-                    const SizedBox(width: 6), // Space between buttons
-                    SizedBox(
-                      width: buttonSizeWidth.toDouble(), // Fixed width for the button
-                      height: buttonSizeHeight.toDouble(), // Fixed height for the button
-                      child: ElevatedButton(
-                        onPressed: () {
-                          audioController.playSfx(SfxType.btnTap);
-                          _handleButtonPress('CHECK', gameState.playerMainIndex);
-                          // // For test only - set increment each time the button is pressed from 0 to 9 for testing
-                          // gameState.setCurrentButtonIndex((gameState.currentButtonIndex + 1) % 10);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: gameState.currentBet == gameState.playerC.getBet ? const Color(0xfff4f3fa).withOpacity(0.85): Colors.white30,
-                          padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
-                          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                          // padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
-                        child: gameState.currentBet == gameState.playerC.getBet ? const Text('CHECK'): const SizedBox.shrink(),
-                      ),
-                    ),
-                    const SizedBox(width: 6), // Space between buttons
-                    SizedBox(
-                      width: buttonSizeWidth.toDouble(), // Fixed width for the button
-                      height: buttonSizeHeight.toDouble(), // Fixed height for the button
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (gameState.currentBet == gameState.playerC.getBet) {
-                            return;
-                          }
-                          audioController.playSfx(SfxType.btnTap);
-                          _handleButtonPress('CALL', gameState.playerMainIndex);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: gameState.currentBet == gameState.playerC.getBet ? Colors.white30:const Color(0xfff4f3fa).withOpacity(0.85),
-                          padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
-                          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
-                        child: gameState.currentBet == gameState.playerC.getBet ? const SizedBox.shrink() : Text('CALL ${() {
-                          final callAmount = gameState.currentBet - gameState.playerC.getBet;
-                          if (callAmount > gameState.playerC.getChips) {
-                            return gameState.playerC.getChips.toString();
-                          }
-                          return (callAmount > 0 && gameState.playerC.getState == proto.PlayerStatusType.Wait4Act) ? callAmount.toString() : '';
-                        }()}'),
-                      ),
-                    ),
-                    const SizedBox(width: 6), // Space between buttons
-                    SizedBox(
-                      width: buttonSizeWidth.toDouble(), // Fixed width for the button
-                      height: buttonSizeHeight.toDouble(), // Fixed height for the button
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (gameState.playerC.getChips <= gameState.currentBet) {
-                            return;
-                          }
-                          audioController.playSfx(SfxType.btnTap);
-                          final raiserProvider = context.read<RaiserProvider>();
-                          if (raiserProvider.isRaiserVisible) {
-                            raiserProvider.isMax ? _handleRaiseButtonPress(gameState.playerMainIndex, 0x7FFFFFFF) :
-                              _handleRaiseButtonPress(gameState.playerMainIndex, raiserProvider.currentRaiseAmountAsInt);
-                          }
-                          raiserProvider.setMinRaiseValue(gameState.currentBet, gameState.playerC.getChips, gameState.totalPot);
-                          raiserProvider.toggleRaiserVisibility();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: gameState.playerC.getChips <= gameState.currentBet ? Colors.white30 : const Color(0xfff4f3fa).withOpacity(0.85),
-                          padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
-                          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                        ),
-                        child: gameState.playerC.getChips <= gameState.currentBet ? const SizedBox.shrink()
-                        : Text(context.watch<RaiserProvider>().isRaiserVisible ? 'CONFIRM' : gameState.currentBet == 0 ? 'BET' : 'RAISE'),
-                      ),
-                    ),
-                  ],
-                ),
-              ): const SizedBox.shrink(),
+                child: ActionButtons(
+                  playerIndex: gameState.playerMainIndex,
+                  onButtonPress: _handleButtonPress,
+                  onRaiseButtonPress: _handleRaiseButtonPress,
+                )
+              ),
 
               // Dropdown menu first
               Positioned(
@@ -606,7 +428,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               Center(
                 child:
                   BalanceLeaderboardDialog(entries:
-                    context.watch<PokerGameStateProvider>().playerBalances
+                    context.read<PokerGameStateProvider>().playerBalances
                   ),
               ),
             ],  // End of children

@@ -4,12 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:poker_with_friends/src/audio/audio_controller.dart';
 import 'package:poker_with_friends/src/audio/sounds.dart';
-import 'package:poker_with_friends/src/game_play/balance_board.dart';
 import '../../proto/message.pb.dart' as proto;
 
-class PlayingSlot {
+class PlayerModel {
+  int _changesCnt = 0;
   proto.PlayerStatusType _state = proto.PlayerStatusType.Playing;
-  bool _isStateChanged = false;
   String _name = '';
   int _chips = 0;
   bool _showCards = false;
@@ -19,6 +18,7 @@ class PlayingSlot {
   bool _isFolded = false;
   String _handRanking = '';
 
+  int get getChangesCnt => _changesCnt;
   proto.PlayerStatusType get getState => _state;
   String get getName => _name;
   int get getChips => _chips;
@@ -28,43 +28,49 @@ class PlayingSlot {
   int get getBet => _bet;
   bool get isFolded => _isFolded;
   String get handRanking => _handRanking;
-
-  bool get isStateChanged => _isStateChanged;
   bool get hasCards => _card1.rank != proto.RankType.UNSPECIFIED_RANK && _card2.rank != proto.RankType.UNSPECIFIED_RANK;
 
-  void clearStateChanged() {
-    _isStateChanged = false;
+  void markChanges() {
+    _changesCnt++;
   }
 
   void addCard(proto.Card card1, proto.Card card2) {
     _card1 = card1;
     _card2 = card2;
+    _changesCnt++;
   }
   void setState(proto.PlayerStatusType newState) {
-    _isStateChanged = _state != newState;
     _state = newState;
+    _changesCnt++;
   }
   void setName(String newName) {
     _name = newName;
+    _changesCnt++;
   }
   void setChips(int newChips) {
     _chips = newChips;
+    _changesCnt++;
   }
   void setShowCards(bool show) {
     _showCards = show;
+    _changesCnt++;
   }
   void setBet(int finalBet) {
     _bet = finalBet;
+    _changesCnt++;
   }
   void setFolded() {
       _isFolded = true;
+      _changesCnt++;
   }
   void setHandRanking(String ranking) {
     _handRanking = ranking;
+    _changesCnt++;
   }
   void resetCards() {
     _card1 = proto.Card();
     _card2 = proto.Card();
+    _changesCnt++;
   }
   void reset() {
     _state = proto.PlayerStatusType.Ready;
@@ -74,6 +80,7 @@ class PlayingSlot {
     _bet = 0;
     _isFolded = false;
     _handRanking = '';
+    _changesCnt++;
   }
   void reinit() {
     _state = proto.PlayerStatusType.Ready;
@@ -85,7 +92,26 @@ class PlayingSlot {
     _bet = 0;
     _isFolded = false;
     _handRanking = '';
+    _changesCnt = 0;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PlayerModel &&
+          runtimeType == other.runtimeType &&
+          _state == other._state &&
+          _name == other._name &&
+          _chips == other._chips &&
+          _showCards == other._showCards &&
+          _card1 == other._card1 &&
+          _card2 == other._card2 &&
+          _bet == other._bet &&
+          _isFolded == other._isFolded &&
+          _handRanking == other._handRanking;
+
+  @override
+  int get hashCode => _state.hashCode ^ _name.hashCode ^ _chips.hashCode ^ _showCards.hashCode ^ _card1.hashCode ^ _card2.hashCode ^ _bet.hashCode ^ _isFolded.hashCode ^ _handRanking.hashCode;
 }
 
 class PokerGameStateProvider extends ChangeNotifier {
@@ -105,17 +131,17 @@ class PokerGameStateProvider extends ChangeNotifier {
   }
 
   final int _maxPlayers = 10;
-  final List<PlayingSlot> _players = [
-    PlayingSlot(), // 0
-    PlayingSlot(), // 1
-    PlayingSlot(), // 2
-    PlayingSlot(), // 3
-    PlayingSlot(), // 4
-    PlayingSlot(), // 5
-    PlayingSlot(), // 6
-    PlayingSlot(), // 7
-    PlayingSlot(), // 8
-    PlayingSlot(), // 9
+  final List<PlayerModel> _players = [
+    PlayerModel(), // 0
+    PlayerModel(), // 1
+    PlayerModel(), // 2
+    PlayerModel(), // 3
+    PlayerModel(), // 4
+    PlayerModel(), // 5
+    PlayerModel(), // 6
+    PlayerModel(), // 7
+    PlayerModel(), // 8
+    PlayerModel(), // 9
   ];
   bool _hasPlayerMainIndex = false;
   int _playerMainIndex = 0;
@@ -128,16 +154,16 @@ class PokerGameStateProvider extends ChangeNotifier {
   List<proto.PlayerBalance> _playerBalances = [];
 
   // Getters
-  PlayingSlot get playerC => _players[0];
-  PlayingSlot get player1 => _players[1];
-  PlayingSlot get player2 => _players[2];
-  PlayingSlot get player3 => _players[3];
-  PlayingSlot get player4 => _players[4];
-  PlayingSlot get player5 => _players[5];
-  PlayingSlot get player6 => _players[6];
-  PlayingSlot get player7 => _players[7];
-  PlayingSlot get player8 => _players[8];
-  PlayingSlot get player9 => _players[9];
+  PlayerModel get playerM => _players[0];
+  PlayerModel get player1 => _players[1];
+  PlayerModel get player2 => _players[2];
+  PlayerModel get player3 => _players[3];
+  PlayerModel get player4 => _players[4];
+  PlayerModel get player5 => _players[5];
+  PlayerModel get player6 => _players[6];
+  PlayerModel get player7 => _players[7];
+  PlayerModel get player8 => _players[8];
+  PlayerModel get player9 => _players[9];
 
   bool get hasPlayerMainIndex => _hasPlayerMainIndex;
   int get playerMainIndex => _playerMainIndex;
@@ -148,9 +174,8 @@ class PokerGameStateProvider extends ChangeNotifier {
   int get totalPot => _totalPot;
   int get currentButtonIndex => _currentButtonIndex;
   int get currentBet => _currentBet;
-  PlayingSlot getPlayerByIndex(int index) => _players[index];
+  PlayerModel getPlayerByIndex(int index) => _players[index];
   List<proto.PlayerBalance> get playerBalances => _playerBalances;
-
 
   int count = 0;
 
@@ -160,12 +185,12 @@ class PokerGameStateProvider extends ChangeNotifier {
     }
 
     // Try to change the state for testing
-    playerC.setState(proto.PlayerStatusType.Playing);
+    playerM.setState(proto.PlayerStatusType.Playing);
     player1.setState(proto.PlayerStatusType.SB);
     player2.setState(proto.PlayerStatusType.BB);
     player3.setState(proto.PlayerStatusType.Wait4Act);
 
-    playerC.setBet(100);
+    playerM.setBet(100);
     player1.setBet(100);
     player2.setBet(200);
     player3.setBet(200);
@@ -178,7 +203,7 @@ class PokerGameStateProvider extends ChangeNotifier {
 
     _currentBet = 200;
 
-    playerC.setName('Harry');
+    playerM.setName('Harry');
     player1.setName('Mie');
     player2.setName('Kane');
     player3.setName('Calie');
@@ -189,7 +214,7 @@ class PokerGameStateProvider extends ChangeNotifier {
     player8.setName('Ronaldo');
     player9.setName('Mbappe');
 
-    playerC.setChips(count++);
+    playerM.setChips(count++);
     player1.setChips(count++);
     player2.setChips(count++);
     player3.setChips(count++);
@@ -201,7 +226,7 @@ class PokerGameStateProvider extends ChangeNotifier {
     player9.setChips(count++);
     count += 1000;
 
-    playerC.addCard(proto.Card(rank: proto.RankType.ACE, suit: proto.SuitType.HEARTS),
+    playerM.addCard(proto.Card(rank: proto.RankType.ACE, suit: proto.SuitType.HEARTS),
      proto.Card(rank: proto.RankType.ACE, suit: proto.SuitType.DIAMONDS));
     player1.addCard(proto.Card(rank: proto.RankType.KING, suit: proto.SuitType.HEARTS),
       proto.Card(rank: proto.RankType.KING, suit: proto.SuitType.DIAMONDS));
@@ -229,7 +254,7 @@ class PokerGameStateProvider extends ChangeNotifier {
     communityCards.add(proto.Card(rank: proto.RankType.JACK, suit: proto.SuitType.CLUBS));
     communityCards.add(proto.Card(rank: proto.RankType.TEN, suit: proto.SuitType.CLUBS));
 
-    playerC.setHandRanking('Royal Flush');
+    playerM.setHandRanking('Royal Flush');
 
     if (count > 10000) {
       resetGame();
@@ -245,6 +270,14 @@ class PokerGameStateProvider extends ChangeNotifier {
   void setPlayerMainIndex(int index) {
     _playerMainIndex = index;
     _hasPlayerMainIndex = true;
+    _players.forEach((player) => player.markChanges());
+    notifyListeners();
+  }
+
+  void mainPlayerLeave() {
+    _players[_playerMainIndex].reset();
+    _hasPlayerMainIndex = false;
+    _players.forEach((player) => player.markChanges());
     notifyListeners();
   }
 
@@ -439,12 +472,6 @@ class PokerGameStateProvider extends ChangeNotifier {
     // internal states
     _isPlayWinnerSfx = false;
 
-    notifyListeners();
-  }
-
-  void mainPlayerLeave() {
-    _players[_playerMainIndex].reset();
-    _hasPlayerMainIndex = false;
     notifyListeners();
   }
 

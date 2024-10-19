@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:poker_with_friends/src/game_play/glow_container.dart';
+import 'package:poker_with_friends/src/game_play/player_chips.dart';
 import 'package:provider/provider.dart';
 
 import '../../proto/message.pb.dart' as proto;
@@ -12,67 +14,43 @@ import '../audio/sounds.dart';
 class PlayerPanel extends StatelessWidget {
   final _log = Logger('PlayerPanel');
 
-  final bool isMainPlayer;
   final int  playerUiIndex;
-  final proto.PlayerStatusType state;
-  final String playerName;
-  final String chips;
-  final proto.Card card1;
-  final proto.Card card2;
-
-  late final bool isEmptySlot;
-  late final bool hasCards;
-  late final bool isActive;
-  late final bool isFolded;
-
-  final String? handRank;
-  final bool? isShowHand;
+  late final bool isMainPlayer;
 
   PlayerPanel({
-    this.handRank,
-    this.isShowHand,
     super.key,
-    required this.isMainPlayer,
     required this.playerUiIndex,
-    required this.state,
-    required this.playerName,
-    required this.chips,
-    required this.card1,
-    required this.card2,
-  }) : isEmptySlot = playerName == '',
-       hasCards = card1.rank != proto.RankType.UNSPECIFIED_RANK && card2.rank != proto.RankType.UNSPECIFIED_RANK,
-       isActive = state == proto.PlayerStatusType.Wait4Act,
-       isFolded = (state == proto.PlayerStatusType.Fold) || (state == proto.PlayerStatusType.Folded);
+  }) : isMainPlayer = playerUiIndex == 0;
 
   String _cardToImagePath(proto.Card card) => 'assets/cards/${card.suit.value}_${card.rank.value + 1}.png';
   static const String _faceDownCardImagePath = 'assets/cards/0_0.png';
-  String _convertHandRankToStatus() {
+  String _convertHandRankToStatus(String? handRank) {
     // Check if contains a substring to determine the status
     if(handRank!.contains('HIGH CARD')) {
         return  'HIGH CARD';
-    } else if (handRank!.contains('ONE PAIR')) {
+    } else if (handRank.contains('ONE PAIR')) {
         return 'PAIR';
-    } else if (handRank!.contains('TWO PAIR')) {
+    } else if (handRank.contains('TWO PAIR')) {
         return 'TWO PAIR';
-    } else if (handRank!.contains('THREE OF A KIND')) {
+    } else if (handRank.contains('THREE OF A KIND')) {
         return 'THREE OF A KIND';
-    } else if (handRank!.contains('STRAIGHT')) {
+    } else if (handRank.contains('STRAIGHT')) {
         return 'STRAIGHT';
-    } else if (handRank!.contains('FLUSH')) {
+    } else if (handRank.contains('FLUSH')) {
         return 'FLUSH';
-    } else if (handRank!.contains('FULL HOUSE')) {
+    } else if (handRank.contains('FULL HOUSE')) {
         return 'FULL HOUSE';
-    } else if (handRank!.contains('FOUR OF A KIND')) {
+    } else if (handRank.contains('FOUR OF A KIND')) {
         return 'FOUR OF A KIND';
-    } else if (handRank!.contains('STRAIGHT FLUSH')) {
+    } else if (handRank.contains('STRAIGHT FLUSH')) {
         return 'STRAIGHT FLUSH';
-    } else if (handRank!.contains('ROYAL FLUSH')) {
+    } else if (handRank.contains('ROYAL FLUSH')) {
         return 'ROYAL FLUSH';
     } else {
       return "WINNER";
     }
   }
-  String _showStatus() {
+  String _showStatus(proto.PlayerStatusType state, String handRank) {
     switch (state) {
       case proto.PlayerStatusType.SB:
         return 'SM. BLIND';
@@ -89,16 +67,16 @@ class PlayerPanel extends StatelessWidget {
       case proto.PlayerStatusType.AllIn:
         return 'ALL IN';
       case proto.PlayerStatusType.WINNER:
-        return _convertHandRankToStatus();
+        return _convertHandRankToStatus(handRank);
       case proto.PlayerStatusType.LOSER:
-        return _convertHandRankToStatus();
+        return _convertHandRankToStatus(handRank);
       case proto.PlayerStatusType.Sat_Out:
         return 'SAT OUT';
       default:
         return '';
     }
   }
-  bool _needShowStatus() {
+  bool _needShowStatus(proto.PlayerStatusType state) {
     switch (state) {
       case proto.PlayerStatusType.Wait4Act:
       case proto.PlayerStatusType.Playing:
@@ -122,7 +100,7 @@ class PlayerPanel extends StatelessWidget {
         return 14;
     }
   }
-  bool _shouldShowCard() {
+  bool _shouldShowCard(proto.PlayerStatusType state) {
     switch (state) {
       case proto.PlayerStatusType.Spectating:
       case proto.PlayerStatusType.Sat_Out:
@@ -146,13 +124,16 @@ class PlayerPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final networkAgent = context.read<NetworkAgent>();
-    final gameState = context.read<PokerGameStateProvider>();
     final audioController = context.read<AudioController>();
+    final gameState = context.read<PokerGameStateProvider>();
 
-    if (isMainPlayer) {
-      _log.info('Main player: $playerName, $playerUiIndex, $state, $chips, $hasCards, $card1, $card2');
-    }
-    // _log.info('PlayerPanel: $playerName, $playerUiIndex, $state, $chips, $hasCards, $card1, $card2');
+    final player = gameState.getPlayerByIndex(playerUiIndex);
+    final isEmptySlot = player.getName == '';
+    final hasCards = player.getCard1.rank != proto.RankType.UNSPECIFIED_RANK && player.getCard2.rank != proto.RankType.UNSPECIFIED_RANK;
+    final isFolded = (player.getState == proto.PlayerStatusType.Fold) || (player.getState == proto.PlayerStatusType.Folded);
+    final isActive = player.getState == proto.PlayerStatusType.Wait4Act;
+    final isShowHand = player.showCards;
+    debugPrint('PlayerPanel build: playerUiIndex=$playerUiIndex, isEmptySlot=$isEmptySlot, hasCards=$hasCards, isFolded=$isFolded, isActive=$isActive, isShowHand=$isShowHand');
 
     return SizedBox(
       width: 130, // Adjust width as needed
@@ -161,8 +142,8 @@ class PlayerPanel extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           // Circular avatar for player image or empty slot
-          isEmptySlot ?
-          Positioned(
+          isEmptySlot
+          ? Positioned(
             top: _getPlusIconTopAlignment(),
             child: GestureDetector(
               onTap: () {
@@ -188,8 +169,8 @@ class PlayerPanel extends StatelessWidget {
                 ),
               ): const SizedBox.shrink(),
             ),
-          ):
-          Positioned(
+          )
+          : Positioned(
             // ignore: unrelated_type_equality_checks
             top: 0,
             child: CircleAvatar(
@@ -200,9 +181,7 @@ class PlayerPanel extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: () {
-                      if (isActive) {
-                        return Colors.green;
-                      } else if (isFolded) {
+                      if (isFolded) {
                         return Colors.black54;
                       } else {
                         return Colors.grey.withOpacity(0.2);
@@ -216,10 +195,10 @@ class PlayerPanel extends StatelessWidget {
           ),
 
           // Cards
-          !isEmptySlot && (_shouldShowCard() || (isShowHand ?? false)) || (isMainPlayer && state == proto.PlayerStatusType.Folded)?
+          !isEmptySlot && (_shouldShowCard(player.getState) || (isShowHand)) || (isMainPlayer && player.getState == proto.PlayerStatusType.Folded)?
           Positioned(
             top: 0,
-            left: (isShowHand ?? false) ? 30 : 35,
+            left: (isShowHand) ? 30 : 35,
             child: SizedBox(
                 width: 80, // Adjust width as needed
                 height: 55, // Adjust height as needed
@@ -228,23 +207,23 @@ class PlayerPanel extends StatelessWidget {
                 Stack(
                   children: [
                     Transform.rotate(
-                      angle: (isShowHand ?? false) ? 0 : -0.1, // Adjust the angle as needed
+                      angle: (isShowHand) ? 0 : -0.1, // Adjust the angle as needed
                       child: Image.asset(
-                        hasCards ? _cardToImagePath(card1) : _faceDownCardImagePath,
-                        color: isFolded && !(isShowHand ?? false) ? Colors.black.withOpacity(0.6) : Colors.transparent,
+                        hasCards ? _cardToImagePath(player.getCard1) : _faceDownCardImagePath,
+                        color: isFolded && !(isShowHand) ? Colors.black.withOpacity(0.6) : Colors.transparent,
                         colorBlendMode : BlendMode.srcATop,
                         width: 40, // Card width
                         height: 60, // Card height
                       ),
                     ),
                     Positioned(
-                      top : (isShowHand ?? false) ?- 2.5 : 0,
-                      left: (isShowHand ?? false) ? 30 : 20, // Adjust the overlap distance
+                      top : (isShowHand) ?- 2.5 : 0,
+                      left: (isShowHand) ? 30 : 20, // Adjust the overlap distance
                       child: Transform.rotate(
-                        angle: (isShowHand ?? false) ? 0 : 0.1, // Adjust the angle as needed
+                        angle: (isShowHand) ? 0 : 0.1, // Adjust the angle as needed
                         child: Image.asset(
-                          hasCards ? _cardToImagePath(card2): _faceDownCardImagePath,
-                          color: isFolded && !(isShowHand ?? false) ? Colors.black.withOpacity(0.6) : Colors.transparent,
+                          hasCards ? _cardToImagePath(player.getCard2): _faceDownCardImagePath,
+                          color: isFolded && !(isShowHand) ? Colors.black.withOpacity(0.6) : Colors.transparent,
                           colorBlendMode : BlendMode.srcATop,
                           width: 40, // Card width
                           height: 60, // Card height
@@ -257,7 +236,7 @@ class PlayerPanel extends StatelessWidget {
           ) : const SizedBox.shrink(),
 
           // Role/Action (e.g., SM. BLIND, BIG BLIND, CHECK, CALL, RAISE, FOLD, ALL IN, WINNER, LOSER)
-          if (!isEmptySlot && _needShowStatus())
+          if (!isEmptySlot && _needShowStatus(player.getState))
             Positioned(
               top: 29, // 35
               child: Container(
@@ -267,9 +246,9 @@ class PlayerPanel extends StatelessWidget {
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                 child: Text(
-                  _showStatus(),
+                  _showStatus(player.getState, player.handRanking),
                   style: TextStyle(
-                    color: state == proto.PlayerStatusType.LOSER ? Colors.white : Colors.yellowAccent,
+                    color: player.getState == proto.PlayerStatusType.LOSER ? Colors.white : Colors.yellowAccent,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -281,50 +260,36 @@ class PlayerPanel extends StatelessWidget {
           if (!isEmptySlot)
           Positioned(
             top: 45, // 55
-            child: Container(
-              width: 76,
-              decoration: BoxDecoration(
-                  color: isActive? Colors.green
-                    : Colors.black87, // Adjust the color as needed
-                  borderRadius: BorderRadius.circular(7),
-                  border: Border.all(
-                    color: Colors.grey.withOpacity(0.2), // Border color
-                    width: 1.5, // Border width
-                  ),
-                ),
+            child: GlowingContainer(
+              uiIdx: playerUiIndex,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 3),
                   Text(
-                    playerName,
+                    context.read<PokerGameStateProvider>().getPlayerByIndex(playerUiIndex).getName,
                     style: TextStyle(
-                      color: isActive ? Colors.black: Colors.white.withOpacity(0.85),
+                      color: Colors.white.withOpacity(0.85),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Permanent Marker',
                       height: 1,
                     ),
                   ),
+                  // add a line break with a color line
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(
-                        color: isActive ? Colors.black: Colors.white.withOpacity(0.85),
+                        color: Colors.white.withOpacity(0.85),
                         'assets/images/chip-new.png',
                         width: 9,
                         height: 9,
                       ),
                       const SizedBox(width: 2),
-                      Text(
-                        chips,
-                        style: TextStyle(
-                          color: isActive ? Colors.black: Colors.white.withOpacity(0.85),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'Permanent Marker',
-                          height: 1.6,
-                        ),
+                      ChipTextAnimation(
+                        value: context.watch<PokerGameStateProvider>().getPlayerByIndex(playerUiIndex).getChips,
+                        duration: const Duration(milliseconds: 300)
                       ),
                     ],
                   ),
