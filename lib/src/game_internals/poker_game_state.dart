@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_function_literals_in_foreach_calls
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:poker_with_friends/src/audio/audio_controller.dart';
 import 'package:poker_with_friends/src/audio/sounds.dart';
@@ -11,6 +12,7 @@ class PlayerModel {
   proto.PlayerStatusType _state = proto.PlayerStatusType.Playing;
   String _name = '';
   int _chips = 0;
+  int _previousChips = 0;
   bool _showCards = false;
   proto.Card _card1 = proto.Card();
   proto.Card _card2 = proto.Card();
@@ -22,6 +24,7 @@ class PlayerModel {
   proto.PlayerStatusType get getState => _state;
   String get getName => _name;
   int get getChips => _chips;
+  int get getPreviousChips => _previousChips;
   bool get showCards => _showCards;
   proto.Card get getCard1 => _card1;
   proto.Card get getCard2 => _card2;
@@ -48,6 +51,7 @@ class PlayerModel {
     _changesCnt++;
   }
   void setChips(int newChips) {
+    _previousChips = _chips != 0 ? _chips : _previousChips;
     _chips = newChips;
     _changesCnt++;
   }
@@ -73,8 +77,10 @@ class PlayerModel {
     _changesCnt++;
   }
   void reset() {
+    debugPrint('Reset player');
     _state = proto.PlayerStatusType.Ready;
     _name = '';
+    _previousChips = _chips != 0 ? _chips : _previousChips;
     _chips = 0;
     _showCards = false;
     _bet = 0;
@@ -83,6 +89,7 @@ class PlayerModel {
     _changesCnt++;
   }
   void reinit() {
+    debugPrint('Reinitializing player');
     _state = proto.PlayerStatusType.Ready;
     _name = '';
     _chips = 0;
@@ -340,7 +347,7 @@ class PokerGameStateProvider extends ChangeNotifier {
           break;
         case proto.RoundStateType.INITIAL:
           resetGame();
-          _players.forEach((player) => player.reinit());
+          // _players.forEach((player) => player.reinit());
           _shouldShowButton = false;
           break;
         case proto.RoundStateType.PREFLOP:
@@ -369,9 +376,9 @@ class PokerGameStateProvider extends ChangeNotifier {
       message.gameState.players.forEach((player) {
         final index = (_maxPlayers - _forUiDisplayIndex + player.tablePosition) % _maxPlayers;
         _players[index].setState(player.status);
-        _players[index].setName(player.name);
-        _players[index].setChips(player.chips);
-        _players[index].setBet(player.currentBet);
+        if (player.hasName()) _players[index].setName(player.name);
+        if (player.hasChips()) _players[index].setChips(player.chips);
+        if (player.hasCurrentBet()) _players[index].setBet(player.currentBet);
         _log.info('Player: ${player.name}, status: ${player.status}, chips: ${player.chips}, bet: ${player.currentBet}, ui index: $index');
 
         if (player.status == proto.PlayerStatusType.Wait4Act) { // To track the current turn index

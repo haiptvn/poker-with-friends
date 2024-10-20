@@ -21,6 +21,8 @@ class BalanceLeaderboardDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Sort the entries by balance in descending order
+    entries.sort((a, b) => b.balance.compareTo(a.balance));
     return context.watch<BalanceBoardProvider>()._isBalanceBoardVisible ? Overlay(
       initialEntries: [
         OverlayEntry(

@@ -262,6 +262,19 @@ class PlayerPanel extends StatelessWidget {
             top: 45, // 55
             child: GlowingContainer(
               uiIdx: playerUiIndex,
+              onTimeExceeded: () {
+                debugPrint('PlayerPanel: onTimeExceeded for player $playerUiIndex');
+                // Fold the player's hand if they take too long to act
+                if (player.getState == proto.PlayerStatusType.Wait4Act &&
+                    playerUiIndex == 0 && gameState.hasPlayerMainIndex) {
+                  final int id = gameState.playerMainIndex;
+                  proto.ClientMessage msg = proto.ClientMessage();
+                  msg.playerAction = proto.PlayerAction()
+                  ..playerId = id.toString()
+                  ..actionType = proto.PlayerGameActionType.FOLD.toString().toLowerCase();
+                  networkAgent.sendMessageAsync(msg.writeToBuffer());
+                }
+              },
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -287,9 +300,16 @@ class PlayerPanel extends StatelessWidget {
                         height: 9,
                       ),
                       const SizedBox(width: 2),
-                      ChipTextAnimation(
-                        value: context.watch<PokerGameStateProvider>().getPlayerByIndex(playerUiIndex).getChips,
-                        duration: const Duration(milliseconds: 300)
+                      Selector<PokerGameStateProvider, (int, int) >(
+                        selector: (_, gameState) => (gameState.getPlayerByIndex(playerUiIndex).getChips, gameState.getPlayerByIndex(playerUiIndex).getPreviousChips),
+                        shouldRebuild: (prev, next) => prev != next,
+                        builder: (context, value, child) {
+                          return ChipTextAnimation(
+                                value: value.$1,
+                                previous: value.$2,
+                                duration: const Duration(milliseconds: 300)
+                              );
+                        }
                       ),
                     ],
                   ),

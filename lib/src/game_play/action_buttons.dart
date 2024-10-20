@@ -25,7 +25,31 @@ class ActionButtons extends StatelessWidget {
     final gameState = context.watch<PokerGameStateProvider>();
 
     debugPrint('ActionButtons build: playerIndex=$playerIndex, playerMainIndex=${gameState.playerMainIndex} gameState.shouldShowButton=${gameState.shouldShowButton} gameState.playerM.getState=${gameState.playerM.getState}');
-
+    if (gameState.hasPlayerMainIndex && gameState.playerM.getState == proto.PlayerStatusType.Sat_Out) {
+      return Text(
+        textAlign : TextAlign.center,
+        'Buy-in to play',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.80),
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
+          fontFamily: 'Permanent Marker',
+          height: 1.6,
+        ),
+      );
+    } else if (gameState.hasPlayerMainIndex && gameState.playerM.getState == proto.PlayerStatusType.Spectating) {
+      return Text(
+        textAlign : TextAlign.center,
+        'Waiting for next hand',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.80),
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
+          fontFamily: 'Permanent Marker',
+          height: 1.6,
+        ),
+      );
+    }
     if (!(gameState.hasPlayerMainIndex && gameState.shouldShowButton && gameState.playerM.getState != proto.PlayerStatusType.Folded)) {
       return const SizedBox.shrink();
     }

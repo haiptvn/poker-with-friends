@@ -174,27 +174,33 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               ),
 
               // Total pot
-              gameState.totalPot > 0 ? Align(
-                alignment: const Alignment(0, -0.40), // Adjust this value for top alignment (-1 is top, 1 is bottom)
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: Text(
-                    'Total Pot: ${gameState.totalPot}', // Replace with actual total pot amount
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
+              Selector<PokerGameStateProvider, int>(
+                selector: (_, pokerGameState) => pokerGameState.totalPot,
+                builder: (context, totalPot, child) {
+                  return totalPot > 0 ? Align(
+                    alignment: const Alignment(0, -0.40), // Adjust this value for top alignment (-1 is top, 1 is bottom)
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      child: Text(
+                        'Total Pot: $totalPot', // Replace with actual total pot amount
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.85),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ) : const SizedBox.shrink(),
+                  )
+                  : const SizedBox.shrink();
+                },
+              ),
 
-               // Hank ranking
+              // Hank ranking
               gameState.playerM.handRanking != '' ? Align(
                 alignment: const Alignment(0, 0.05), // Adjust this value for top alignment (-1 is top, 1 is bottom)
                 child: Container(
@@ -346,37 +352,50 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                 ),
               ),
 
-              if (!gameState.playerM.showCards && !gameState.shouldShowButton && gameState.playerM.hasCards && (gameState.playerM.getState != proto.PlayerStatusType.Ready))
-              Positioned(
-                bottom: 110,
-                left: MediaQuery.of(context).size.width / 2 + 40,
-                child: Container(
-                  height: 35,
-                  width: 45, // Fixed width for the button
-                  decoration: BoxDecoration(
-                  color : Colors.transparent, // Adjust the color as needed
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(
-                    color: Colors.grey.withOpacity(0.2), // Border color
-                    width: 1.5, // Border width
-                  ),
-                ),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      audioController.playSfx(SfxType.btnTap);
-                      _handleButtonShow(gameState.playerMainIndex);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
-                      textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+
+              Selector<PokerGameStateProvider, (bool, bool, proto.PlayerStatusType) >(
+                selector: (_, pokerGameState) => (pokerGameState.playerM.showCards, pokerGameState.shouldShowButton, pokerGameState.playerM.getState),
+                builder: (context, data, child) {
+                  debugPrint('Show button: $data');
+                  return (!data.$1 &&
+                  !data.$2 &&
+                  (data.$3 != proto.PlayerStatusType.Ready) &&
+                  (data.$3 != proto.PlayerStatusType.Spectating) &&
+                  (data.$3 != proto.PlayerStatusType.Sat_Out) &&
+                  gameState.playerM.hasCards)
+                  ? Positioned(
+                    bottom: 110,
+                    left: MediaQuery.of(context).size.width / 2 + 40,
+                    child: Container(
+                      height: 35,
+                      width: 45, // Fixed width for the button
+                      decoration: BoxDecoration(
+                        color : Colors.transparent, // Adjust the color as needed
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(
+                          color: Colors.grey.withOpacity(0.2), // Border color
+                          width: 1.5, // Border width
+                        ),
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          audioController.playSfx(SfxType.btnTap);
+                          _handleButtonShow(gameState.playerMainIndex);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
+                          textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: const Text('SHOW'),
                       ),
                     ),
-                    child: const Text('SHOW'),
-                  ),
-                )
+                  )
+                  : const SizedBox.shrink();
+                },
               ),
 
               // Other widgets can go here
@@ -426,10 +445,12 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               ),
 
               Center(
-                child:
-                  BalanceLeaderboardDialog(entries:
-                    context.read<PokerGameStateProvider>().playerBalances
-                  ),
+                child: Consumer<BalanceBoardProvider>(builder: (context, value, child) {
+                    return BalanceLeaderboardDialog(entries:
+                      context.read<PokerGameStateProvider>().playerBalances
+                    );
+                  }
+                ),
               ),
             ],  // End of children
 
@@ -553,7 +574,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   }
 
   void _handleButtonShow(int mainPlayerIndex) {
-    _log.info('Show button pressed');
+    debugPrint('Show button pressed');
     _networkAgent.sendMessageAsync(ClientMessageBuilder.build('request_show_hand', mainPlayerIndex).toProto());
     return;
   }

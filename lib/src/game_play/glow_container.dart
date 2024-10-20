@@ -5,12 +5,22 @@ import 'package:poker_with_friends/src/game_internals/poker_game_state.dart';
 import 'package:poker_with_friends/proto/message.pb.dart' as proto;
 import 'package:provider/provider.dart';
 
+
+// Static const for timedown duration
+const int _timeWaitForActionDurationInSec = 30;
 class GlowingContainer extends StatefulWidget {
   final _log = Logger('GlowingContainer');
   final Widget child;
   final int uiIdx;
 
-  GlowingContainer({super.key, required this.child, required this.uiIdx});
+  final VoidCallback? onTimeExceeded;
+
+  GlowingContainer({
+    super.key,
+    required this.child,
+    required this.uiIdx,
+    this.onTimeExceeded,
+  });
 
   @override
   _GlowingContainerState createState() => _GlowingContainerState();
@@ -18,6 +28,8 @@ class GlowingContainer extends StatefulWidget {
 
 class _GlowingContainerState extends State<GlowingContainer> {
   bool _isLightOn = false;
+  bool _indicator5sLeft = false;
+  bool _indicatorRemainingHalftime = false;
   Timer? _timer;
 
   @override
@@ -36,7 +48,7 @@ class _GlowingContainerState extends State<GlowingContainer> {
   // Start the automatic blinking effect
   void _startGlowing() {
     debugPrint('Starting GlowingContainer uiIdx=${widget.uiIdx}');
-    _timer = Timer.periodic(const Duration(milliseconds: 900), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 1000), (timer) {
       // debugPrint('Timer tick uiIdx=${widget.uiIdx}');
       if (mounted) {
         setState(() {
@@ -71,6 +83,20 @@ class _GlowingContainerState extends State<GlowingContainer> {
       if (isActive) {
         _startGlowing();
       }
+    } else {
+      if (isActive) {
+        // debugPrint('Timer tick uiIdx=${widget.uiIdx} tick=${_timer!.tick}');
+        if (_timer!.tick > 0) {
+          final remainingTime = _timeWaitForActionDurationInSec - _timer!.tick;
+          _indicator5sLeft = remainingTime <= 5;
+          _indicatorRemainingHalftime = remainingTime <= _timeWaitForActionDurationInSec/2;
+          if (_timer!.tick >= _timeWaitForActionDurationInSec) {
+            debugPrint('Time exceeded $_timeWaitForActionDurationInSec, UiIdx=${widget.uiIdx}');
+            widget.onTimeExceeded?.call();
+            _stopGlowing();
+          }
+        }
+      }
     }
 
     return AnimatedContainer(
@@ -79,7 +105,13 @@ class _GlowingContainerState extends State<GlowingContainer> {
       decoration: BoxDecoration(
         color: Colors.black87,
         border: Border.all(
-          color: _isLightOn ? Colors.white : Colors.grey.withOpacity(0.2),
+          color: _isLightOn
+          ? _indicator5sLeft
+          ? Colors.redAccent
+          : _indicatorRemainingHalftime
+          ? Colors.yellowAccent
+          : Colors.white
+          : Colors.grey.withOpacity(0.2),
           width: _isLightOn ? 1.7 : 1.7,
         ),
         borderRadius: BorderRadius.circular(7),
