@@ -8,8 +8,38 @@ import 'package:poker_with_friends/src/game_internals/poker_game_state.dart';
 import 'package:poker_with_friends/src/game_play/raiser_menu.dart';
 import 'package:poker_with_friends/proto/message.pb.dart' as proto;
 
+enum ButtonType {
+  unknown,
+  fold,
+  checkFold,
+  check,
+  call,
+  raise,
+}
+class ButtonStateProvider extends ChangeNotifier {
+  ButtonType _selectedButtonType = ButtonType.unknown;
 
-const int buttonSizeWidth = 150;
+  bool get foldEnabled => _selectedButtonType == ButtonType.fold;
+  bool get checkFoldEnabled => _selectedButtonType == ButtonType.checkFold;
+  bool get checkEnabled => _selectedButtonType == ButtonType.check;
+  bool get callEnabled => _selectedButtonType == ButtonType.call;
+  bool get raiseEnabled => _selectedButtonType == ButtonType.raise;
+
+  void resetButtonState() {
+    _selectedButtonType = ButtonType.unknown;
+  }
+
+  void toggleButtonState(ButtonType type) {
+    if (_selectedButtonType == type) {
+        _selectedButtonType = ButtonType.unknown; // If the same button is clicked again, deactivate it
+    } else {
+      _selectedButtonType = type; // Activate the clicked button
+    }
+    notifyListeners();
+  }
+}
+
+const int buttonSizeWidth = 130;
 const int buttonSizeHeight = 35;
 
 class ActionButtons extends StatelessWidget {
@@ -19,10 +49,20 @@ class ActionButtons extends StatelessWidget {
 
   const ActionButtons({super.key, required this.playerIndex, required this.onButtonPress, required this.onRaiseButtonPress});
 
+  void _handleCheckFold(PokerGameStateProvider gameState) {
+    debugPrint('Check/Fold button pressed');
+    if (gameState.currentBet == gameState.playerM.getBet) {
+      onButtonPress('CHECK', playerIndex);
+    } else {
+      onButtonPress('FOLD', playerIndex);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final audioController = context.read<AudioController>();
     final gameState = context.watch<PokerGameStateProvider>();
+    final buttonState = context.watch<ButtonStateProvider>();
 
     debugPrint('ActionButtons build: playerIndex=$playerIndex, playerMainIndex=${gameState.playerMainIndex} gameState.shouldShowButton=${gameState.shouldShowButton} gameState.playerM.getState=${gameState.playerM.getState}');
     if (gameState.hasPlayerMainIndex && gameState.playerM.getState == proto.PlayerStatusType.Sat_Out) {
@@ -54,6 +94,14 @@ class ActionButtons extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final buttonStateAvailable = (gameState.hasPlayerMainIndex && gameState.playerM.getState == proto.PlayerStatusType.Wait4Act);
+    if (buttonStateAvailable) {
+      if (buttonState.checkFoldEnabled) {
+        _handleCheckFold(gameState);
+      }
+      buttonState.resetButtonState();
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -65,6 +113,7 @@ class ActionButtons extends StatelessWidget {
             onPressed: () {
               audioController.playSfx(SfxType.btnTap);
               onButtonPress('FOLD', playerIndex);
+              context.read<RaiserProvider>().closeRaiser();
             },
             // onPressed: () => gameState.touch(),
             style: ElevatedButton.styleFrom(
@@ -80,12 +129,52 @@ class ActionButtons extends StatelessWidget {
         ),
         const SizedBox(width: 6), // Space between buttons
         SizedBox(
+          width: buttonSizeWidth.toDouble() + 10, // Fixed width for the button
+          height: buttonSizeHeight.toDouble(), // Fixed height for the button
+          child: ElevatedButton(
+            onPressed: () {
+              audioController.playSfx(SfxType.btnTap);
+              if (buttonStateAvailable){
+                _handleCheckFold(gameState);
+              } else {
+                buttonState.toggleButtonState(ButtonType.checkFold);
+              }
+              context.read<RaiserProvider>().closeRaiser();
+            },
+            // onPressed: () => gameState.touch(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xfff4f3fa).withOpacity(0.85),
+              padding: const EdgeInsets.all(2), // Remove default padding since size is fixed
+              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+            child:
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(width: 2.5),
+                Checkbox(
+                  value: buttonState.checkFoldEnabled,
+                  onChanged: null,
+                  activeColor: Colors.greenAccent,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                ), const Text('CHECK/FOLD'),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 6), // Space between buttons
+        SizedBox(
           width: buttonSizeWidth.toDouble(), // Fixed width for the button
           height: buttonSizeHeight.toDouble(), // Fixed height for the button
           child: ElevatedButton(
             onPressed: () {
               audioController.playSfx(SfxType.btnTap);
               onButtonPress('CHECK', playerIndex);
+              context.read<RaiserProvider>().closeRaiser();
               // // For test only - set increment each time the button is pressed from 0 to 9 for testing
               // gameState.setCurrentButtonIndex((gameState.currentButtonIndex + 1) % 10);
             },
@@ -111,7 +200,8 @@ class ActionButtons extends StatelessWidget {
                 return;
               }
               audioController.playSfx(SfxType.btnTap);
-              onButtonPress('CALL', gameState.playerMainIndex);
+              buttonStateAvailable ? onButtonPress('CALL', gameState.playerMainIndex): buttonState.toggleButtonState(ButtonType.call);
+              context.read<RaiserProvider>().closeRaiser();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: gameState.currentBet == gameState.playerM.getBet ? Colors.white30:const Color(0xfff4f3fa).withOpacity(0.85),

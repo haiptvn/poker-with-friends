@@ -15,7 +15,7 @@ import 'package:protobuf/protobuf.dart' as $pb;
 
 /// Enum for card rank
 class RankType extends $pb.ProtobufEnum {
-  static const RankType UNSPECIFIED_RANK = RankType._(0, _omitEnumNames ? '' : 'UNSPECIFIED_RANK');
+  static const RankType NONE = RankType._(0, _omitEnumNames ? '' : 'NONE');
   static const RankType DEUCE = RankType._(1, _omitEnumNames ? '' : 'DEUCE');
   static const RankType THREE = RankType._(2, _omitEnumNames ? '' : 'THREE');
   static const RankType FOUR = RankType._(3, _omitEnumNames ? '' : 'FOUR');
@@ -31,7 +31,7 @@ class RankType extends $pb.ProtobufEnum {
   static const RankType ACE = RankType._(13, _omitEnumNames ? '' : 'ACE');
 
   static const $core.List<RankType> values = <RankType> [
-    UNSPECIFIED_RANK,
+    NONE,
     DEUCE,
     THREE,
     FOUR,
@@ -186,6 +186,35 @@ class RoundStateType extends $pb.ProtobufEnum {
   static RoundStateType? valueOf($core.int value) => _byValue[value];
 
   const RoundStateType._($core.int v, $core.String n) : super(v, n);
+}
+
+class NotifyReasonType extends $pb.ProtobufEnum {
+  static const NotifyReasonType NOT_SET = NotifyReasonType._(0, _omitEnumNames ? '' : 'NOT_SET');
+  static const NotifyReasonType STATE_CHANGED = NotifyReasonType._(1, _omitEnumNames ? '' : 'STATE_CHANGED');
+  static const NotifyReasonType NEW_HAND = NotifyReasonType._(2, _omitEnumNames ? '' : 'NEW_HAND');
+  static const NotifyReasonType NEW_ROUND = NotifyReasonType._(3, _omitEnumNames ? '' : 'NEW_ROUND');
+  static const NotifyReasonType END_ROUND = NotifyReasonType._(4, _omitEnumNames ? '' : 'END_ROUND');
+  static const NotifyReasonType FOR_ACTION = NotifyReasonType._(5, _omitEnumNames ? '' : 'FOR_ACTION');
+  static const NotifyReasonType PLAYER_CHANGED = NotifyReasonType._(6, _omitEnumNames ? '' : 'PLAYER_CHANGED');
+  static const NotifyReasonType SETTING_CHANGED = NotifyReasonType._(7, _omitEnumNames ? '' : 'SETTING_CHANGED');
+  static const NotifyReasonType SYNC_BALANCE = NotifyReasonType._(8, _omitEnumNames ? '' : 'SYNC_BALANCE');
+
+  static const $core.List<NotifyReasonType> values = <NotifyReasonType> [
+    NOT_SET,
+    STATE_CHANGED,
+    NEW_HAND,
+    NEW_ROUND,
+    END_ROUND,
+    FOR_ACTION,
+    PLAYER_CHANGED,
+    SETTING_CHANGED,
+    SYNC_BALANCE,
+  ];
+
+  static final $core.Map<$core.int, NotifyReasonType> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static NotifyReasonType? valueOf($core.int value) => _byValue[value];
+
+  const NotifyReasonType._($core.int v, $core.String n) : super(v, n);
 }
 
 

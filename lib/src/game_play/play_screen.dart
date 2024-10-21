@@ -140,6 +140,9 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
         ChangeNotifierProvider(
           create: (context) => DropdownProvider(), // Provide PokerGameStateProvider
         ),
+        ChangeNotifierProvider(
+          create: (context) => ButtonStateProvider(), // Provide ButtonStateProvider
+        ),
       ],
       child: IgnorePointer(
         ignoring: _duringCelebration,
@@ -189,10 +192,49 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                         'Total Pot: $totalPot', // Replace with actual total pot amount
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.85),
+                          color: Colors.yellowAccent.withOpacity(0.85),
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
                         ),
+                      ),
+                    ),
+                  )
+                  : const SizedBox.shrink();
+                },
+              ),
+
+              // Previous Pot
+              Selector<PokerGameStateProvider, int>(
+                selector: (_, pokerGameState) => pokerGameState.pot,
+                builder: (context, pot, child) {
+                  return pot > 0 ? Align(
+                    alignment: const Alignment(0, 0.04), // Adjust this value for top alignment (-1 is top, 1 is bottom)
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            color: Colors.white.withOpacity(0.85),
+                            'assets/images/chip-new.png',
+                            width: 12,
+                            height: 12,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(pot.toString(), // Replace with actual pot amount
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.85),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   )
@@ -420,7 +462,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
               // Raiser menu
               Positioned(
                 bottom: 60.5,
-                left: MediaQuery.of(context).size.width / 2 + 150,
+                left: MediaQuery.of(context).size.width / 2 + 180,
                 child: const RaiseSliderScreen(),
               ),
 

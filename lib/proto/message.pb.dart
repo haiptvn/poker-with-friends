@@ -37,7 +37,7 @@ class Card extends $pb.GeneratedMessage {
   factory Card.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Card', package: const $pb.PackageName(_omitMessageNames ? '' : 'gpbmessage'), createEmptyInstance: create)
-    ..e<RankType>(1, _omitFieldNames ? '' : 'rank', $pb.PbFieldType.OE, defaultOrMaker: RankType.UNSPECIFIED_RANK, valueOf: RankType.valueOf, enumValues: RankType.values)
+    ..e<RankType>(1, _omitFieldNames ? '' : 'rank', $pb.PbFieldType.OE, defaultOrMaker: RankType.NONE, valueOf: RankType.valueOf, enumValues: RankType.values)
     ..e<SuitType>(2, _omitFieldNames ? '' : 'suit', $pb.PbFieldType.OE, defaultOrMaker: SuitType.HEARTS, valueOf: SuitType.valueOf, enumValues: SuitType.values)
     ..hasRequiredFields = false
   ;
@@ -395,6 +395,7 @@ class Result extends $pb.GeneratedMessage {
 /// Message to represent a game state
 class GameState extends $pb.GeneratedMessage {
   factory GameState({
+    NotifyReasonType? ntfReason,
     $core.Iterable<PlayerState>? players,
     $core.int? potSize,
     $core.int? dealerId,
@@ -404,6 +405,9 @@ class GameState extends $pb.GeneratedMessage {
     Result? finalResult,
   }) {
     final $result = create();
+    if (ntfReason != null) {
+      $result.ntfReason = ntfReason;
+    }
     if (players != null) {
       $result.players.addAll(players);
     }
@@ -432,13 +436,14 @@ class GameState extends $pb.GeneratedMessage {
   factory GameState.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GameState', package: const $pb.PackageName(_omitMessageNames ? '' : 'gpbmessage'), createEmptyInstance: create)
-    ..pc<PlayerState>(1, _omitFieldNames ? '' : 'players', $pb.PbFieldType.PM, subBuilder: PlayerState.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'potSize', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'dealerId', $pb.PbFieldType.O3)
-    ..pc<Card>(4, _omitFieldNames ? '' : 'communityCards', $pb.PbFieldType.PM, subBuilder: Card.create)
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'currentBet', $pb.PbFieldType.O3)
-    ..e<RoundStateType>(6, _omitFieldNames ? '' : 'currentRound', $pb.PbFieldType.OE, defaultOrMaker: RoundStateType.INITIAL, valueOf: RoundStateType.valueOf, enumValues: RoundStateType.values)
-    ..aOM<Result>(7, _omitFieldNames ? '' : 'finalResult', subBuilder: Result.create)
+    ..e<NotifyReasonType>(1, _omitFieldNames ? '' : 'ntfReason', $pb.PbFieldType.OE, defaultOrMaker: NotifyReasonType.NOT_SET, valueOf: NotifyReasonType.valueOf, enumValues: NotifyReasonType.values)
+    ..pc<PlayerState>(2, _omitFieldNames ? '' : 'players', $pb.PbFieldType.PM, subBuilder: PlayerState.create)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'potSize', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'dealerId', $pb.PbFieldType.O3)
+    ..pc<Card>(5, _omitFieldNames ? '' : 'communityCards', $pb.PbFieldType.PM, subBuilder: Card.create)
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'currentBet', $pb.PbFieldType.O3)
+    ..e<RoundStateType>(7, _omitFieldNames ? '' : 'currentRound', $pb.PbFieldType.OE, defaultOrMaker: RoundStateType.INITIAL, valueOf: RoundStateType.valueOf, enumValues: RoundStateType.values)
+    ..aOM<Result>(8, _omitFieldNames ? '' : 'finalResult', subBuilder: Result.create)
     ..hasRequiredFields = false
   ;
 
@@ -464,57 +469,66 @@ class GameState extends $pb.GeneratedMessage {
   static GameState? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<PlayerState> get players => $_getList(0);
+  NotifyReasonType get ntfReason => $_getN(0);
+  @$pb.TagNumber(1)
+  set ntfReason(NotifyReasonType v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasNtfReason() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNtfReason() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.int get potSize => $_getIZ(1);
-  @$pb.TagNumber(2)
-  set potSize($core.int v) { $_setSignedInt32(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasPotSize() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearPotSize() => clearField(2);
+  $core.List<PlayerState> get players => $_getList(1);
 
   @$pb.TagNumber(3)
-  $core.int get dealerId => $_getIZ(2);
+  $core.int get potSize => $_getIZ(2);
   @$pb.TagNumber(3)
-  set dealerId($core.int v) { $_setSignedInt32(2, v); }
+  set potSize($core.int v) { $_setSignedInt32(2, v); }
   @$pb.TagNumber(3)
-  $core.bool hasDealerId() => $_has(2);
+  $core.bool hasPotSize() => $_has(2);
   @$pb.TagNumber(3)
-  void clearDealerId() => clearField(3);
+  void clearPotSize() => clearField(3);
 
   @$pb.TagNumber(4)
-  $core.List<Card> get communityCards => $_getList(3);
+  $core.int get dealerId => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set dealerId($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasDealerId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDealerId() => clearField(4);
 
   @$pb.TagNumber(5)
-  $core.int get currentBet => $_getIZ(4);
-  @$pb.TagNumber(5)
-  set currentBet($core.int v) { $_setSignedInt32(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasCurrentBet() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearCurrentBet() => clearField(5);
+  $core.List<Card> get communityCards => $_getList(4);
 
   @$pb.TagNumber(6)
-  RoundStateType get currentRound => $_getN(5);
+  $core.int get currentBet => $_getIZ(5);
   @$pb.TagNumber(6)
-  set currentRound(RoundStateType v) { setField(6, v); }
+  set currentBet($core.int v) { $_setSignedInt32(5, v); }
   @$pb.TagNumber(6)
-  $core.bool hasCurrentRound() => $_has(5);
+  $core.bool hasCurrentBet() => $_has(5);
   @$pb.TagNumber(6)
-  void clearCurrentRound() => clearField(6);
+  void clearCurrentBet() => clearField(6);
 
   @$pb.TagNumber(7)
-  Result get finalResult => $_getN(6);
+  RoundStateType get currentRound => $_getN(6);
   @$pb.TagNumber(7)
-  set finalResult(Result v) { setField(7, v); }
+  set currentRound(RoundStateType v) { setField(7, v); }
   @$pb.TagNumber(7)
-  $core.bool hasFinalResult() => $_has(6);
+  $core.bool hasCurrentRound() => $_has(6);
   @$pb.TagNumber(7)
-  void clearFinalResult() => clearField(7);
-  @$pb.TagNumber(7)
-  Result ensureFinalResult() => $_ensure(6);
+  void clearCurrentRound() => clearField(7);
+
+  @$pb.TagNumber(8)
+  Result get finalResult => $_getN(7);
+  @$pb.TagNumber(8)
+  set finalResult(Result v) { setField(8, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasFinalResult() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearFinalResult() => clearField(8);
+  @$pb.TagNumber(8)
+  Result ensureFinalResult() => $_ensure(7);
 }
 
 /// Message to represent a player's action

@@ -31,7 +31,7 @@ class PlayerModel {
   int get getBet => _bet;
   bool get isFolded => _isFolded;
   String get handRanking => _handRanking;
-  bool get hasCards => _card1.rank != proto.RankType.UNSPECIFIED_RANK && _card2.rank != proto.RankType.UNSPECIFIED_RANK;
+  bool get hasCards => _card1.rank != proto.RankType.NONE && _card2.rank != proto.RankType.NONE;
 
   void markChanges() {
     _changesCnt++;
@@ -156,6 +156,7 @@ class PokerGameStateProvider extends ChangeNotifier {
   int _forUiDisplayIndex = 0;
   int _currentButtonIndex = 0;
   final List<proto.Card> _communityCards = [];
+  int _pot = 0;
   int _totalPot = 0;
   int _currentBet = 0;
   List<proto.PlayerBalance> _playerBalances = [];
@@ -179,6 +180,7 @@ class PokerGameStateProvider extends ChangeNotifier {
   bool get shouldShowButton => _shouldShowButton;
   List<proto.Card> get communityCards => _communityCards;
   int get totalPot => _totalPot;
+  int get pot => _pot;
   int get currentButtonIndex => _currentButtonIndex;
   int get currentBet => _currentBet;
   PlayerModel getPlayerByIndex(int index) => _players[index];
@@ -311,6 +313,7 @@ class PokerGameStateProvider extends ChangeNotifier {
     _log.info('============================== : $_rxCount ==============================');
     _rxCount++;
     if (message.hasGameState()) {
+      _log.info('Game state changed by reason: ${message.gameState.ntfReason}');
       _players.forEach((player) => player.reset());
       if (_forUiDisplayIndex != _playerMainIndex) {
         _forUiDisplayIndex = _playerMainIndex;
@@ -330,6 +333,30 @@ class PokerGameStateProvider extends ChangeNotifier {
       _currentBet = message.gameState.currentBet;
       _totalPot = message.gameState.potSize;
       _log.info('Current button index: $_currentButtonIndex, current bet: $_currentBet, total pot: $_totalPot');
+
+      if (message.gameState.hasNtfReason()) {
+        switch (message.gameState.ntfReason) {
+          case proto.NotifyReasonType.NEW_HAND:
+            break;
+          case proto.NotifyReasonType.NEW_ROUND:
+            break;
+          case proto.NotifyReasonType.END_ROUND:
+            _pot = _totalPot;
+            break;
+          case proto.NotifyReasonType.FOR_ACTION:
+            break;
+          case proto.NotifyReasonType.PLAYER_CHANGED:
+            break;
+          case proto.NotifyReasonType.SETTING_CHANGED:
+            break;
+          case proto.NotifyReasonType.STATE_CHANGED:
+            break;
+          case proto.NotifyReasonType.SYNC_BALANCE:
+            break;
+          case proto.NotifyReasonType.NOT_SET:
+            break;
+        }
+      }
 
       _shouldShowButton = true;
       switch (message.gameState.currentRound) {
@@ -473,6 +500,7 @@ class PokerGameStateProvider extends ChangeNotifier {
   void resetGame() {
     _players.forEach((player) => player.reset());
     _currentBet = 0;
+    _pot = 0;
     _totalPot = 0;
     _communityCards.clear();
 
@@ -485,6 +513,7 @@ class PokerGameStateProvider extends ChangeNotifier {
   void reinit() {
     _log.info('Reinitializing game state');
     _players.forEach((player) => player.reinit());
+    _pot = 0;
     _totalPot = 0;
     _communityCards.clear();
     _currentButtonIndex = 0;

@@ -84,6 +84,11 @@ class RaiserProvider extends ChangeNotifier {
     }
   }
 
+  void closeRaiser() {
+    _isRaiserVisible = false;
+    notifyListeners();
+  }
+
   // Toggle the visibility of the raiser
   void toggleRaiserVisibility() {
     _isRaiserVisible = !_isRaiserVisible;
@@ -104,7 +109,7 @@ class RaiseSliderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final gameState = context.watch<PokerGameStateProvider>();
     final raiser = context.watch<RaiserProvider>();
-    if (gameState.currentBet > raiser.totalPot) {
+    if (gameState.currentBet > raiser.min.toInt()) {
       raiser.setMinRaiseValue(gameState.currentBet, gameState.playerM.getChips, gameState.totalPot);
     }
 

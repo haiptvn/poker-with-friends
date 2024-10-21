@@ -129,7 +129,7 @@ class PlayerPanel extends StatelessWidget {
 
     final player = gameState.getPlayerByIndex(playerUiIndex);
     final isEmptySlot = player.getName == '';
-    final hasCards = player.getCard1.rank != proto.RankType.UNSPECIFIED_RANK && player.getCard2.rank != proto.RankType.UNSPECIFIED_RANK;
+    final hasCards = player.getCard1.rank != proto.RankType.NONE && player.getCard2.rank != proto.RankType.NONE;
     final isFolded = (player.getState == proto.PlayerStatusType.Fold) || (player.getState == proto.PlayerStatusType.Folded);
     final isActive = player.getState == proto.PlayerStatusType.Wait4Act;
     final isShowHand = player.showCards;

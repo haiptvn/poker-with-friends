@@ -24,6 +24,12 @@ images](https://flutter.dev/to/resolution-aware-images).
 
 ## Progo gen
 
+Install tools
+```
+dart pub global activate protoc_plugin
+export PATH="$PATH":"$HOME/.pub-cache/bin"
+```
+Run command to gen dart code
 ```
 protoc --dart_out=lib/ --plugin=protoc-gen-dart=$HOME/.pub-cache/bin/protoc-gen-dart proto/message.proto
 ```

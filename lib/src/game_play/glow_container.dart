@@ -48,7 +48,7 @@ class _GlowingContainerState extends State<GlowingContainer> {
   // Start the automatic blinking effect
   void _startGlowing() {
     debugPrint('Starting GlowingContainer uiIdx=${widget.uiIdx}');
-    _timer = Timer.periodic(const Duration(milliseconds: 1000), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       // debugPrint('Timer tick uiIdx=${widget.uiIdx}');
       if (mounted) {
         setState(() {
@@ -87,11 +87,12 @@ class _GlowingContainerState extends State<GlowingContainer> {
       if (isActive) {
         // debugPrint('Timer tick uiIdx=${widget.uiIdx} tick=${_timer!.tick}');
         if (_timer!.tick > 0) {
-          final remainingTime = _timeWaitForActionDurationInSec - _timer!.tick;
-          _indicator5sLeft = remainingTime <= 5;
-          _indicatorRemainingHalftime = remainingTime <= _timeWaitForActionDurationInSec/2;
-          if (_timer!.tick >= _timeWaitForActionDurationInSec) {
-            debugPrint('Time exceeded $_timeWaitForActionDurationInSec, UiIdx=${widget.uiIdx}');
+          const totalTick = _timeWaitForActionDurationInSec*2;
+          final remainingTime = totalTick - _timer!.tick;
+          _indicator5sLeft = remainingTime <= 10;
+          _indicatorRemainingHalftime = remainingTime <= 20;
+          if (_timer!.tick >= totalTick) {
+            debugPrint('Time exceeded $totalTick, UiIdx=${widget.uiIdx}');
             widget.onTimeExceeded?.call();
             _stopGlowing();
           }
@@ -101,7 +102,7 @@ class _GlowingContainerState extends State<GlowingContainer> {
 
     return AnimatedContainer(
       width: 76,
-      duration: const Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 250),
       decoration: BoxDecoration(
         color: Colors.black87,
         border: Border.all(
