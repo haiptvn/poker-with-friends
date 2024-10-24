@@ -45,6 +45,14 @@ class _GlowingContainerState extends State<GlowingContainer> {
     }
   }
 
+  @override
+  void dispose() {
+    debugPrint('Disposing GlowingContainer uiIdx=${widget.uiIdx}');
+    _timer?.cancel();
+    super.dispose();
+  }
+
+
   // Start the automatic blinking effect
   void _startGlowing() {
     debugPrint('Starting GlowingContainer uiIdx=${widget.uiIdx}');
@@ -65,13 +73,6 @@ class _GlowingContainerState extends State<GlowingContainer> {
     setState(() {
       _isLightOn = false;
     });
-  }
-
-  @override
-  void dispose() {
-    debugPrint('Disposing GlowingContainer uiIdx=${widget.uiIdx}');
-    _timer?.cancel();
-    super.dispose();
   }
 
   @override
@@ -99,23 +100,26 @@ class _GlowingContainerState extends State<GlowingContainer> {
         }
       }
     }
+    final glowingColor = _indicator5sLeft
+                    ? Colors.redAccent
+                    : _indicatorRemainingHalftime
+                    ? Colors.yellowAccent
+                    : Colors.white;
 
     return AnimatedContainer(
       width: 76,
-      duration: const Duration(milliseconds: 250),
+      height: 34,
+      duration: const Duration(milliseconds: 150),
       decoration: BoxDecoration(
-        color: Colors.black87,
+        color: const Color.fromARGB(255, 23, 23, 23),
         border: Border.all(
-          color: _isLightOn
-          ? _indicator5sLeft
-          ? Colors.redAccent
-          : _indicatorRemainingHalftime
-          ? Colors.yellowAccent
-          : Colors.white
-          : Colors.grey.withOpacity(0.2),
-          width: _isLightOn ? 1.7 : 1.7,
+          color: const Color.fromARGB(125, 55, 55, 55),
+          width: 1.8,
         ),
         borderRadius: BorderRadius.circular(7),
+        boxShadow: _isLightOn
+          ? [BoxShadow(color: glowingColor, blurRadius: 5, spreadRadius: 2.2),]
+          : [],
       ),
       child: widget.child, // The inner content of the container
     );

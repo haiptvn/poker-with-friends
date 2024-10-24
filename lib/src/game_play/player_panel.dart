@@ -278,7 +278,7 @@ class PlayerPanel extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 1),
                   Text(
                     context.read<PokerGameStateProvider>().getPlayerByIndex(playerUiIndex).getName,
                     style: TextStyle(
