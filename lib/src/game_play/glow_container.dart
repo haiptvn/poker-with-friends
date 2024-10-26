@@ -52,7 +52,6 @@ class _GlowingContainerState extends State<GlowingContainer> {
     super.dispose();
   }
 
-
   // Start the automatic blinking effect
   void _startGlowing() {
     debugPrint('Starting GlowingContainer uiIdx=${widget.uiIdx}');
@@ -70,9 +69,11 @@ class _GlowingContainerState extends State<GlowingContainer> {
   void _stopGlowing() {
     debugPrint('Stopping GlowingContainer uiIdx=${widget.uiIdx}');
     _timer?.cancel();
-    setState(() {
-      _isLightOn = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isLightOn = false;
+      });
+    }
   }
 
   @override
@@ -82,6 +83,7 @@ class _GlowingContainerState extends State<GlowingContainer> {
     // debugPrint('_GlowingContainerState rebuilt at ${DateTime.now()} uiIdx=${widget.uiIdx}, state=$playerState to $isActive' );
     if (_timer == null) {
       if (isActive) {
+        debugPrint('Timer is null, uiIdx=${widget.uiIdx}');
         _startGlowing();
       }
     } else {
@@ -98,6 +100,8 @@ class _GlowingContainerState extends State<GlowingContainer> {
             _stopGlowing();
           }
         }
+      } else {
+        _stopGlowing();
       }
     }
     final glowingColor = _indicator5sLeft

@@ -105,6 +105,7 @@ class PlayerPanel extends StatelessWidget {
       case proto.PlayerStatusType.Spectating:
       case proto.PlayerStatusType.Sat_Out:
       case proto.PlayerStatusType.Ready:
+      case proto.PlayerStatusType.Fold:
       case proto.PlayerStatusType.Folded:
         return false;
       default:
@@ -119,6 +120,15 @@ class PlayerPanel extends StatelessWidget {
       ..joinGame.chooseSlot = requestedSlot;
     gameState.setPlayerMainIndex(requestedSlot); // Todo: Update the playerMainIndex in the rx gameState
     networkAgent.sendMessageAsync(joinGameMsg.writeToBuffer());
+  }
+  bool _isMainPlayerAbleToShowCard(proto.PlayerStatusType state) {
+    switch (state) {
+      case proto.PlayerStatusType.Fold:
+      case proto.PlayerStatusType.Folded:
+        return true;
+      default:
+        return false;
+    }
   }
 
   @override
@@ -195,7 +205,7 @@ class PlayerPanel extends StatelessWidget {
           ),
 
           // Cards
-          !isEmptySlot && (_shouldShowCard(player.getState) || (isShowHand)) || (isMainPlayer && player.getState == proto.PlayerStatusType.Folded)?
+          !isEmptySlot && (_shouldShowCard(player.getState) || (isShowHand)) || (isMainPlayer && _isMainPlayerAbleToShowCard(player.getState))?
           Positioned(
             top: 0,
             left: (isShowHand) ? 30 : 35,
