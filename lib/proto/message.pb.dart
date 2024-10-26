@@ -1081,6 +1081,112 @@ class BalanceInfo extends $pb.GeneratedMessage {
   $core.List<PlayerBalance> get playerBalances => $_getList(0);
 }
 
+class JoinedAcknowledge extends $pb.GeneratedMessage {
+  factory JoinedAcknowledge({
+    $core.bool? success,
+    $core.String? errorMsg,
+    $core.String? yourSessionId,
+    $core.bool? isReconnected,
+    $core.int? yourPos,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (errorMsg != null) {
+      $result.errorMsg = errorMsg;
+    }
+    if (yourSessionId != null) {
+      $result.yourSessionId = yourSessionId;
+    }
+    if (isReconnected != null) {
+      $result.isReconnected = isReconnected;
+    }
+    if (yourPos != null) {
+      $result.yourPos = yourPos;
+    }
+    return $result;
+  }
+  JoinedAcknowledge._() : super();
+  factory JoinedAcknowledge.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory JoinedAcknowledge.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'JoinedAcknowledge', package: const $pb.PackageName(_omitMessageNames ? '' : 'gpbmessage'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorMsg')
+    ..aOS(3, _omitFieldNames ? '' : 'yourSessionId')
+    ..aOB(4, _omitFieldNames ? '' : 'isReconnected')
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'yourPos', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  JoinedAcknowledge clone() => JoinedAcknowledge()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  JoinedAcknowledge copyWith(void Function(JoinedAcknowledge) updates) => super.copyWith((message) => updates(message as JoinedAcknowledge)) as JoinedAcknowledge;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static JoinedAcknowledge create() => JoinedAcknowledge._();
+  JoinedAcknowledge createEmptyInstance() => create();
+  static $pb.PbList<JoinedAcknowledge> createRepeated() => $pb.PbList<JoinedAcknowledge>();
+  @$core.pragma('dart2js:noInline')
+  static JoinedAcknowledge getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<JoinedAcknowledge>(create);
+  static JoinedAcknowledge? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorMsg => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorMsg($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorMsg() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorMsg() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get yourSessionId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set yourSessionId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasYourSessionId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearYourSessionId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get isReconnected => $_getBF(3);
+  @$pb.TagNumber(4)
+  set isReconnected($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasIsReconnected() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearIsReconnected() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get yourPos => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set yourPos($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasYourPos() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearYourPos() => clearField(5);
+}
+
 enum ClientMessage_Message {
   playerAction, 
   joinRoom, 
@@ -1206,7 +1312,7 @@ enum ServerMessage_Message {
   gameSetting, 
   peerState, 
   balanceInfo, 
-  gameOver, 
+  joinedAck, 
   errorMessage, 
   welcomeMessage, 
   notSet
@@ -1219,7 +1325,7 @@ class ServerMessage extends $pb.GeneratedMessage {
     GameSetting? gameSetting,
     PeerState? peerState,
     BalanceInfo? balanceInfo,
-    $core.String? gameOver,
+    JoinedAcknowledge? joinedAck,
     $core.String? errorMessage,
     $core.String? welcomeMessage,
   }) {
@@ -1236,8 +1342,8 @@ class ServerMessage extends $pb.GeneratedMessage {
     if (balanceInfo != null) {
       $result.balanceInfo = balanceInfo;
     }
-    if (gameOver != null) {
-      $result.gameOver = gameOver;
+    if (joinedAck != null) {
+      $result.joinedAck = joinedAck;
     }
     if (errorMessage != null) {
       $result.errorMessage = errorMessage;
@@ -1256,7 +1362,7 @@ class ServerMessage extends $pb.GeneratedMessage {
     2 : ServerMessage_Message.gameSetting,
     3 : ServerMessage_Message.peerState,
     4 : ServerMessage_Message.balanceInfo,
-    5 : ServerMessage_Message.gameOver,
+    5 : ServerMessage_Message.joinedAck,
     6 : ServerMessage_Message.errorMessage,
     7 : ServerMessage_Message.welcomeMessage,
     0 : ServerMessage_Message.notSet
@@ -1267,7 +1373,7 @@ class ServerMessage extends $pb.GeneratedMessage {
     ..aOM<GameSetting>(2, _omitFieldNames ? '' : 'gameSetting', subBuilder: GameSetting.create)
     ..aOM<PeerState>(3, _omitFieldNames ? '' : 'peerState', subBuilder: PeerState.create)
     ..aOM<BalanceInfo>(4, _omitFieldNames ? '' : 'balanceInfo', subBuilder: BalanceInfo.create)
-    ..aOS(5, _omitFieldNames ? '' : 'gameOver')
+    ..aOM<JoinedAcknowledge>(5, _omitFieldNames ? '' : 'joinedAck', subBuilder: JoinedAcknowledge.create)
     ..aOS(6, _omitFieldNames ? '' : 'errorMessage')
     ..aOS(7, _omitFieldNames ? '' : 'welcomeMessage')
     ..hasRequiredFields = false
@@ -1342,13 +1448,15 @@ class ServerMessage extends $pb.GeneratedMessage {
   BalanceInfo ensureBalanceInfo() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  $core.String get gameOver => $_getSZ(4);
+  JoinedAcknowledge get joinedAck => $_getN(4);
   @$pb.TagNumber(5)
-  set gameOver($core.String v) { $_setString(4, v); }
+  set joinedAck(JoinedAcknowledge v) { setField(5, v); }
   @$pb.TagNumber(5)
-  $core.bool hasGameOver() => $_has(4);
+  $core.bool hasJoinedAck() => $_has(4);
   @$pb.TagNumber(5)
-  void clearGameOver() => clearField(5);
+  void clearJoinedAck() => clearField(5);
+  @$pb.TagNumber(5)
+  JoinedAcknowledge ensureJoinedAck() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $core.String get errorMessage => $_getSZ(5);

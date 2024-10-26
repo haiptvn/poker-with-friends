@@ -77,7 +77,9 @@ class ActionButtons extends StatelessWidget {
           height: 1.6,
         ),
       );
-    } else if (gameState.hasPlayerMainIndex && gameState.playerM.getState == proto.PlayerStatusType.Spectating) {
+    } else if (gameState.hasPlayerMainIndex &&
+    (gameState.playerM.getState == proto.PlayerStatusType.Fold ||
+    gameState.playerM.getState == proto.PlayerStatusType.Folded)) {
       return Text(
         textAlign : TextAlign.center,
         'Waiting for next hand',
@@ -90,7 +92,7 @@ class ActionButtons extends StatelessWidget {
         ),
       );
     }
-    if (!(gameState.hasPlayerMainIndex && gameState.shouldShowButton && gameState.playerM.getState != proto.PlayerStatusType.Folded)) {
+    if (!(gameState.hasPlayerMainIndex && gameState.shouldShowButton && gameState.playerM.getState != proto.PlayerStatusType.Spectating)) {
       return const SizedBox.shrink();
     }
 

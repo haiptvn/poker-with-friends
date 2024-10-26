@@ -179,6 +179,14 @@ message BalanceInfo {
     repeated PlayerBalance player_balances = 1;
 }
 
+message JoinedAcknowledge {
+    bool    success     = 1;
+    string  error_msg   = 2;
+    string  your_session_id = 3;
+    bool    is_reconnected  = 4;
+    int32   your_pos    = 5;
+}
+
 // Message sent by the client to the server
 message ClientMessage {
     oneof message {
@@ -196,7 +204,7 @@ message ServerMessage {
         GameSetting game_setting = 2;      // Updated game setting
         PeerState peer_state = 3;          // Updated private player information
         BalanceInfo balance_info = 4;      // Updated all player balance information
-        string game_over = 5;              // Game over message
+        JoinedAcknowledge joined_ack = 5;  // Joined Acknowledgement
         string error_message = 6;          // Error message
         string welcome_message = 7;        // Welcome message upon joining
     }

@@ -284,7 +284,7 @@ class PokerGameStateProvider extends ChangeNotifier {
   }
 
   void mainPlayerLeave() {
-    _players[_playerMainIndex].reset();
+    playerM.reset();
     _hasPlayerMainIndex = false;
     _players.forEach((player) => player.markChanges());
     notifyListeners();
@@ -307,6 +307,20 @@ class PokerGameStateProvider extends ChangeNotifier {
   void setCurrentBet(int bet) {
     _currentBet = bet;
     notifyListeners();
+  }
+
+  void updateAfterReconnect(proto.ServerMessage message) {
+    _log.info('Joined ack detected');
+    if (message.joinedAck.isReconnected) {
+      setPlayerMainIndex(message.joinedAck.yourPos);
+      _log.info('Player main index: $_playerMainIndex');
+    } else {
+      _log.info('New connection');
+      mainPlayerLeave();
+    }
+    if (_forUiDisplayIndex != _playerMainIndex) {
+      _forUiDisplayIndex = _playerMainIndex;
+    }
   }
 
   void updateGameState(proto.ServerMessage message) {

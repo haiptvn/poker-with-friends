@@ -8,6 +8,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:poker_with_friends/src/game_play/action_buttons.dart';
+import 'package:poker_with_friends/src/game_play/reconnect_popup.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:poker_with_friends/src/game_play/balance_board.dart';
 import 'package:poker_with_friends/src/message_format/client_message_builder.dart';
@@ -493,6 +494,14 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                     );
                   }
                 ),
+              ),
+
+              // Reconnect popup
+              Selector<NetworkStatusProvider, bool>(
+                selector: (_, connectionStatus) => connectionStatus.isConnected,
+                builder: (context, isConnected, child) {
+                  return isConnected == false ? const ReconnectPopup() : const SizedBox.shrink();
+                },
               ),
             ],  // End of children
 

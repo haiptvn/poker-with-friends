@@ -227,6 +227,9 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(
             create: (context) => BalanceBoardProvider(),
           ),
+          ChangeNotifierProvider(
+            create: (context) => NetworkStatusProvider(),
+          ),
         ],
         child: Builder(builder: (context) {
           final palette = context.watch<Palette>();

@@ -377,6 +377,25 @@ final $typed_data.Uint8List balanceInfoDescriptor = $convert.base64Decode(
     'CgtCYWxhbmNlSW5mbxJCCg9wbGF5ZXJfYmFsYW5jZXMYASADKAsyGS5ncGJtZXNzYWdlLlBsYX'
     'llckJhbGFuY2VSDnBsYXllckJhbGFuY2Vz');
 
+@$core.Deprecated('Use joinedAcknowledgeDescriptor instead')
+const JoinedAcknowledge$json = {
+  '1': 'JoinedAcknowledge',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error_msg', '3': 2, '4': 1, '5': 9, '10': 'errorMsg'},
+    {'1': 'your_session_id', '3': 3, '4': 1, '5': 9, '10': 'yourSessionId'},
+    {'1': 'is_reconnected', '3': 4, '4': 1, '5': 8, '10': 'isReconnected'},
+    {'1': 'your_pos', '3': 5, '4': 1, '5': 5, '10': 'yourPos'},
+  ],
+};
+
+/// Descriptor for `JoinedAcknowledge`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List joinedAcknowledgeDescriptor = $convert.base64Decode(
+    'ChFKb2luZWRBY2tub3dsZWRnZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhsKCWVycm9yX2'
+    '1zZxgCIAEoCVIIZXJyb3JNc2cSJgoPeW91cl9zZXNzaW9uX2lkGAMgASgJUg15b3VyU2Vzc2lv'
+    'bklkEiUKDmlzX3JlY29ubmVjdGVkGAQgASgIUg1pc1JlY29ubmVjdGVkEhkKCHlvdXJfcG9zGA'
+    'UgASgFUgd5b3VyUG9z');
+
 @$core.Deprecated('Use clientMessageDescriptor instead')
 const ClientMessage$json = {
   '1': 'ClientMessage',
@@ -407,7 +426,7 @@ const ServerMessage$json = {
     {'1': 'game_setting', '3': 2, '4': 1, '5': 11, '6': '.gpbmessage.GameSetting', '9': 0, '10': 'gameSetting'},
     {'1': 'peer_state', '3': 3, '4': 1, '5': 11, '6': '.gpbmessage.PeerState', '9': 0, '10': 'peerState'},
     {'1': 'balance_info', '3': 4, '4': 1, '5': 11, '6': '.gpbmessage.BalanceInfo', '9': 0, '10': 'balanceInfo'},
-    {'1': 'game_over', '3': 5, '4': 1, '5': 9, '9': 0, '10': 'gameOver'},
+    {'1': 'joined_ack', '3': 5, '4': 1, '5': 11, '6': '.gpbmessage.JoinedAcknowledge', '9': 0, '10': 'joinedAck'},
     {'1': 'error_message', '3': 6, '4': 1, '5': 9, '9': 0, '10': 'errorMessage'},
     {'1': 'welcome_message', '3': 7, '4': 1, '5': 9, '9': 0, '10': 'welcomeMessage'},
   ],
@@ -422,7 +441,8 @@ final $typed_data.Uint8List serverMessageDescriptor = $convert.base64Decode(
     'F0ZUgAUglnYW1lU3RhdGUSPAoMZ2FtZV9zZXR0aW5nGAIgASgLMhcuZ3BibWVzc2FnZS5HYW1l'
     'U2V0dGluZ0gAUgtnYW1lU2V0dGluZxI2CgpwZWVyX3N0YXRlGAMgASgLMhUuZ3BibWVzc2FnZS'
     '5QZWVyU3RhdGVIAFIJcGVlclN0YXRlEjwKDGJhbGFuY2VfaW5mbxgEIAEoCzIXLmdwYm1lc3Nh'
-    'Z2UuQmFsYW5jZUluZm9IAFILYmFsYW5jZUluZm8SHQoJZ2FtZV9vdmVyGAUgASgJSABSCGdhbW'
-    'VPdmVyEiUKDWVycm9yX21lc3NhZ2UYBiABKAlIAFIMZXJyb3JNZXNzYWdlEikKD3dlbGNvbWVf'
-    'bWVzc2FnZRgHIAEoCUgAUg53ZWxjb21lTWVzc2FnZUIJCgdtZXNzYWdl');
+    'Z2UuQmFsYW5jZUluZm9IAFILYmFsYW5jZUluZm8SPgoKam9pbmVkX2FjaxgFIAEoCzIdLmdwYm'
+    '1lc3NhZ2UuSm9pbmVkQWNrbm93bGVkZ2VIAFIJam9pbmVkQWNrEiUKDWVycm9yX21lc3NhZ2UY'
+    'BiABKAlIAFIMZXJyb3JNZXNzYWdlEikKD3dlbGNvbWVfbWVzc2FnZRgHIAEoCUgAUg53ZWxjb2'
+    '1lTWVzc2FnZUIJCgdtZXNzYWdl');
 
