@@ -131,6 +131,7 @@ class PokerGameStateProvider extends ChangeNotifier {
   int _rxCount = 0;
   int _internalCurrentTurn = 0;
   int _internalLastTurn = -1;
+  bool _hasPlayedYourTurnSfx = false;
   proto.RoundStateType _internalLastRound = proto.RoundStateType.INITIAL;
 
   attachAudioController(AudioController audioController) {
@@ -311,6 +312,8 @@ class PokerGameStateProvider extends ChangeNotifier {
 
   void updateAfterReconnect(proto.ServerMessage message) {
     _log.info('Joined ack detected');
+    reinit();
+
     if (message.joinedAck.isReconnected) {
       setPlayerMainIndex(message.joinedAck.yourPos);
       _log.info('Player main index: $_playerMainIndex');
@@ -318,6 +321,7 @@ class PokerGameStateProvider extends ChangeNotifier {
       _log.info('New connection');
       mainPlayerLeave();
     }
+
     if (_forUiDisplayIndex != _playerMainIndex) {
       _forUiDisplayIndex = _playerMainIndex;
     }
@@ -353,6 +357,7 @@ class PokerGameStateProvider extends ChangeNotifier {
           case proto.NotifyReasonType.NEW_HAND:
             break;
           case proto.NotifyReasonType.NEW_ROUND:
+            _hasPlayedYourTurnSfx = false;
             break;
           case proto.NotifyReasonType.END_ROUND:
             _pot = _totalPot;
@@ -429,8 +434,10 @@ class PokerGameStateProvider extends ChangeNotifier {
       });
 
       if (_internalCurrentTurn == 0 &&
-          _players[_internalCurrentTurn]._state == proto.PlayerStatusType.Wait4Act) {
+          _players[_internalCurrentTurn]._state == proto.PlayerStatusType.Wait4Act &&
+          !_hasPlayedYourTurnSfx) {
           audioController?.playSfx(SfxType.yourTurn);
+          _hasPlayedYourTurnSfx = true;
       }
       if (message.gameState.currentRound == proto.RoundStateType.SHOWDOWN) {
         if (message.gameState.hasFinalResult() && message.gameState.finalResult.showingCards.isNotEmpty) {
