@@ -160,6 +160,7 @@ class PokerGameStateProvider extends ChangeNotifier {
   int _pot = 0;
   int _totalPot = 0;
   int _currentBet = 0;
+  bool _isCurrentBetChanged = false;
   List<proto.PlayerBalance> _playerBalances = [];
 
   // Getters
@@ -184,6 +185,7 @@ class PokerGameStateProvider extends ChangeNotifier {
   int get pot => _pot;
   int get currentButtonIndex => _currentButtonIndex;
   int get currentBet => _currentBet;
+  bool get isCurrentBetChanged => _isCurrentBetChanged;
   PlayerModel getPlayerByIndex(int index) => _players[index];
   List<proto.PlayerBalance> get playerBalances => _playerBalances;
 
@@ -332,45 +334,93 @@ class PokerGameStateProvider extends ChangeNotifier {
     _rxCount++;
     if (message.hasGameState()) {
       _log.info('Game state changed by reason: ${message.gameState.ntfReason}');
-      _players.forEach((player) => player.reset());
-      if (_forUiDisplayIndex != _playerMainIndex) {
-        _forUiDisplayIndex = _playerMainIndex;
-      }
-
-      final prevNumOfCards = _communityCards.length;
-      _communityCards.clear();
-      message.gameState.communityCards.forEach((card) {
-        _communityCards.add(card);
-      });
-      final newNumOfCards = _communityCards.length - prevNumOfCards;
-      if ( newNumOfCards == 3 || newNumOfCards == 1) {
-        audioController?.playSfx(SfxType.dealCommunity);
-      }
-
       _currentButtonIndex = (_maxPlayers - _forUiDisplayIndex +  message.gameState.dealerId) % _maxPlayers;
-      _currentBet = message.gameState.currentBet;
-      _totalPot = message.gameState.potSize;
+      if (message.gameState.hasCurrentBet()) {
+        _isCurrentBetChanged = _currentBet != message.gameState.currentBet;
+        _currentBet = message.gameState.currentBet;
+      }
+      if (message.gameState.hasPotSize()) _totalPot = message.gameState.potSize;
       _log.info('Current button index: $_currentButtonIndex, current bet: $_currentBet, total pot: $_totalPot');
 
       if (message.gameState.hasNtfReason()) {
         switch (message.gameState.ntfReason) {
           case proto.NotifyReasonType.NEW_HAND:
             break;
+          case proto.NotifyReasonType.END_HAND:
+            _players.forEach((player) {
+                player.resetCards();
+                player.setShowCards(false);
+              }
+            );
+            _communityCards.clear();
+            _pot = 0;
+            _players.forEach((player) => player.setBet(0));
+            _currentBet = 0;
+            break;
           case proto.NotifyReasonType.NEW_ROUND:
             _hasPlayedYourTurnSfx = false;
+            // Update community cards
+            final prevNumOfCards = _communityCards.length;
+            _communityCards.clear();
+            message.gameState.communityCards.forEach((card) {
+              _communityCards.add(card);
+            });
+            final newNumOfCards = _communityCards.length - prevNumOfCards;
+            if ( newNumOfCards == 3 || newNumOfCards == 1) {
+              audioController?.playSfx(SfxType.dealCommunity);
+            }
             break;
           case proto.NotifyReasonType.END_ROUND:
             _pot = _totalPot;
+            _players.forEach((player) => player.setBet(0));
+            _currentBet = 0;
             break;
           case proto.NotifyReasonType.FOR_ACTION:
             break;
           case proto.NotifyReasonType.PLAYER_CHANGED:
+            _players.forEach((player) => player.reset());
+            if (_forUiDisplayIndex != _playerMainIndex) {
+              _forUiDisplayIndex = _playerMainIndex;
+            }
             break;
           case proto.NotifyReasonType.SETTING_CHANGED:
             break;
           case proto.NotifyReasonType.STATE_CHANGED:
             break;
           case proto.NotifyReasonType.SYNC_BALANCE:
+            if (message.hasBalanceInfo()) {
+              message.balanceInfo.playerBalances.forEach((playerBalance) {
+                _log.info('Player: ${playerBalance.playerName}, balance: ${playerBalance.balance}');
+              });
+              _playerBalances = message.balanceInfo.playerBalances;
+            }
+            break;
+          case proto.NotifyReasonType.SYNC_SHOWDOWN:
+            if ((message.gameState.currentRound == proto.RoundStateType.SHOWDOWN) &&
+                message.gameState.hasFinalResult() && message.gameState.finalResult.showingCards.isNotEmpty) {
+                // Store the hand ranking for the all players
+                message.gameState.finalResult.showingCards.forEach((showingCard) {
+                final index = (_maxPlayers - _forUiDisplayIndex + showingCard.tablePos) % _maxPlayers;
+                if (showingCard.playerCards.isNotEmpty) {
+                  _players[index].addCard(showingCard.playerCards[0], showingCard.playerCards[1]);
+                  _log.info('Showing card: $showingCard, UX index: $index');
+                  _players[index].setHandRanking(showingCard.handRanking);
+                  _log.info('Store hand info for player: ${_players[index]._name}, ranking: ${showingCard.handRanking}');
+                }
+              });
+            }
+            break;
+          case proto.NotifyReasonType.SHOWDOWN_CTRL:
+            if ((message.gameState.currentRound == proto.RoundStateType.SHOWDOWN) &&
+                message.gameState.hasFinalResult() && message.gameState.finalResult.hasControl()) {
+              // Store the hand ranking for the all players
+              message.gameState.finalResult.control.allowShowingPos.forEach((int tablePos) {
+                final index = (_maxPlayers - _forUiDisplayIndex + tablePos) % _maxPlayers;
+                _players[index].setShowCards(true);
+                _log.info('Showing hand ranking and card for player: ${_players[index]._name}');
+              });
+              audioController?.playSfx(SfxType.dealCommunity);
+            }
             break;
           case proto.NotifyReasonType.NOT_SET:
             break;
@@ -380,15 +430,6 @@ class PokerGameStateProvider extends ChangeNotifier {
       _shouldShowButton = true;
       switch (message.gameState.currentRound) {
         case proto.RoundStateType.SHOWDOWN:
-          if (message.gameState.hasFinalResult()) {
-            message.gameState.finalResult.showingCards.forEach((showingCard) {
-              final index = (_maxPlayers - _forUiDisplayIndex + showingCard.tablePos) % _maxPlayers;
-              if (showingCard.playerCards.isNotEmpty) {
-                _log.info('Showing card: $showingCard, UX index: $index');
-                _players[index].addCard(showingCard.playerCards[0], showingCard.playerCards[1]);
-              }
-            });
-          }
           _shouldShowButton = false;
           break;
         case proto.RoundStateType.INITIAL:
@@ -440,20 +481,7 @@ class PokerGameStateProvider extends ChangeNotifier {
           _hasPlayedYourTurnSfx = true;
       }
       if (message.gameState.currentRound == proto.RoundStateType.SHOWDOWN) {
-        if (message.gameState.hasFinalResult() && message.gameState.finalResult.showingCards.isNotEmpty) {
-          message.gameState.finalResult.showingCards.forEach((showingCard) {
-            final index = (_maxPlayers - _forUiDisplayIndex + showingCard.tablePos) % _maxPlayers;
-            if (showingCard.playerCards.isNotEmpty) {
-              _players[index].setShowCards(true);
-              _players[index].setHandRanking(showingCard.handRanking);
-              _log.info('Showing hand ranking card player: ${_players[index]._name}, ranking: ${showingCard.handRanking}');
-              // Todo: Find another way to replace this just not play sound for the main player when rx multiple show
-              if (_players[index].getState != proto.PlayerStatusType.Ready) {
-                audioController?.playSfx(SfxType.dealCommunity);
-              }
-            }
-          });
-        }
+
         if (_players[0]._state == proto.PlayerStatusType.WINNER) {
           if (_isPlayWinnerSfx == null || _isPlayWinnerSfx == false) {
             audioController?.playSfx(SfxType.collect);
@@ -471,12 +499,7 @@ class PokerGameStateProvider extends ChangeNotifier {
       }
     }
 
-    if (message.hasBalanceInfo()) {
-      message.balanceInfo.playerBalances.forEach((playerBalance) {
-        _log.info('Player: ${playerBalance.playerName}, balance: ${playerBalance.balance}');
-      });
-      _playerBalances = message.balanceInfo.playerBalances;
-    }
+
 
     _log.info('Last turn index: $_internalLastTurn');
     if (_internalLastTurn >= 0) {

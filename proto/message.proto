@@ -81,12 +81,15 @@ enum NotifyReasonType {
     NOT_SET         = 0;
     STATE_CHANGED   = 1;
     NEW_HAND        = 2;
-    NEW_ROUND       = 3;
-    END_ROUND       = 4;
-    FOR_ACTION      = 5;
-    PLAYER_CHANGED  = 6;
-    SETTING_CHANGED = 7;
-    SYNC_BALANCE    = 8;
+    END_HAND        = 3;
+    NEW_ROUND       = 4;
+    END_ROUND       = 5;
+    FOR_ACTION      = 6;
+    PLAYER_CHANGED  = 7;
+    SETTING_CHANGED = 8;
+    SYNC_BALANCE    = 9;
+    SYNC_SHOWDOWN   = 10;
+    SHOWDOWN_CTRL   = 11;
 }
 
 // Message to represent a card
@@ -118,8 +121,14 @@ message PlayerState {
     repeated PlayerGameActionType no_actions = 10;  // Invalid action that player should not act
 }
 
+message ControlShowing {
+    repeated int32  allow_showing_pos   = 1;
+    int32           winner_pos          = 2;
+}
+
 message Result {
-    repeated PeerState  showing_cards   = 3;
+    repeated PeerState  showing_cards   = 1;
+    ControlShowing      control         = 2;    // For control how to show the hand, and who wins
 }
 
 // Message to represent a game state

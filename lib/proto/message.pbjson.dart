@@ -151,21 +151,24 @@ const NotifyReasonType$json = {
     {'1': 'NOT_SET', '2': 0},
     {'1': 'STATE_CHANGED', '2': 1},
     {'1': 'NEW_HAND', '2': 2},
-    {'1': 'NEW_ROUND', '2': 3},
-    {'1': 'END_ROUND', '2': 4},
-    {'1': 'FOR_ACTION', '2': 5},
-    {'1': 'PLAYER_CHANGED', '2': 6},
-    {'1': 'SETTING_CHANGED', '2': 7},
-    {'1': 'SYNC_BALANCE', '2': 8},
+    {'1': 'END_HAND', '2': 3},
+    {'1': 'NEW_ROUND', '2': 4},
+    {'1': 'END_ROUND', '2': 5},
+    {'1': 'FOR_ACTION', '2': 6},
+    {'1': 'PLAYER_CHANGED', '2': 7},
+    {'1': 'SETTING_CHANGED', '2': 8},
+    {'1': 'SYNC_BALANCE', '2': 9},
+    {'1': 'SYNC_SHOWDOWN', '2': 10},
+    {'1': 'SHOWDOWN_CTRL', '2': 11},
   ],
 };
 
 /// Descriptor for `NotifyReasonType`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List notifyReasonTypeDescriptor = $convert.base64Decode(
     'ChBOb3RpZnlSZWFzb25UeXBlEgsKB05PVF9TRVQQABIRCg1TVEFURV9DSEFOR0VEEAESDAoITk'
-    'VXX0hBTkQQAhINCglORVdfUk9VTkQQAxINCglFTkRfUk9VTkQQBBIOCgpGT1JfQUNUSU9OEAUS'
-    'EgoOUExBWUVSX0NIQU5HRUQQBhITCg9TRVRUSU5HX0NIQU5HRUQQBxIQCgxTWU5DX0JBTEFOQ0'
-    'UQCA==');
+    'VXX0hBTkQQAhIMCghFTkRfSEFORBADEg0KCU5FV19ST1VORBAEEg0KCUVORF9ST1VORBAFEg4K'
+    'CkZPUl9BQ1RJT04QBhISCg5QTEFZRVJfQ0hBTkdFRBAHEhMKD1NFVFRJTkdfQ0hBTkdFRBAIEh'
+    'AKDFNZTkNfQkFMQU5DRRAJEhEKDVNZTkNfU0hPV0RPV04QChIRCg1TSE9XRE9XTl9DVFJMEAs=');
 
 @$core.Deprecated('Use cardDescriptor instead')
 const Card$json = {
@@ -227,18 +230,34 @@ final $typed_data.Uint8List playerStateDescriptor = $convert.base64Decode(
     'VSDGNoYW5nZUFtb3VudBI/Cgpub19hY3Rpb25zGAogAygOMiAuZ3BibWVzc2FnZS5QbGF5ZXJH'
     'YW1lQWN0aW9uVHlwZVIJbm9BY3Rpb25z');
 
+@$core.Deprecated('Use controlShowingDescriptor instead')
+const ControlShowing$json = {
+  '1': 'ControlShowing',
+  '2': [
+    {'1': 'allow_showing_pos', '3': 1, '4': 3, '5': 5, '10': 'allowShowingPos'},
+    {'1': 'winner_pos', '3': 2, '4': 1, '5': 5, '10': 'winnerPos'},
+  ],
+};
+
+/// Descriptor for `ControlShowing`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List controlShowingDescriptor = $convert.base64Decode(
+    'Cg5Db250cm9sU2hvd2luZxIqChFhbGxvd19zaG93aW5nX3BvcxgBIAMoBVIPYWxsb3dTaG93aW'
+    '5nUG9zEh0KCndpbm5lcl9wb3MYAiABKAVSCXdpbm5lclBvcw==');
+
 @$core.Deprecated('Use resultDescriptor instead')
 const Result$json = {
   '1': 'Result',
   '2': [
-    {'1': 'showing_cards', '3': 3, '4': 3, '5': 11, '6': '.gpbmessage.PeerState', '10': 'showingCards'},
+    {'1': 'showing_cards', '3': 1, '4': 3, '5': 11, '6': '.gpbmessage.PeerState', '10': 'showingCards'},
+    {'1': 'control', '3': 2, '4': 1, '5': 11, '6': '.gpbmessage.ControlShowing', '10': 'control'},
   ],
 };
 
 /// Descriptor for `Result`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List resultDescriptor = $convert.base64Decode(
-    'CgZSZXN1bHQSOgoNc2hvd2luZ19jYXJkcxgDIAMoCzIVLmdwYm1lc3NhZ2UuUGVlclN0YXRlUg'
-    'xzaG93aW5nQ2FyZHM=');
+    'CgZSZXN1bHQSOgoNc2hvd2luZ19jYXJkcxgBIAMoCzIVLmdwYm1lc3NhZ2UuUGVlclN0YXRlUg'
+    'xzaG93aW5nQ2FyZHMSNAoHY29udHJvbBgCIAEoCzIaLmdwYm1lc3NhZ2UuQ29udHJvbFNob3dp'
+    'bmdSB2NvbnRyb2w=');
 
 @$core.Deprecated('Use gameStateDescriptor instead')
 const GameState$json = {

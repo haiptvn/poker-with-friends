@@ -50,7 +50,7 @@ class ActionButtons extends StatelessWidget {
   const ActionButtons({super.key, required this.playerIndex, required this.onButtonPress, required this.onRaiseButtonPress});
 
   void _handleCheckFold(PokerGameStateProvider gameState) {
-    debugPrint('Check/Fold button pressed');
+    debugPrint('Check/Fold button triggerred');
     if (gameState.currentBet == gameState.playerM.getBet) {
       onButtonPress('CHECK', playerIndex);
     } else {
@@ -66,6 +66,7 @@ class ActionButtons extends StatelessWidget {
 
     debugPrint('ActionButtons build: playerIndex=$playerIndex, playerMainIndex=${gameState.playerMainIndex} gameState.shouldShowButton=${gameState.shouldShowButton} gameState.playerM.getState=${gameState.playerM.getState}');
     if (gameState.hasPlayerMainIndex && gameState.playerM.getState == proto.PlayerStatusType.Sat_Out) {
+      buttonState.resetButtonState();
       return Text(
         textAlign : TextAlign.center,
         'Buy-in to play',
@@ -80,6 +81,7 @@ class ActionButtons extends StatelessWidget {
     } else if (gameState.hasPlayerMainIndex &&
     (gameState.playerM.getState == proto.PlayerStatusType.Fold ||
     gameState.playerM.getState == proto.PlayerStatusType.Folded)) {
+      buttonState.resetButtonState();
       return Text(
         textAlign : TextAlign.center,
         'Waiting for next hand',
@@ -92,7 +94,9 @@ class ActionButtons extends StatelessWidget {
         ),
       );
     }
+
     if (!(gameState.hasPlayerMainIndex && gameState.shouldShowButton && gameState.playerM.getState != proto.PlayerStatusType.Spectating)) {
+      buttonState.resetButtonState();
       return const SizedBox.shrink();
     }
 
@@ -100,6 +104,20 @@ class ActionButtons extends StatelessWidget {
     if (buttonStateAvailable) {
       if (buttonState.checkFoldEnabled) {
         _handleCheckFold(gameState);
+      } else if (!gameState.isCurrentBetChanged) {
+        if (buttonState.checkEnabled) {
+          onButtonPress('CHECK', playerIndex);
+        } else if (buttonState.callEnabled) {
+          onButtonPress('CALL', playerIndex);
+        }
+      } else if (buttonState.raiseEnabled) {
+        // final raiserProvider = context.read<RaiserProvider>();
+        // if (raiserProvider.isRaiserVisible) {
+        //   raiserProvider.isMax ? onRaiseButtonPress(gameState.playerMainIndex, 0x7FFFFFFF) :
+        //     onRaiseButtonPress(gameState.playerMainIndex, raiserProvider.currentRaiseAmountAsInt);
+        // }
+        // raiserProvider.setMinRaiseValue(gameState.currentBet, gameState.playerM.getChips, gameState.totalPot);
+        // raiserProvider.toggleRaiserVisibility();
       }
       buttonState.resetButtonState();
     }
@@ -131,16 +149,12 @@ class ActionButtons extends StatelessWidget {
         ),
         const SizedBox(width: 6), // Space between buttons
         SizedBox(
-          width: buttonSizeWidth.toDouble() + 10, // Fixed width for the button
+          width: buttonSizeWidth.toDouble() + 18, // Fixed width for the button
           height: buttonSizeHeight.toDouble(), // Fixed height for the button
           child: ElevatedButton(
             onPressed: () {
               audioController.playSfx(SfxType.btnTap);
-              if (buttonStateAvailable){
-                _handleCheckFold(gameState);
-              } else {
-                buttonState.toggleButtonState(ButtonType.checkFold);
-              }
+              buttonStateAvailable ? _handleCheckFold(gameState) : buttonState.toggleButtonState(ButtonType.checkFold);
               context.read<RaiserProvider>().closeRaiser();
             },
             // onPressed: () => gameState.touch(),
@@ -163,7 +177,8 @@ class ActionButtons extends StatelessWidget {
                   activeColor: Colors.greenAccent,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   visualDensity: VisualDensity.compact,
-                ), const Text('CHECK/FOLD'),
+                ),
+                const Text('CHECK/FOLD'),
               ],
             ),
           ),
@@ -175,7 +190,7 @@ class ActionButtons extends StatelessWidget {
           child: ElevatedButton(
             onPressed: () {
               audioController.playSfx(SfxType.btnTap);
-              onButtonPress('CHECK', playerIndex);
+              buttonStateAvailable ? onButtonPress('CHECK', playerIndex): buttonState.toggleButtonState(ButtonType.check);
               context.read<RaiserProvider>().closeRaiser();
               // // For test only - set increment each time the button is pressed from 0 to 9 for testing
               // gameState.setCurrentButtonIndex((gameState.currentButtonIndex + 1) % 10);
@@ -189,7 +204,23 @@ class ActionButtons extends StatelessWidget {
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
-            child: gameState.currentBet == gameState.playerM.getBet ? const Text('CHECK'): const SizedBox.shrink(),
+            child: gameState.currentBet == gameState.playerM.getBet ?
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(width: 2.5),
+                Checkbox(
+                  value: buttonState.checkEnabled,
+                  onChanged: null,
+                  activeColor: Colors.greenAccent,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                ),
+                const SizedBox(width: 10),
+                const Text('CHECK'),
+              ],
+            )
+            : const SizedBox.shrink(),
           ),
         ),
         const SizedBox(width: 6), // Space between buttons
@@ -213,13 +244,29 @@ class ActionButtons extends StatelessWidget {
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
-            child: gameState.currentBet == gameState.playerM.getBet ? const SizedBox.shrink() : Text('CALL ${() {
-              final callAmount = gameState.currentBet - gameState.playerM.getBet;
-              if (callAmount > gameState.playerM.getChips) {
-                return gameState.playerM.getChips.toString();
-              }
-              return (callAmount > 0 && gameState.playerM.getState == proto.PlayerStatusType.Wait4Act) ? callAmount.toString() : '';
-            }()}'),
+            child: gameState.currentBet == gameState.playerM.getBet ?
+            const SizedBox.shrink()
+            : Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(width: 2.5),
+                Checkbox(
+                  value: buttonState.callEnabled,
+                  onChanged: null,
+                  activeColor: Colors.greenAccent,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                ),
+                const SizedBox(width: 6),
+                Text('CALL ${() {
+                    final callAmount = gameState.currentBet - gameState.playerM.getBet;
+                    if (callAmount > gameState.playerM.getChips) {
+                      return gameState.playerM.getChips.toString();
+                    }
+                    return (callAmount > 0) ? callAmount.toString() : '';
+                  }()}'),
+              ],
+            )
           ),
         ),
         const SizedBox(width: 6), // Space between buttons

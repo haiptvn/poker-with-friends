@@ -348,13 +348,75 @@ class PlayerState extends $pb.GeneratedMessage {
   $core.List<PlayerGameActionType> get noActions => $_getList(9);
 }
 
+class ControlShowing extends $pb.GeneratedMessage {
+  factory ControlShowing({
+    $core.Iterable<$core.int>? allowShowingPos,
+    $core.int? winnerPos,
+  }) {
+    final $result = create();
+    if (allowShowingPos != null) {
+      $result.allowShowingPos.addAll(allowShowingPos);
+    }
+    if (winnerPos != null) {
+      $result.winnerPos = winnerPos;
+    }
+    return $result;
+  }
+  ControlShowing._() : super();
+  factory ControlShowing.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ControlShowing.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ControlShowing', package: const $pb.PackageName(_omitMessageNames ? '' : 'gpbmessage'), createEmptyInstance: create)
+    ..p<$core.int>(1, _omitFieldNames ? '' : 'allowShowingPos', $pb.PbFieldType.K3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'winnerPos', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ControlShowing clone() => ControlShowing()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ControlShowing copyWith(void Function(ControlShowing) updates) => super.copyWith((message) => updates(message as ControlShowing)) as ControlShowing;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ControlShowing create() => ControlShowing._();
+  ControlShowing createEmptyInstance() => create();
+  static $pb.PbList<ControlShowing> createRepeated() => $pb.PbList<ControlShowing>();
+  @$core.pragma('dart2js:noInline')
+  static ControlShowing getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ControlShowing>(create);
+  static ControlShowing? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<$core.int> get allowShowingPos => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get winnerPos => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set winnerPos($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasWinnerPos() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearWinnerPos() => clearField(2);
+}
+
 class Result extends $pb.GeneratedMessage {
   factory Result({
     $core.Iterable<PeerState>? showingCards,
+    ControlShowing? control,
   }) {
     final $result = create();
     if (showingCards != null) {
       $result.showingCards.addAll(showingCards);
+    }
+    if (control != null) {
+      $result.control = control;
     }
     return $result;
   }
@@ -363,7 +425,8 @@ class Result extends $pb.GeneratedMessage {
   factory Result.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Result', package: const $pb.PackageName(_omitMessageNames ? '' : 'gpbmessage'), createEmptyInstance: create)
-    ..pc<PeerState>(3, _omitFieldNames ? '' : 'showingCards', $pb.PbFieldType.PM, subBuilder: PeerState.create)
+    ..pc<PeerState>(1, _omitFieldNames ? '' : 'showingCards', $pb.PbFieldType.PM, subBuilder: PeerState.create)
+    ..aOM<ControlShowing>(2, _omitFieldNames ? '' : 'control', subBuilder: ControlShowing.create)
     ..hasRequiredFields = false
   ;
 
@@ -388,8 +451,19 @@ class Result extends $pb.GeneratedMessage {
   static Result getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Result>(create);
   static Result? _defaultInstance;
 
-  @$pb.TagNumber(3)
+  @$pb.TagNumber(1)
   $core.List<PeerState> get showingCards => $_getList(0);
+
+  @$pb.TagNumber(2)
+  ControlShowing get control => $_getN(1);
+  @$pb.TagNumber(2)
+  set control(ControlShowing v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasControl() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearControl() => clearField(2);
+  @$pb.TagNumber(2)
+  ControlShowing ensureControl() => $_ensure(1);
 }
 
 /// Message to represent a game state

@@ -76,7 +76,7 @@ class PlayerPanel extends StatelessWidget {
         return '';
     }
   }
-  bool _needShowStatus(proto.PlayerStatusType state) {
+  bool _needShowStatus(proto.PlayerStatusType state, bool isShow) {
     switch (state) {
       case proto.PlayerStatusType.Wait4Act:
       case proto.PlayerStatusType.Playing:
@@ -84,6 +84,9 @@ class PlayerPanel extends StatelessWidget {
       case proto.PlayerStatusType.Ready:
       case proto.PlayerStatusType.Folded:
         return false;
+      case proto.PlayerStatusType.LOSER:
+      case proto.PlayerStatusType.WINNER:
+         return isShow;
       default:
         return true;
     }
@@ -219,7 +222,7 @@ class PlayerPanel extends StatelessWidget {
                     Transform.rotate(
                       angle: (isShowHand) ? 0 : -0.1, // Adjust the angle as needed
                       child: Image.asset(
-                        hasCards ? _cardToImagePath(player.getCard1) : _faceDownCardImagePath,
+                        hasCards && (isMainPlayer || isShowHand) ? _cardToImagePath(player.getCard1) : _faceDownCardImagePath,
                         color: isFolded && !(isShowHand) ? Colors.black.withOpacity(0.6) : Colors.transparent,
                         colorBlendMode : BlendMode.srcATop,
                         width: 40, // Card width
@@ -232,7 +235,7 @@ class PlayerPanel extends StatelessWidget {
                       child: Transform.rotate(
                         angle: (isShowHand) ? 0 : 0.1, // Adjust the angle as needed
                         child: Image.asset(
-                          hasCards ? _cardToImagePath(player.getCard2): _faceDownCardImagePath,
+                          hasCards && (isMainPlayer || isShowHand) ? _cardToImagePath(player.getCard2): _faceDownCardImagePath,
                           color: isFolded && !(isShowHand) ? Colors.black.withOpacity(0.6) : Colors.transparent,
                           colorBlendMode : BlendMode.srcATop,
                           width: 40, // Card width
@@ -246,7 +249,7 @@ class PlayerPanel extends StatelessWidget {
           ) : const SizedBox.shrink(),
 
           // Role/Action (e.g., SM. BLIND, BIG BLIND, CHECK, CALL, RAISE, FOLD, ALL IN, WINNER, LOSER)
-          if (!isEmptySlot && _needShowStatus(player.getState))
+          if (!isEmptySlot && _needShowStatus(player.getState, isShowHand))
             Positioned(
               top: 29, // 35
               child: Container(
