@@ -47,7 +47,7 @@ class PlayerPanel extends StatelessWidget {
     } else if (handRank.contains('ROYAL FLUSH')) {
         return 'ROYAL FLUSH';
     } else {
-      return "WINNER";
+      return "...";
     }
   }
   String _showStatus(proto.PlayerStatusType state, String handRank) {
@@ -76,7 +76,7 @@ class PlayerPanel extends StatelessWidget {
         return '';
     }
   }
-  bool _needShowStatus(proto.PlayerStatusType state, bool isShow) {
+  bool _needShowStatus(proto.PlayerStatusType state, bool isShow, bool hasHankRanking) {
     switch (state) {
       case proto.PlayerStatusType.Wait4Act:
       case proto.PlayerStatusType.Playing:
@@ -84,9 +84,9 @@ class PlayerPanel extends StatelessWidget {
       case proto.PlayerStatusType.Ready:
       case proto.PlayerStatusType.Folded:
         return false;
-      case proto.PlayerStatusType.LOSER:
       case proto.PlayerStatusType.WINNER:
-         return isShow;
+      case proto.PlayerStatusType.LOSER:
+         return isShow && hasHankRanking;
       default:
         return true;
     }
@@ -202,6 +202,13 @@ class PlayerPanel extends StatelessWidget {
                     }(), // Border color
                     width: 5, // Border width
                   ),
+                  boxShadow: player.isWinner ? const [
+                    BoxShadow(
+                      color: Colors.yellowAccent, // Shadow color
+                      blurRadius: 4, // Shadow blur radius
+                      spreadRadius: 2.5, // Shadow spread radius
+                    ),
+                  ] : const [],
                 ),
               ),
             ),
@@ -249,7 +256,7 @@ class PlayerPanel extends StatelessWidget {
           ) : const SizedBox.shrink(),
 
           // Role/Action (e.g., SM. BLIND, BIG BLIND, CHECK, CALL, RAISE, FOLD, ALL IN, WINNER, LOSER)
-          if (!isEmptySlot && _needShowStatus(player.getState, isShowHand))
+          if (!isEmptySlot && _needShowStatus(player.getState, isShowHand, player.handRanking.isNotEmpty))
             Positioned(
               top: 29, // 35
               child: Container(
@@ -292,10 +299,9 @@ class PlayerPanel extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 1),
-                  Text(
-                    context.read<PokerGameStateProvider>().getPlayerByIndex(playerUiIndex).getName,
+                  Text(player.isWinner ? "Winner" : player.getName,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
+                      color: player.isWinner ? Colors.yellowAccent : Colors.white.withOpacity(0.85),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Permanent Marker',

@@ -230,19 +230,34 @@ final $typed_data.Uint8List playerStateDescriptor = $convert.base64Decode(
     'VSDGNoYW5nZUFtb3VudBI/Cgpub19hY3Rpb25zGAogAygOMiAuZ3BibWVzc2FnZS5QbGF5ZXJH'
     'YW1lQWN0aW9uVHlwZVIJbm9BY3Rpb25z');
 
+@$core.Deprecated('Use winPlayerDescriptor instead')
+const WinPlayer$json = {
+  '1': 'WinPlayer',
+  '2': [
+    {'1': 'table_pos', '3': 1, '4': 1, '5': 5, '10': 'tablePos'},
+    {'1': 'won_amount', '3': 2, '4': 1, '5': 5, '10': 'wonAmount'},
+    {'1': 'is_last', '3': 3, '4': 1, '5': 8, '10': 'isLast'},
+  ],
+};
+
+/// Descriptor for `WinPlayer`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List winPlayerDescriptor = $convert.base64Decode(
+    'CglXaW5QbGF5ZXISGwoJdGFibGVfcG9zGAEgASgFUgh0YWJsZVBvcxIdCgp3b25fYW1vdW50GA'
+    'IgASgFUgl3b25BbW91bnQSFwoHaXNfbGFzdBgDIAEoCFIGaXNMYXN0');
+
 @$core.Deprecated('Use controlShowingDescriptor instead')
 const ControlShowing$json = {
   '1': 'ControlShowing',
   '2': [
     {'1': 'allow_showing_pos', '3': 1, '4': 3, '5': 5, '10': 'allowShowingPos'},
-    {'1': 'winner_pos', '3': 2, '4': 1, '5': 5, '10': 'winnerPos'},
+    {'1': 'winner', '3': 2, '4': 1, '5': 11, '6': '.gpbmessage.WinPlayer', '10': 'winner'},
   ],
 };
 
 /// Descriptor for `ControlShowing`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List controlShowingDescriptor = $convert.base64Decode(
     'Cg5Db250cm9sU2hvd2luZxIqChFhbGxvd19zaG93aW5nX3BvcxgBIAMoBVIPYWxsb3dTaG93aW'
-    '5nUG9zEh0KCndpbm5lcl9wb3MYAiABKAVSCXdpbm5lclBvcw==');
+    '5nUG9zEi0KBndpbm5lchgCIAEoCzIVLmdwYm1lc3NhZ2UuV2luUGxheWVyUgZ3aW5uZXI=');
 
 @$core.Deprecated('Use resultDescriptor instead')
 const Result$json = {

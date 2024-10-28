@@ -80,6 +80,7 @@ class _GlowingContainerState extends State<GlowingContainer> {
   Widget build(BuildContext context) {
     final playerState = context.read<PokerGameStateProvider>().getPlayerByIndex(widget.uiIdx).getState;
     final isActive = playerState == proto.PlayerStatusType.Wait4Act;
+    final isWinner = playerState == proto.PlayerStatusType.WINNER;
     // debugPrint('_GlowingContainerState rebuilt at ${DateTime.now()} uiIdx=${widget.uiIdx}, state=$playerState to $isActive' );
     if (_timer == null) {
       if (isActive) {
@@ -107,10 +108,25 @@ class _GlowingContainerState extends State<GlowingContainer> {
     final glowingColor = _indicator5sLeft
                     ? Colors.redAccent
                     : _indicatorRemainingHalftime
-                    ? Colors.yellowAccent
+                    ? Colors.orange
                     : Colors.white;
 
-    return AnimatedContainer(
+    return isWinner ?
+      Container(
+        width: 76,
+        height: 34,
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 23, 23, 23),
+          border: Border.all(
+            color: const Color.fromARGB(125, 55, 55, 55),
+            width: 1.8,
+          ),
+          borderRadius: BorderRadius.circular(7),
+          boxShadow:const [BoxShadow(color: Colors.yellow, blurRadius: 6, spreadRadius: 4),]
+        ),
+        child: widget.child, // The inner content of the container
+      )
+    : AnimatedContainer(
       width: 76,
       height: 34,
       duration: const Duration(milliseconds: 150),

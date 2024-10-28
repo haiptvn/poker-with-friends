@@ -134,6 +134,7 @@ class ActionButtons extends StatelessWidget {
               audioController.playSfx(SfxType.btnTap);
               onButtonPress('FOLD', playerIndex);
               context.read<RaiserProvider>().closeRaiser();
+              buttonState.resetButtonState();
             },
             // onPressed: () => gameState.touch(),
             style: ElevatedButton.styleFrom(
@@ -149,7 +150,7 @@ class ActionButtons extends StatelessWidget {
         ),
         const SizedBox(width: 6), // Space between buttons
         SizedBox(
-          width: buttonSizeWidth.toDouble() + 18, // Fixed width for the button
+          width: buttonSizeWidth.toDouble() + 15, // Fixed width for the button
           height: buttonSizeHeight.toDouble(), // Fixed height for the button
           child: ElevatedButton(
             onPressed: () {
@@ -286,6 +287,7 @@ class ActionButtons extends StatelessWidget {
               }
               raiserProvider.setMinRaiseValue(gameState.currentBet, gameState.playerM.getChips, gameState.totalPot);
               raiserProvider.toggleRaiserVisibility();
+              buttonState.resetButtonState();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: gameState.playerM.getChips <= gameState.currentBet ? Colors.white30 : const Color(0xfff4f3fa).withOpacity(0.85),

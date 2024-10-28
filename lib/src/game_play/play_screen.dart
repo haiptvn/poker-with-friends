@@ -243,26 +243,26 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                 },
               ),
 
-              // Hank ranking
-              gameState.playerM.handRanking != '' ? Align(
-                alignment: const Alignment(0, 0.05), // Adjust this value for top alignment (-1 is top, 1 is bottom)
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: Text(
-                    gameState.playerM.handRanking,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.yellowAccent,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ): const SizedBox.shrink(),
+              // // Hank ranking
+              // gameState.playerM.handRanking != '' ? Align(
+              //   alignment: const Alignment(0, 0.05), // Adjust this value for top alignment (-1 is top, 1 is bottom)
+              //   child: Container(
+              //     decoration: BoxDecoration(
+              //       color: Colors.black.withOpacity(0.3),
+              //       borderRadius: BorderRadius.circular(5),
+              //     ),
+              //     padding: const EdgeInsets.symmetric(horizontal: 5),
+              //     child: Text(
+              //       gameState.playerM.handRanking,
+              //       textAlign: TextAlign.center,
+              //       style: const TextStyle(
+              //         color: Colors.yellowAccent,
+              //         fontSize: 12,
+              //         fontWeight: FontWeight.bold,
+              //       ),
+              //     ),
+              //   ),
+              // ): const SizedBox.shrink(),
 
               // Dealer icon
               Positioned(
@@ -395,17 +395,11 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                 ),
               ),
 
-
-              Selector<PokerGameStateProvider, (bool, bool, proto.PlayerStatusType) >(
-                selector: (_, pokerGameState) => (pokerGameState.playerM.showCards, pokerGameState.shouldShowButton, pokerGameState.playerM.getState),
+              Selector<PokerGameStateProvider, (bool, bool, bool) >(
+                selector: (_, pokerGameState) => (pokerGameState.playerM.showCards, pokerGameState.shouldShowButton, pokerGameState.isAllowToShowYourCard),
                 builder: (context, data, child) {
                   debugPrint('Show button: $data');
-                  return (!data.$1 &&
-                  !data.$2 &&
-                  (data.$3 != proto.PlayerStatusType.Ready) &&
-                  (data.$3 != proto.PlayerStatusType.Spectating) &&
-                  (data.$3 != proto.PlayerStatusType.Sat_Out) &&
-                  gameState.playerM.hasCards)
+                  return (!data.$1 && !data.$2 && data.$3 && gameState.playerM.hasCards)
                   ? Positioned(
                     bottom: 110,
                     left: MediaQuery.of(context).size.width / 2 + 40,

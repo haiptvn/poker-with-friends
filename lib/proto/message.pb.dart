@@ -348,17 +348,96 @@ class PlayerState extends $pb.GeneratedMessage {
   $core.List<PlayerGameActionType> get noActions => $_getList(9);
 }
 
+/// Messages for control showdown phase
+class WinPlayer extends $pb.GeneratedMessage {
+  factory WinPlayer({
+    $core.int? tablePos,
+    $core.int? wonAmount,
+    $core.bool? isLast,
+  }) {
+    final $result = create();
+    if (tablePos != null) {
+      $result.tablePos = tablePos;
+    }
+    if (wonAmount != null) {
+      $result.wonAmount = wonAmount;
+    }
+    if (isLast != null) {
+      $result.isLast = isLast;
+    }
+    return $result;
+  }
+  WinPlayer._() : super();
+  factory WinPlayer.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WinPlayer.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WinPlayer', package: const $pb.PackageName(_omitMessageNames ? '' : 'gpbmessage'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'tablePos', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'wonAmount', $pb.PbFieldType.O3)
+    ..aOB(3, _omitFieldNames ? '' : 'isLast')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  WinPlayer clone() => WinPlayer()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WinPlayer copyWith(void Function(WinPlayer) updates) => super.copyWith((message) => updates(message as WinPlayer)) as WinPlayer;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static WinPlayer create() => WinPlayer._();
+  WinPlayer createEmptyInstance() => create();
+  static $pb.PbList<WinPlayer> createRepeated() => $pb.PbList<WinPlayer>();
+  @$core.pragma('dart2js:noInline')
+  static WinPlayer getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WinPlayer>(create);
+  static WinPlayer? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get tablePos => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set tablePos($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTablePos() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTablePos() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get wonAmount => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set wonAmount($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasWonAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearWonAmount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get isLast => $_getBF(2);
+  @$pb.TagNumber(3)
+  set isLast($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasIsLast() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearIsLast() => clearField(3);
+}
+
 class ControlShowing extends $pb.GeneratedMessage {
   factory ControlShowing({
     $core.Iterable<$core.int>? allowShowingPos,
-    $core.int? winnerPos,
+    WinPlayer? winner,
   }) {
     final $result = create();
     if (allowShowingPos != null) {
       $result.allowShowingPos.addAll(allowShowingPos);
     }
-    if (winnerPos != null) {
-      $result.winnerPos = winnerPos;
+    if (winner != null) {
+      $result.winner = winner;
     }
     return $result;
   }
@@ -368,7 +447,7 @@ class ControlShowing extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ControlShowing', package: const $pb.PackageName(_omitMessageNames ? '' : 'gpbmessage'), createEmptyInstance: create)
     ..p<$core.int>(1, _omitFieldNames ? '' : 'allowShowingPos', $pb.PbFieldType.K3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'winnerPos', $pb.PbFieldType.O3)
+    ..aOM<WinPlayer>(2, _omitFieldNames ? '' : 'winner', subBuilder: WinPlayer.create)
     ..hasRequiredFields = false
   ;
 
@@ -397,13 +476,15 @@ class ControlShowing extends $pb.GeneratedMessage {
   $core.List<$core.int> get allowShowingPos => $_getList(0);
 
   @$pb.TagNumber(2)
-  $core.int get winnerPos => $_getIZ(1);
+  WinPlayer get winner => $_getN(1);
   @$pb.TagNumber(2)
-  set winnerPos($core.int v) { $_setSignedInt32(1, v); }
+  set winner(WinPlayer v) { setField(2, v); }
   @$pb.TagNumber(2)
-  $core.bool hasWinnerPos() => $_has(1);
+  $core.bool hasWinner() => $_has(1);
   @$pb.TagNumber(2)
-  void clearWinnerPos() => clearField(2);
+  void clearWinner() => clearField(2);
+  @$pb.TagNumber(2)
+  WinPlayer ensureWinner() => $_ensure(1);
 }
 
 class Result extends $pb.GeneratedMessage {

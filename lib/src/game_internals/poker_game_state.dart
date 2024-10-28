@@ -18,6 +18,7 @@ class PlayerModel {
   proto.Card _card2 = proto.Card();
   int _bet = 0;
   bool _isFolded = false;
+  bool _isWinner = false;
   String _handRanking = '';
 
   int get getChangesCnt => _changesCnt;
@@ -30,6 +31,7 @@ class PlayerModel {
   proto.Card get getCard2 => _card2;
   int get getBet => _bet;
   bool get isFolded => _isFolded;
+  bool get isWinner => _isWinner;
   String get handRanking => _handRanking;
   bool get hasCards => _card1.rank != proto.RankType.NONE && _card2.rank != proto.RankType.NONE;
 
@@ -67,6 +69,10 @@ class PlayerModel {
       _isFolded = true;
       _changesCnt++;
   }
+  void setWinnerState(bool isWinner) {
+    _isWinner = isWinner;
+    _changesCnt++;
+  }
   void setHandRanking(String ranking) {
     _handRanking = ranking;
     _changesCnt++;
@@ -85,6 +91,7 @@ class PlayerModel {
     _showCards = false;
     _bet = 0;
     _isFolded = false;
+    _isWinner = false;
     _handRanking = '';
     _changesCnt++;
   }
@@ -98,6 +105,7 @@ class PlayerModel {
     _card2 = proto.Card();
     _bet = 0;
     _isFolded = false;
+    _isWinner = false;
     _handRanking = '';
     _changesCnt = 0;
   }
@@ -162,6 +170,7 @@ class PokerGameStateProvider extends ChangeNotifier {
   int _currentBet = 0;
   bool _isCurrentBetChanged = false;
   List<proto.PlayerBalance> _playerBalances = [];
+  bool _isAllowToShowYourCard = false;
 
   // Getters
   PlayerModel get playerM => _players[0];
@@ -188,6 +197,7 @@ class PokerGameStateProvider extends ChangeNotifier {
   bool get isCurrentBetChanged => _isCurrentBetChanged;
   PlayerModel getPlayerByIndex(int index) => _players[index];
   List<proto.PlayerBalance> get playerBalances => _playerBalances;
+  bool get isAllowToShowYourCard => _isAllowToShowYourCard;
 
   int count = 0;
 
@@ -366,6 +376,11 @@ class PokerGameStateProvider extends ChangeNotifier {
             break;
           case proto.NotifyReasonType.NEW_ROUND:
             _hasPlayedYourTurnSfx = false;
+            break;
+          case proto.NotifyReasonType.END_ROUND:
+            _pot = _totalPot;
+            _players.forEach((player) => player.setBet(0));
+            _currentBet = 0;
             // Update community cards
             final prevNumOfCards = _communityCards.length;
             _communityCards.clear();
@@ -376,11 +391,6 @@ class PokerGameStateProvider extends ChangeNotifier {
             if ( newNumOfCards == 3 || newNumOfCards == 1) {
               audioController?.playSfx(SfxType.dealCommunity);
             }
-            break;
-          case proto.NotifyReasonType.END_ROUND:
-            _pot = _totalPot;
-            _players.forEach((player) => player.setBet(0));
-            _currentBet = 0;
             break;
           case proto.NotifyReasonType.FOR_ACTION:
             break;
@@ -402,6 +412,24 @@ class PokerGameStateProvider extends ChangeNotifier {
             }
             break;
           case proto.NotifyReasonType.SYNC_SHOWDOWN:
+            _pot = _totalPot;
+            _players.forEach((player) {
+              player.setBet(0);
+              player.setState(proto.PlayerStatusType.LOSER); // Wait for the server to send the winning status
+              player.setWinnerState(false);
+            });
+            _currentBet = 0;
+            // Update community cards for case all in
+            final prevNumOfCards = _communityCards.length;
+            _communityCards.clear();
+            message.gameState.communityCards.forEach((card) {
+              _communityCards.add(card);
+            });
+            final newNumOfCards = _communityCards.length - prevNumOfCards;
+            if ( newNumOfCards == 3 || newNumOfCards == 1) {
+              audioController?.playSfx(SfxType.dealCommunity);
+            }
+            // Store the hand ranking for the all players
             if ((message.gameState.currentRound == proto.RoundStateType.SHOWDOWN) &&
                 message.gameState.hasFinalResult() && message.gameState.finalResult.showingCards.isNotEmpty) {
                 // Store the hand ranking for the all players
@@ -415,17 +443,45 @@ class PokerGameStateProvider extends ChangeNotifier {
                 }
               });
             }
+            // Show the hand if message has the control info
+            if ((message.gameState.currentRound == proto.RoundStateType.SHOWDOWN) &&
+                message.gameState.hasFinalResult() && message.gameState.finalResult.hasControl()) {
+                if (message.gameState.finalResult.control.allowShowingPos.isNotEmpty) {
+                  // Store the hand ranking for the all players
+                  message.gameState.finalResult.control.allowShowingPos.forEach((int tablePos) {
+                    final index = (_maxPlayers - _forUiDisplayIndex + tablePos) % _maxPlayers;
+                    _players[index].setShowCards(true);
+                    _log.info('Showing hand ranking and card for player: ${_players[index]._name}');
+                  });
+                  audioController?.playSfx(SfxType.dealCommunity);
+                }
+              }
             break;
           case proto.NotifyReasonType.SHOWDOWN_CTRL:
             if ((message.gameState.currentRound == proto.RoundStateType.SHOWDOWN) &&
                 message.gameState.hasFinalResult() && message.gameState.finalResult.hasControl()) {
-              // Store the hand ranking for the all players
-              message.gameState.finalResult.control.allowShowingPos.forEach((int tablePos) {
-                final index = (_maxPlayers - _forUiDisplayIndex + tablePos) % _maxPlayers;
-                _players[index].setShowCards(true);
-                _log.info('Showing hand ranking and card for player: ${_players[index]._name}');
-              });
-              audioController?.playSfx(SfxType.dealCommunity);
+                if (message.gameState.finalResult.control.allowShowingPos.isNotEmpty) {
+                  // Store the hand ranking for the all players
+                  message.gameState.finalResult.control.allowShowingPos.forEach((int tablePos) {
+                    final index = (_maxPlayers - _forUiDisplayIndex + tablePos) % _maxPlayers;
+                    _players[index].setShowCards(true);
+                    _log.info('Showing hand ranking and card for player: ${_players[index]._name}');
+                  });
+                  audioController?.playSfx(SfxType.dealCommunity);
+                }
+                if (message.gameState.finalResult.control.hasWinner()) {
+                  final index = (_maxPlayers - _forUiDisplayIndex + message.gameState.finalResult.control.winner.tablePos) % _maxPlayers;
+                  final won = message.gameState.finalResult.control.winner.wonAmount;
+                  audioController?.playSfx(SfxType.collect);
+                  // Set the winner status for the player and trigger effect
+                  _players[index].setState(proto.PlayerStatusType.WINNER);
+                  _players[index].setWinnerState(true);
+                  _log.info('Winner detected: ${_players[index]._name}, current chip: ${_players[index].getChips}, won $won chips');
+                  _players[index].setChips(_players[index].getChips + won);
+                  _pot -= won;
+                  _log.info('Pot: $_pot');
+                  _isAllowToShowYourCard = message.gameState.finalResult.control.winner.isLast;
+                }
             }
             break;
           case proto.NotifyReasonType.NOT_SET:
@@ -469,8 +525,8 @@ class PokerGameStateProvider extends ChangeNotifier {
       message.gameState.players.forEach((player) {
         final index = (_maxPlayers - _forUiDisplayIndex + player.tablePosition) % _maxPlayers;
         _players[index].setState(player.status);
+        _players[index].setChips(player.chips);
         if (player.hasName()) _players[index].setName(player.name);
-        if (player.hasChips()) _players[index].setChips(player.chips);
         if (player.hasCurrentBet()) _players[index].setBet(player.currentBet);
         _log.info('Player: ${player.name}, status: ${player.status}, chips: ${player.chips}, bet: ${player.currentBet}, ui index: $index');
 
@@ -553,7 +609,7 @@ class PokerGameStateProvider extends ChangeNotifier {
     _pot = 0;
     _totalPot = 0;
     _communityCards.clear();
-
+    _isAllowToShowYourCard = false;
     // internal states
     _isPlayWinnerSfx = false;
 
@@ -571,6 +627,7 @@ class PokerGameStateProvider extends ChangeNotifier {
     _hasPlayerMainIndex = false;
     _forUiDisplayIndex = 0;
     _playerBalances.clear();
+    _isAllowToShowYourCard = false;
 
     // internal states
     _rxCount = 0;

@@ -121,9 +121,16 @@ message PlayerState {
     repeated PlayerGameActionType no_actions = 10;  // Invalid action that player should not act
 }
 
+// Messages for control showdown phase
+message WinPlayer {
+    int32   table_pos   = 1;
+    int32   won_amount  = 2;
+    bool    is_last     = 3;
+}
+
 message ControlShowing {
     repeated int32  allow_showing_pos   = 1;
-    int32           winner_pos          = 2;
+    WinPlayer       winner              = 2;
 }
 
 message Result {
