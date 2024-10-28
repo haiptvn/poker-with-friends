@@ -271,6 +271,7 @@ const GameState$json = {
     {'1': 'current_bet', '3': 6, '4': 1, '5': 5, '10': 'currentBet'},
     {'1': 'current_round', '3': 7, '4': 1, '5': 14, '6': '.gpbmessage.RoundStateType', '10': 'currentRound'},
     {'1': 'final_result', '3': 8, '4': 1, '5': 11, '6': '.gpbmessage.Result', '10': 'finalResult'},
+    {'1': 'balance_info', '3': 9, '4': 1, '5': 11, '6': '.gpbmessage.BalanceInfo', '10': 'balanceInfo'},
   ],
 };
 
@@ -283,7 +284,8 @@ final $typed_data.Uint8List gameStateDescriptor = $convert.base64Decode(
     'Ug5jb21tdW5pdHlDYXJkcxIfCgtjdXJyZW50X2JldBgGIAEoBVIKY3VycmVudEJldBI/Cg1jdX'
     'JyZW50X3JvdW5kGAcgASgOMhouZ3BibWVzc2FnZS5Sb3VuZFN0YXRlVHlwZVIMY3VycmVudFJv'
     'dW5kEjUKDGZpbmFsX3Jlc3VsdBgIIAEoCzISLmdwYm1lc3NhZ2UuUmVzdWx0UgtmaW5hbFJlc3'
-    'VsdA==');
+    'VsdBI6CgxiYWxhbmNlX2luZm8YCSABKAsyFy5ncGJtZXNzYWdlLkJhbGFuY2VJbmZvUgtiYWxh'
+    'bmNlSW5mbw==');
 
 @$core.Deprecated('Use playerActionDescriptor instead')
 const PlayerAction$json = {
@@ -444,10 +446,9 @@ const ServerMessage$json = {
     {'1': 'game_state', '3': 1, '4': 1, '5': 11, '6': '.gpbmessage.GameState', '9': 0, '10': 'gameState'},
     {'1': 'game_setting', '3': 2, '4': 1, '5': 11, '6': '.gpbmessage.GameSetting', '9': 0, '10': 'gameSetting'},
     {'1': 'peer_state', '3': 3, '4': 1, '5': 11, '6': '.gpbmessage.PeerState', '9': 0, '10': 'peerState'},
-    {'1': 'balance_info', '3': 4, '4': 1, '5': 11, '6': '.gpbmessage.BalanceInfo', '9': 0, '10': 'balanceInfo'},
-    {'1': 'joined_ack', '3': 5, '4': 1, '5': 11, '6': '.gpbmessage.JoinedAcknowledge', '9': 0, '10': 'joinedAck'},
-    {'1': 'error_message', '3': 6, '4': 1, '5': 9, '9': 0, '10': 'errorMessage'},
-    {'1': 'welcome_message', '3': 7, '4': 1, '5': 9, '9': 0, '10': 'welcomeMessage'},
+    {'1': 'joined_ack', '3': 4, '4': 1, '5': 11, '6': '.gpbmessage.JoinedAcknowledge', '9': 0, '10': 'joinedAck'},
+    {'1': 'error_message', '3': 5, '4': 1, '5': 9, '9': 0, '10': 'errorMessage'},
+    {'1': 'welcome_message', '3': 6, '4': 1, '5': 9, '9': 0, '10': 'welcomeMessage'},
   ],
   '8': [
     {'1': 'message'},
@@ -459,9 +460,8 @@ final $typed_data.Uint8List serverMessageDescriptor = $convert.base64Decode(
     'Cg1TZXJ2ZXJNZXNzYWdlEjYKCmdhbWVfc3RhdGUYASABKAsyFS5ncGJtZXNzYWdlLkdhbWVTdG'
     'F0ZUgAUglnYW1lU3RhdGUSPAoMZ2FtZV9zZXR0aW5nGAIgASgLMhcuZ3BibWVzc2FnZS5HYW1l'
     'U2V0dGluZ0gAUgtnYW1lU2V0dGluZxI2CgpwZWVyX3N0YXRlGAMgASgLMhUuZ3BibWVzc2FnZS'
-    '5QZWVyU3RhdGVIAFIJcGVlclN0YXRlEjwKDGJhbGFuY2VfaW5mbxgEIAEoCzIXLmdwYm1lc3Nh'
-    'Z2UuQmFsYW5jZUluZm9IAFILYmFsYW5jZUluZm8SPgoKam9pbmVkX2FjaxgFIAEoCzIdLmdwYm'
-    '1lc3NhZ2UuSm9pbmVkQWNrbm93bGVkZ2VIAFIJam9pbmVkQWNrEiUKDWVycm9yX21lc3NhZ2UY'
-    'BiABKAlIAFIMZXJyb3JNZXNzYWdlEikKD3dlbGNvbWVfbWVzc2FnZRgHIAEoCUgAUg53ZWxjb2'
-    '1lTWVzc2FnZUIJCgdtZXNzYWdl');
+    '5QZWVyU3RhdGVIAFIJcGVlclN0YXRlEj4KCmpvaW5lZF9hY2sYBCABKAsyHS5ncGJtZXNzYWdl'
+    'LkpvaW5lZEFja25vd2xlZGdlSABSCWpvaW5lZEFjaxIlCg1lcnJvcl9tZXNzYWdlGAUgASgJSA'
+    'BSDGVycm9yTWVzc2FnZRIpCg93ZWxjb21lX21lc3NhZ2UYBiABKAlIAFIOd2VsY29tZU1lc3Nh'
+    'Z2VCCQoHbWVzc2FnZQ==');
 

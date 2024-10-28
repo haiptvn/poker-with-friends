@@ -141,6 +141,7 @@ message GameState {
     int32                   current_bet     = 6;    // Current bet amount
     RoundStateType          current_round   = 7;    // Type of the current round
     Result                  final_result    = 8;    // For final result e.g winner, show hands
+    BalanceInfo             balance_info    = 9;    // Updated all player balance information
 }
 
 // Message to represent a player's action
@@ -212,9 +213,8 @@ message ServerMessage {
         GameState game_state = 1;          // Updated game state
         GameSetting game_setting = 2;      // Updated game setting
         PeerState peer_state = 3;          // Updated private player information
-        BalanceInfo balance_info = 4;      // Updated all player balance information
-        JoinedAcknowledge joined_ack = 5;  // Joined Acknowledgement
-        string error_message = 6;          // Error message
-        string welcome_message = 7;        // Welcome message upon joining
+        JoinedAcknowledge joined_ack = 4;  // Joined Acknowledgement
+        string error_message = 5;          // Error message
+        string welcome_message = 6;        // Welcome message upon joining
     }
 }

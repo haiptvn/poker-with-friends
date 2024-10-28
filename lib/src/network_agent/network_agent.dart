@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:poker_with_friends/src/audio/audio_controller.dart';
+import 'package:poker_with_friends/src/message_format/client_message_builder.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:poker_with_friends/proto/message.pb.dart' as proto;
@@ -232,6 +233,7 @@ class NetworkAgent {
       final decodedMessage = proto.ServerMessage.fromBuffer(message);
       if (decodedMessage.hasJoinedAck()) {
         gameState?.updateAfterReconnect(decodedMessage);
+        sendMessageAsync(ClientMessageBuilder.build('sync_game_state', gameState!.playerMainIndex).toProto());
       } else {
         gameState?.updateGameState(decodedMessage);
       }

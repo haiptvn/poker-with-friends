@@ -330,7 +330,7 @@ class PokerGameStateProvider extends ChangeNotifier {
   }
 
   void updateGameState(proto.ServerMessage message) {
-    _log.info('============================== : $_rxCount ==============================');
+    _log.info('============================== : $_rxCount : ${DateTime.now()} ==============================');
     _rxCount++;
     if (message.hasGameState()) {
       _log.info('Game state changed by reason: ${message.gameState.ntfReason}');
@@ -356,6 +356,13 @@ class PokerGameStateProvider extends ChangeNotifier {
             _pot = 0;
             _players.forEach((player) => player.setBet(0));
             _currentBet = 0;
+            // Todo merge this as a function
+            if (message.gameState.hasBalanceInfo()) {
+              message.gameState.balanceInfo.playerBalances.forEach((playerBalance) {
+                _log.info('Player: ${playerBalance.playerName}, balance: ${playerBalance.balance}');
+              });
+              _playerBalances = message.gameState.balanceInfo.playerBalances;
+            }
             break;
           case proto.NotifyReasonType.NEW_ROUND:
             _hasPlayedYourTurnSfx = false;
@@ -377,22 +384,21 @@ class PokerGameStateProvider extends ChangeNotifier {
             break;
           case proto.NotifyReasonType.FOR_ACTION:
             break;
+          case proto.NotifyReasonType.SETTING_CHANGED:
           case proto.NotifyReasonType.PLAYER_CHANGED:
             _players.forEach((player) => player.reset());
             if (_forUiDisplayIndex != _playerMainIndex) {
               _forUiDisplayIndex = _playerMainIndex;
             }
             break;
-          case proto.NotifyReasonType.SETTING_CHANGED:
-            break;
           case proto.NotifyReasonType.STATE_CHANGED:
             break;
           case proto.NotifyReasonType.SYNC_BALANCE:
-            if (message.hasBalanceInfo()) {
-              message.balanceInfo.playerBalances.forEach((playerBalance) {
+            if (message.gameState.hasBalanceInfo()) {
+              message.gameState.balanceInfo.playerBalances.forEach((playerBalance) {
                 _log.info('Player: ${playerBalance.playerName}, balance: ${playerBalance.balance}');
               });
-              _playerBalances = message.balanceInfo.playerBalances;
+              _playerBalances = message.gameState.balanceInfo.playerBalances;
             }
             break;
           case proto.NotifyReasonType.SYNC_SHOWDOWN:

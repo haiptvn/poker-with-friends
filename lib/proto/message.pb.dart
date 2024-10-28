@@ -477,6 +477,7 @@ class GameState extends $pb.GeneratedMessage {
     $core.int? currentBet,
     RoundStateType? currentRound,
     Result? finalResult,
+    BalanceInfo? balanceInfo,
   }) {
     final $result = create();
     if (ntfReason != null) {
@@ -503,6 +504,9 @@ class GameState extends $pb.GeneratedMessage {
     if (finalResult != null) {
       $result.finalResult = finalResult;
     }
+    if (balanceInfo != null) {
+      $result.balanceInfo = balanceInfo;
+    }
     return $result;
   }
   GameState._() : super();
@@ -518,6 +522,7 @@ class GameState extends $pb.GeneratedMessage {
     ..a<$core.int>(6, _omitFieldNames ? '' : 'currentBet', $pb.PbFieldType.O3)
     ..e<RoundStateType>(7, _omitFieldNames ? '' : 'currentRound', $pb.PbFieldType.OE, defaultOrMaker: RoundStateType.INITIAL, valueOf: RoundStateType.valueOf, enumValues: RoundStateType.values)
     ..aOM<Result>(8, _omitFieldNames ? '' : 'finalResult', subBuilder: Result.create)
+    ..aOM<BalanceInfo>(9, _omitFieldNames ? '' : 'balanceInfo', subBuilder: BalanceInfo.create)
     ..hasRequiredFields = false
   ;
 
@@ -603,6 +608,17 @@ class GameState extends $pb.GeneratedMessage {
   void clearFinalResult() => clearField(8);
   @$pb.TagNumber(8)
   Result ensureFinalResult() => $_ensure(7);
+
+  @$pb.TagNumber(9)
+  BalanceInfo get balanceInfo => $_getN(8);
+  @$pb.TagNumber(9)
+  set balanceInfo(BalanceInfo v) { setField(9, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasBalanceInfo() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearBalanceInfo() => clearField(9);
+  @$pb.TagNumber(9)
+  BalanceInfo ensureBalanceInfo() => $_ensure(8);
 }
 
 /// Message to represent a player's action
@@ -1385,7 +1401,6 @@ enum ServerMessage_Message {
   gameState, 
   gameSetting, 
   peerState, 
-  balanceInfo, 
   joinedAck, 
   errorMessage, 
   welcomeMessage, 
@@ -1398,7 +1413,6 @@ class ServerMessage extends $pb.GeneratedMessage {
     GameState? gameState,
     GameSetting? gameSetting,
     PeerState? peerState,
-    BalanceInfo? balanceInfo,
     JoinedAcknowledge? joinedAck,
     $core.String? errorMessage,
     $core.String? welcomeMessage,
@@ -1412,9 +1426,6 @@ class ServerMessage extends $pb.GeneratedMessage {
     }
     if (peerState != null) {
       $result.peerState = peerState;
-    }
-    if (balanceInfo != null) {
-      $result.balanceInfo = balanceInfo;
     }
     if (joinedAck != null) {
       $result.joinedAck = joinedAck;
@@ -1435,21 +1446,19 @@ class ServerMessage extends $pb.GeneratedMessage {
     1 : ServerMessage_Message.gameState,
     2 : ServerMessage_Message.gameSetting,
     3 : ServerMessage_Message.peerState,
-    4 : ServerMessage_Message.balanceInfo,
-    5 : ServerMessage_Message.joinedAck,
-    6 : ServerMessage_Message.errorMessage,
-    7 : ServerMessage_Message.welcomeMessage,
+    4 : ServerMessage_Message.joinedAck,
+    5 : ServerMessage_Message.errorMessage,
+    6 : ServerMessage_Message.welcomeMessage,
     0 : ServerMessage_Message.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ServerMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'gpbmessage'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 7])
+    ..oo(0, [1, 2, 3, 4, 5, 6])
     ..aOM<GameState>(1, _omitFieldNames ? '' : 'gameState', subBuilder: GameState.create)
     ..aOM<GameSetting>(2, _omitFieldNames ? '' : 'gameSetting', subBuilder: GameSetting.create)
     ..aOM<PeerState>(3, _omitFieldNames ? '' : 'peerState', subBuilder: PeerState.create)
-    ..aOM<BalanceInfo>(4, _omitFieldNames ? '' : 'balanceInfo', subBuilder: BalanceInfo.create)
-    ..aOM<JoinedAcknowledge>(5, _omitFieldNames ? '' : 'joinedAck', subBuilder: JoinedAcknowledge.create)
-    ..aOS(6, _omitFieldNames ? '' : 'errorMessage')
-    ..aOS(7, _omitFieldNames ? '' : 'welcomeMessage')
+    ..aOM<JoinedAcknowledge>(4, _omitFieldNames ? '' : 'joinedAck', subBuilder: JoinedAcknowledge.create)
+    ..aOS(5, _omitFieldNames ? '' : 'errorMessage')
+    ..aOS(6, _omitFieldNames ? '' : 'welcomeMessage')
     ..hasRequiredFields = false
   ;
 
@@ -1511,44 +1520,33 @@ class ServerMessage extends $pb.GeneratedMessage {
   PeerState ensurePeerState() => $_ensure(2);
 
   @$pb.TagNumber(4)
-  BalanceInfo get balanceInfo => $_getN(3);
+  JoinedAcknowledge get joinedAck => $_getN(3);
   @$pb.TagNumber(4)
-  set balanceInfo(BalanceInfo v) { setField(4, v); }
+  set joinedAck(JoinedAcknowledge v) { setField(4, v); }
   @$pb.TagNumber(4)
-  $core.bool hasBalanceInfo() => $_has(3);
+  $core.bool hasJoinedAck() => $_has(3);
   @$pb.TagNumber(4)
-  void clearBalanceInfo() => clearField(4);
+  void clearJoinedAck() => clearField(4);
   @$pb.TagNumber(4)
-  BalanceInfo ensureBalanceInfo() => $_ensure(3);
+  JoinedAcknowledge ensureJoinedAck() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  JoinedAcknowledge get joinedAck => $_getN(4);
+  $core.String get errorMessage => $_getSZ(4);
   @$pb.TagNumber(5)
-  set joinedAck(JoinedAcknowledge v) { setField(5, v); }
+  set errorMessage($core.String v) { $_setString(4, v); }
   @$pb.TagNumber(5)
-  $core.bool hasJoinedAck() => $_has(4);
+  $core.bool hasErrorMessage() => $_has(4);
   @$pb.TagNumber(5)
-  void clearJoinedAck() => clearField(5);
-  @$pb.TagNumber(5)
-  JoinedAcknowledge ensureJoinedAck() => $_ensure(4);
+  void clearErrorMessage() => clearField(5);
 
   @$pb.TagNumber(6)
-  $core.String get errorMessage => $_getSZ(5);
+  $core.String get welcomeMessage => $_getSZ(5);
   @$pb.TagNumber(6)
-  set errorMessage($core.String v) { $_setString(5, v); }
+  set welcomeMessage($core.String v) { $_setString(5, v); }
   @$pb.TagNumber(6)
-  $core.bool hasErrorMessage() => $_has(5);
+  $core.bool hasWelcomeMessage() => $_has(5);
   @$pb.TagNumber(6)
-  void clearErrorMessage() => clearField(6);
-
-  @$pb.TagNumber(7)
-  $core.String get welcomeMessage => $_getSZ(6);
-  @$pb.TagNumber(7)
-  set welcomeMessage($core.String v) { $_setString(6, v); }
-  @$pb.TagNumber(7)
-  $core.bool hasWelcomeMessage() => $_has(6);
-  @$pb.TagNumber(7)
-  void clearWelcomeMessage() => clearField(7);
+  void clearWelcomeMessage() => clearField(6);
 }
 
 
