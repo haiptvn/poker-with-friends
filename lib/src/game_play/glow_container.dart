@@ -86,6 +86,8 @@ class _GlowingContainerState extends State<GlowingContainer> {
       if (isActive) {
         debugPrint('Timer is null, uiIdx=${widget.uiIdx}');
         _startGlowing();
+      } else {
+        _stopGlowing();
       }
     } else {
       if (isActive) {

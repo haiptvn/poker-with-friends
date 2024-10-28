@@ -575,7 +575,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
     gameState.reinit();
 
     _networkAgent = Provider.of<NetworkAgent>(context, listen: false);
-    _networkAgent.sendMessageAsync(ClientMessageBuilder.build('sync_game_state', gameState.playerMainIndex).toProto());
+    // _networkAgent.sendMessageAsync(ClientMessageBuilder.build('sync_game_state', gameState.playerMainIndex).toProto());
 
     WakelockPlus.enable();
   }

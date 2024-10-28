@@ -67,8 +67,8 @@ class PlayerPanel extends StatelessWidget {
       case proto.PlayerStatusType.AllIn:
         return 'ALL IN';
       case proto.PlayerStatusType.WINNER:
-        return _convertHandRankToStatus(handRank);
       case proto.PlayerStatusType.LOSER:
+      case proto.PlayerStatusType.Evaluated:
         return _convertHandRankToStatus(handRank);
       case proto.PlayerStatusType.Sat_Out:
         return 'SAT OUT';
@@ -76,7 +76,7 @@ class PlayerPanel extends StatelessWidget {
         return '';
     }
   }
-  bool _needShowStatus(proto.PlayerStatusType state, bool isShow, bool hasHankRanking) {
+  bool _needShowStatus(proto.PlayerStatusType state, bool isShow, bool hasHankRanking, bool isAllow) {
     switch (state) {
       case proto.PlayerStatusType.Wait4Act:
       case proto.PlayerStatusType.Playing:
@@ -86,7 +86,10 @@ class PlayerPanel extends StatelessWidget {
         return false;
       case proto.PlayerStatusType.WINNER:
       case proto.PlayerStatusType.LOSER:
+      case proto.PlayerStatusType.Evaluated:
          return isShow && hasHankRanking;
+      case proto.PlayerStatusType.Fold:
+         return !isAllow;
       default:
         return true;
     }
@@ -202,13 +205,13 @@ class PlayerPanel extends StatelessWidget {
                     }(), // Border color
                     width: 5, // Border width
                   ),
-                  boxShadow: player.isWinner ? const [
-                    BoxShadow(
-                      color: Colors.yellowAccent, // Shadow color
-                      blurRadius: 4, // Shadow blur radius
-                      spreadRadius: 2.5, // Shadow spread radius
-                    ),
-                  ] : const [],
+                  // boxShadow: player.isWinner ? const [
+                  //   BoxShadow(
+                  //     color: Colors.yellowAccent, // Shadow color
+                  //     blurRadius: 4, // Shadow blur radius
+                  //     spreadRadius: 2.5, // Shadow spread radius
+                  //   ),
+                  // ] : const [],
                 ),
               ),
             ),
@@ -256,7 +259,7 @@ class PlayerPanel extends StatelessWidget {
           ) : const SizedBox.shrink(),
 
           // Role/Action (e.g., SM. BLIND, BIG BLIND, CHECK, CALL, RAISE, FOLD, ALL IN, WINNER, LOSER)
-          if (!isEmptySlot && _needShowStatus(player.getState, isShowHand, player.handRanking.isNotEmpty))
+          if (!isEmptySlot && _needShowStatus(player.getState, isShowHand, player.handRanking.isNotEmpty, gameState.isAllowToShowYourCard))
             Positioned(
               top: 29, // 35
               child: Container(
@@ -268,7 +271,8 @@ class PlayerPanel extends StatelessWidget {
                 child: Text(
                   _showStatus(player.getState, player.handRanking),
                   style: TextStyle(
-                    color: player.getState == proto.PlayerStatusType.LOSER ? Colors.white : Colors.yellowAccent,
+                    color: player.getState == proto.PlayerStatusType.Evaluated
+                    ? Colors.white : Colors.yellowAccent,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),

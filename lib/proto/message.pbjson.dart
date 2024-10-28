@@ -99,6 +99,7 @@ const PlayerStatusType$json = {
     {'1': 'WINNER', '2': 12},
     {'1': 'SB', '2': 13},
     {'1': 'BB', '2': 14},
+    {'1': 'Evaluated', '2': 15},
   ],
 };
 
@@ -107,7 +108,7 @@ final $typed_data.Uint8List playerStatusTypeDescriptor = $convert.base64Decode(
     'ChBQbGF5ZXJTdGF0dXNUeXBlEgsKB1NhdF9PdXQQABIOCgpTcGVjdGF0aW5nEAESCgoGRm9sZG'
     'VkEAISCQoFUmVhZHkQAxILCgdQbGF5aW5nEAQSDAoIV2FpdDRBY3QQBRIICgRGb2xkEAYSCQoF'
     'Q2hlY2sQBxIICgRDYWxsEAgSCQoFUmFpc2UQCRIJCgVBbGxJbhAKEgkKBUxPU0VSEAsSCgoGV0'
-    'lOTkVSEAwSBgoCU0IQDRIGCgJCQhAO');
+    'lOTkVSEAwSBgoCU0IQDRIGCgJCQhAOEg0KCUV2YWx1YXRlZBAP');
 
 @$core.Deprecated('Use playerGameActionTypeDescriptor instead')
 const PlayerGameActionType$json = {

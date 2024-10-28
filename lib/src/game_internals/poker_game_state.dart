@@ -416,10 +416,8 @@ class PokerGameStateProvider extends ChangeNotifier {
             _pot = _totalPot;
             _players.forEach((player) {
               player.setBet(0);
-              player.setState(proto.PlayerStatusType.LOSER); // Wait for the server to send the winning status
               player.setWinnerState(false);
             });
-            _currentBet = 0;
             // Update community cards for case all in
             final prevNumOfCards = _communityCards.length;
             _communityCards.clear();
@@ -516,17 +514,12 @@ class PokerGameStateProvider extends ChangeNotifier {
           }
         });
       }
-      // To remove the hand ranking after show down to ready for the next game
-      // if (message.gameState.currentRound == proto.RoundStateType.PREFLOP ||
-      //     message.gameState.currentRound == proto.RoundStateType.INITIAL) {
-      //   _handRanking = '';
-      // }
 
       _internalCurrentTurn = -1; // Invalidate current turn index every time we receive a new game state about players
       message.gameState.players.forEach((player) {
         final index = (_maxPlayers - _forUiDisplayIndex + player.tablePosition) % _maxPlayers;
         _players[index].setState(player.status);
-        _players[index].setChips(player.chips);
+        if (player.hasChips()) _players[index].setChips(player.chips);
         if (player.hasName()) _players[index].setName(player.name);
         if (player.hasCurrentBet()) _players[index].setBet(player.currentBet);
         _log.info('Player: ${player.name}, status: ${player.status}, chips: ${player.chips}, bet: ${player.currentBet}, ui index: $index');

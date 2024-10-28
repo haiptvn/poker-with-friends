@@ -119,6 +119,7 @@ class PlayerStatusType extends $pb.ProtobufEnum {
   static const PlayerStatusType WINNER = PlayerStatusType._(12, _omitEnumNames ? '' : 'WINNER');
   static const PlayerStatusType SB = PlayerStatusType._(13, _omitEnumNames ? '' : 'SB');
   static const PlayerStatusType BB = PlayerStatusType._(14, _omitEnumNames ? '' : 'BB');
+  static const PlayerStatusType Evaluated = PlayerStatusType._(15, _omitEnumNames ? '' : 'Evaluated');
 
   static const $core.List<PlayerStatusType> values = <PlayerStatusType> [
     Sat_Out,
@@ -136,6 +137,7 @@ class PlayerStatusType extends $pb.ProtobufEnum {
     WINNER,
     SB,
     BB,
+    Evaluated,
   ];
 
   static final $core.Map<$core.int, PlayerStatusType> _byValue = $pb.ProtobufEnum.initByValue(values);

@@ -58,6 +58,7 @@ enum PlayerStatusType {
     WINNER      = 12;   // Winner
     SB          = 13;   // Small blind
     BB          = 14;   // Big blind
+    Evaluated   = 15;   // Player that  was evaluated
 }
 
 enum PlayerGameActionType {
