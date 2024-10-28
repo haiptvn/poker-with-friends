@@ -45,8 +45,8 @@ class DropdownMenu extends StatelessWidget {
         return ;
       case 'Stand Up':
         if (gameState.hasPlayerMainIndex) {
-          gameState.mainPlayerLeave();
           networkAgent.sendMessageAsync(ClientMessageBuilder.build('leave_game', gameState.playerMainIndex).toProto());
+          gameState.mainPlayerLeave();
         }
         break;
       case '+1 Buy-In':

@@ -46,7 +46,7 @@ class GameLobbyScreen extends StatelessWidget {
     final playerName = Provider.of<SettingsController>(context, listen: false).playerName.value;
     final connStatus = Provider.of<NetworkStatusProvider>(context, listen: false);
     final network = Provider.of<NetworkAgent>(context, listen: false);
-    return network.wsConnect('wss://$serverAddress:28888/ws', playerName, room, enteredPasscode, gameState, connStatus);
+    return network.wsConnect('wss://$serverAddress:${room}8888/ws', playerName, room, enteredPasscode, gameState, connStatus);
   }
 
   // This function shows the passcode dialog

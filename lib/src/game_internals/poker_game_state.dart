@@ -160,7 +160,7 @@ class PokerGameStateProvider extends ChangeNotifier {
     PlayerModel(), // 9
   ];
   bool _hasPlayerMainIndex = false;
-  int _playerMainIndex = 0;
+  int _playerMainIndex = -1;
   bool _shouldShowButton = false;
   int _forUiDisplayIndex = 0;
   int _currentButtonIndex = 0;
@@ -298,6 +298,7 @@ class PokerGameStateProvider extends ChangeNotifier {
 
   void mainPlayerLeave() {
     playerM.reset();
+    _playerMainIndex = -1;
     _hasPlayerMainIndex = false;
     _players.forEach((player) => player.markChanges());
     notifyListeners();
