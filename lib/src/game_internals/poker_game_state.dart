@@ -519,7 +519,7 @@ class PokerGameStateProvider extends ChangeNotifier {
       message.gameState.players.forEach((player) {
         final index = (_maxPlayers - _forUiDisplayIndex + player.tablePosition) % _maxPlayers;
         _players[index].setState(player.status);
-        if (player.hasChips()) _players[index].setChips(player.chips);
+        _players[index].setChips(player.chips); // Force set the chips to avoid the chip animation when chips are 0
         if (player.hasName()) _players[index].setName(player.name);
         if (player.hasCurrentBet()) _players[index].setBet(player.currentBet);
         _log.info('Player: ${player.name}, status: ${player.status}, chips: ${player.chips}, bet: ${player.currentBet}, ui index: $index');
