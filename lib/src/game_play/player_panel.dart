@@ -76,7 +76,7 @@ class PlayerPanel extends StatelessWidget {
         return '';
     }
   }
-  bool _needShowStatus(proto.PlayerStatusType state, bool isShow, bool hasHankRanking, bool isAllow) {
+  bool _needShowStatus(proto.PlayerStatusType state, bool isShow, bool isMainPlayer, bool hasHankRanking, bool isAllow) {
     switch (state) {
       case proto.PlayerStatusType.Wait4Act:
       case proto.PlayerStatusType.Playing:
@@ -87,7 +87,7 @@ class PlayerPanel extends StatelessWidget {
       case proto.PlayerStatusType.WINNER:
       case proto.PlayerStatusType.LOSER:
       case proto.PlayerStatusType.Evaluated:
-         return isShow && hasHankRanking;
+         return (isShow || isMainPlayer) && hasHankRanking;
       case proto.PlayerStatusType.Fold:
          return !isAllow;
       default:
@@ -259,7 +259,7 @@ class PlayerPanel extends StatelessWidget {
           ) : const SizedBox.shrink(),
 
           // Role/Action (e.g., SM. BLIND, BIG BLIND, CHECK, CALL, RAISE, FOLD, ALL IN, WINNER, LOSER)
-          if (!isEmptySlot && _needShowStatus(player.getState, isShowHand, player.handRanking.isNotEmpty, gameState.isAllowToShowYourCard))
+          if (!isEmptySlot && _needShowStatus(player.getState, isShowHand, isMainPlayer, player.handRanking.isNotEmpty, gameState.isAllowToShowYourCard))
             Positioned(
               top: 29, // 35
               child: Container(

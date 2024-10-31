@@ -395,11 +395,11 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                 ),
               ),
 
-              Selector<PokerGameStateProvider, (bool, bool, bool) >(
-                selector: (_, pokerGameState) => (pokerGameState.playerM.showCards, pokerGameState.shouldShowButton, pokerGameState.isAllowToShowYourCard),
+              Selector<PokerGameStateProvider, (bool, bool, bool, bool) >(
+                selector: (_, pokerGameState) => (pokerGameState.playerM.showCards, pokerGameState.shouldShowButton, pokerGameState.isAllowToShowYourCard, pokerGameState.playerM.hasCards),
                 builder: (context, data, child) {
                   debugPrint('Show button: $data');
-                  return (!data.$1 && !data.$2 && data.$3 && gameState.playerM.hasCards)
+                  return (!data.$1 && !data.$2 && data.$3 && data.$4)
                   ? Positioned(
                     bottom: 110,
                     left: MediaQuery.of(context).size.width / 2 + 40,

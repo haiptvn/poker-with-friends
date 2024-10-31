@@ -78,9 +78,8 @@ class _GlowingContainerState extends State<GlowingContainer> {
 
   @override
   Widget build(BuildContext context) {
-    final playerState = context.read<PokerGameStateProvider>().getPlayerByIndex(widget.uiIdx).getState;
-    final isActive = playerState == proto.PlayerStatusType.Wait4Act;
-    final isWinner = playerState == proto.PlayerStatusType.WINNER;
+    final player = context.read<PokerGameStateProvider>().getPlayerByIndex(widget.uiIdx);
+    final isActive = player.getState == proto.PlayerStatusType.Wait4Act;
     // debugPrint('_GlowingContainerState rebuilt at ${DateTime.now()} uiIdx=${widget.uiIdx}, state=$playerState to $isActive' );
     if (_timer == null) {
       if (isActive) {
@@ -113,7 +112,7 @@ class _GlowingContainerState extends State<GlowingContainer> {
                     ? Colors.orange
                     : Colors.white;
 
-    return isWinner ?
+    return player.isWinner ?
       Container(
         width: 76,
         height: 34,

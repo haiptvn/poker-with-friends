@@ -160,7 +160,7 @@ class PokerGameStateProvider extends ChangeNotifier {
     PlayerModel(), // 9
   ];
   bool _hasPlayerMainIndex = false;
-  int _playerMainIndex = -1;
+  int _playerMainIndex = 0;
   bool _shouldShowButton = false;
   int _forUiDisplayIndex = 0;
   int _currentButtonIndex = 0;
@@ -298,7 +298,6 @@ class PokerGameStateProvider extends ChangeNotifier {
 
   void mainPlayerLeave() {
     playerM.reset();
-    _playerMainIndex = -1;
     _hasPlayerMainIndex = false;
     _players.forEach((player) => player.markChanges());
     notifyListeners();
@@ -396,7 +395,7 @@ class PokerGameStateProvider extends ChangeNotifier {
           case proto.NotifyReasonType.SETTING_CHANGED:
           case proto.NotifyReasonType.PLAYER_CHANGED:
             _players.forEach((player) => player.reset());
-            if (_forUiDisplayIndex != _playerMainIndex) {
+            if (_forUiDisplayIndex != _playerMainIndex && _hasPlayerMainIndex) {
               _forUiDisplayIndex = _playerMainIndex;
             }
             break;
@@ -414,7 +413,6 @@ class PokerGameStateProvider extends ChangeNotifier {
             _pot = _isAllowToShowYourCard ? 0 : _totalPot;
             _players.forEach((player) {
               player.setBet(0);
-              player.setWinnerState(false);
             });
             // Update community cards for case all in
             final prevNumOfCards = _communityCards.length;
@@ -427,8 +425,7 @@ class PokerGameStateProvider extends ChangeNotifier {
               audioController?.playSfx(SfxType.dealCommunity);
             }
             // Store the hand ranking for the all players
-            if ((message.gameState.currentRound == proto.RoundStateType.SHOWDOWN) &&
-                message.gameState.hasFinalResult() && message.gameState.finalResult.showingCards.isNotEmpty) {
+            if (message.gameState.hasFinalResult() && message.gameState.finalResult.showingCards.isNotEmpty) {
                 // Store the hand ranking for the all players
                 message.gameState.finalResult.showingCards.forEach((showingCard) {
                 final index = (_maxPlayers - _forUiDisplayIndex + showingCard.tablePos) % _maxPlayers;
@@ -441,8 +438,7 @@ class PokerGameStateProvider extends ChangeNotifier {
               });
             }
             // Show the hand if message has the control info
-            if ((message.gameState.currentRound == proto.RoundStateType.SHOWDOWN) &&
-                message.gameState.hasFinalResult() && message.gameState.finalResult.hasControl()) {
+            if (message.gameState.hasFinalResult() && message.gameState.finalResult.hasControl()) {
               if (message.gameState.finalResult.control.allowShowingPos.isNotEmpty) {
                 // Store the hand ranking for the all players
                 message.gameState.finalResult.control.allowShowingPos.forEach((int tablePos) {
@@ -497,8 +493,6 @@ class PokerGameStateProvider extends ChangeNotifier {
           // _players.forEach((player) => player.reinit());
           _shouldShowButton = false;
           break;
-        case proto.RoundStateType.PREFLOP:
-          for (var i = 1; i < _maxPlayers; i++) { _players[i].resetCards(); }
         default:
         _log.info('Not process this current round: ${message.gameState.currentRound}');
       }
@@ -618,6 +612,7 @@ class PokerGameStateProvider extends ChangeNotifier {
     _currentButtonIndex = 0;
     _currentBet = 0;
     _hasPlayerMainIndex = false;
+    _playerMainIndex = 0;
     _forUiDisplayIndex = 0;
     _playerBalances.clear();
     _isAllowToShowYourCard = false;
