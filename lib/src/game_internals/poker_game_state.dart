@@ -464,11 +464,18 @@ class PokerGameStateProvider extends ChangeNotifier {
                 }
                 if (message.gameState.finalResult.control.hasWinner()) {
                   final index = (_maxPlayers - _forUiDisplayIndex + message.gameState.finalResult.control.winner.tablePos) % _maxPlayers;
-                  final won = message.gameState.finalResult.control.winner.wonAmount;
+                  var won = message.gameState.finalResult.control.winner.wonAmount;
                   audioController?.playSfx(SfxType.collect);
+                  // CHeck if won is negative, then it is the amount of chips that the player has to pay
+                  if (won <= 0) {
+                    won = won * -1;
+                    _log.info('Return Pot: $_pot');
+                    _players[index].setState(proto.PlayerStatusType.LOSER);
+                  } else {
+                    _players[index].setState(proto.PlayerStatusType.WINNER);
+                    _players[index].setWinnerState(true);
+                  }
                   // Set the winner status for the player and trigger effect
-                  _players[index].setState(proto.PlayerStatusType.WINNER);
-                  _players[index].setWinnerState(true);
                   _log.info('Winner detected: ${_players[index]._name}, current chip: ${_players[index].getChips}, won $won chips');
                   _players[index].setChips(_players[index].getChips + won);
                   _pot -= won;
@@ -490,7 +497,9 @@ class PokerGameStateProvider extends ChangeNotifier {
           break;
         case proto.RoundStateType.INITIAL:
           resetGame();
-          // _players.forEach((player) => player.reinit());
+          _players.forEach((player) {
+            player.resetCards();
+          });
           _shouldShowButton = false;
           break;
         default:
